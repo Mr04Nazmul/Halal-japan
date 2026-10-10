@@ -1,0 +1,18 @@
+{
+  "name": "Japan Halal Checker",
+  "short_name": "Halal Check",
+  "description": "Look up food products and review ingredients that may need halal verification in Japan.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f8f3",
+  "theme_color": "#0c382b",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
