@@ -69,7 +69,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: japan-halal-checker-${{ matrix.variant }}-debug-apk
+          name: japan-halal-checker-${{ matrix.variant }}-release-apk
           path: apk
       - uses: actions/setup-java@v4
         with:
