@@ -15,6 +15,8 @@ module.exports = {
       versionCode: 1
     },
     extra: { buildVariant: withAds ? 'ads-test' : 'adfree' },
-    plugins: withAds ? [['react-native-google-mobile-ads', { androidAppId: admobAppId }]] : []
+    // Native module is autolinked in both builds; a valid test App ID avoids startup crashes.
+    // Ad-free variant never requests or displays ads.
+    plugins: [['react-native-google-mobile-ads', { androidAppId: admobAppId }]]
   }
 };
