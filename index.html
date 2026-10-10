@@ -71,11 +71,11 @@ $('scanBtn').onclick=async()=>{
   scanner=new Html5Qrcode('reader',{verbose:false});
   const formats=window.Html5QrcodeSupportedFormats;
   // Use the entire camera viewfinder: retail barcodes are long and often missed by a small scan box.
-  const config={fps:15,disableFlip:true,useBarCodeDetectorIfSupported:true};
+  const config={fps:12,disableFlip:false,experimentalFeatures:{useBarCodeDetectorIfSupported:false}};
   if(formats)config.formatsToSupport=[formats.EAN_13,formats.EAN_8,formats.UPC_A,formats.UPC_E,formats.UPC_EAN_EXTENSION,formats.CODE_128,formats.CODE_39,formats.ITF];
   // facingMode avoids accidentally selecting the front camera from an unordered camera list.
-  await scanner.start({facingMode:'environment'},config,onBarcodeDetected,()=>{});
-  setStatus(tr('camera')+' Move the phone slightly farther away until the bars look sharp; keep the full barcode visible.');
+  await scanner.start({facingMode:'environment'},config,onBarcodeDetected,(decodeError)=>{ /* No match in this frame is normal; keep scanning. */ });
+  setStatus(tr('camera')+' Keep the barcode flat, well lit, and fully visible. Move closer or farther until the bars are sharp; avoid glare and hold steady for a few seconds.');
  }catch(e){
   setStatus(tr('camError')+' '+(e&&e.message?e.message:'')+' You can type the barcode instead.');
   $('scanBtn').disabled=false;$('stopBtn').disabled=true;
