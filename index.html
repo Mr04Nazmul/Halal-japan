@@ -221,7 +221,7 @@ $('homeSearch').onsubmit=e=>{e.preventDefault();const q=$('homeQuery').value.tri
 const oldReview=reviewIngredients;reviewIngredients=function(t,p){currentProduct=null;oldReview(t,p);addDetailButton()};
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopScanner()});
 navigate('home');$('enterApp').onclick=()=>{$('splashScreen').classList.add('hidden')};setTimeout(()=>$('splashScreen').classList.add('hidden'),1400);
-</script><script src="./languages.js?v=20261011"></script><script src="./product-data.js?v=20261011"></script><script>
+</script><script src="./languages.js?v=34-r3"></script><script src="./product-data.js?v=34-r3"></script><script>
 const originalNavigate=navigate;navigate=function(page){originalNavigate(page);if(page==='details'){$('ingredientDetails').setAttribute('data-original','');const translated=$('translatedIngredients');if(translated&&translated.textContent!==coreText('Translating…'))$('ingredientDetails').textContent=translated.textContent;}queueLocalization()};window.navigate=navigate;
 const originalShowResult=showResult;showResult=function(html){originalShowResult(html);queueLocalization()};
 const originalLanguageSetup=setupLanguages;setupLanguages();const selectLanguage=$('language').onchange;$('language').onchange=()=>{selectLanguage();translateProductIngredients()};
