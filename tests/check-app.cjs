@@ -13,6 +13,7 @@ const ctx=vm.createContext({document,window:null,navigator:{},NodeFilter:nf,loca
 vm.runInContext('window=globalThis;window.scrollTo=()=>{};',ctx);
 for(const script of document.querySelectorAll('script')){const src=script.getAttribute('src');if(src?.startsWith('./'))vm.runInContext(fs.readFileSync(src.split('?')[0],'utf8'),ctx,{filename:src});else if(!src)vm.runInContext(script.textContent,ctx,{filename:'inline'});}
 const run=s=>vm.runInContext(s,ctx);
+run("window.HALAL_API_BASE='';window.HALAL_API_PATH='';");
 async function flush(){pending=[];await run('localizeUI()');}
 (async()=>{
  assert.deepEqual(Array.from(run('HALAL_LOCALES.map(x=>x[0])')),['en','ja','bn','ur','uz','ar','fa','id','ms']);
@@ -32,6 +33,8 @@ async function flush(){pending=[];await run('localizeUI()');}
  run("lang='en';localeEpoch++;navigate('search')");
  await run("fetchProduct('https://world.openfoodfacts.org/api/v2/product/4900000000000.json')");await flush();
  assert.equal(run('currentPage'),'result');assert.match(document.querySelector('#result').textContent,/HARAM/);
+ // Verified official JAN snapshots must not be confused with another size or certify halal.
+ const official=run("window.HALAL_MANUFACTURER_RECORDS.find(p=>p.code==='4901777411760')");assert.ok(official);run("renderProduct(window.HALAL_MANUFACTURER_RECORDS.find(p=>p.code==='4901777411760'))");await flush();assert.match(document.querySelector('#result').textContent,/VERIFY/);assert.match(document.querySelector('#result').textContent,/Saved manufacturer record/);
  // Missing product falls back without crashing; retail metadata cannot produce HALAL.
  ctx.fetch=async u=>({ok:true,json:async()=>({})});
  await run("fetchProduct('https://world.openfoodfacts.org/api/v2/product/4900000000001.json')");await flush();

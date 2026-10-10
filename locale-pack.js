@@ -90,3 +90,12 @@ Object.assign(TEXT_ALIASES,{'Search product name or barcode':'Search product nam
 // All app UI is bundled for the requested languages. Only product/ingredient text uses online translation.
 const sourceLocalizeUI=localizeUI;
 localizeUI=function(){const original=translateSegments;translateSegments=async(texts,source,target)=>source==='en'&&PACK_LANGS.includes(target)?Object.fromEntries(texts.filter(t=>LOCAL_TEXT[target]?.[TEXT_ALIASES[t]||t]).map(t=>[t,LOCAL_TEXT[target][TEXT_ALIASES[t]||t]])):original(texts,source,target);const result=sourceLocalizeUI();translateSegments=original;return result};
+
+const PROVIDER_TEXT={
+'Yahoo returned 403.':['Yahoo থেকে 403 এসেছে।','Yahoo سے 403 آیا ہے۔','Yahoo 403 qaytardi.','أعاد Yahoo الرمز 403.','Yahoo کد 403 برگرداند.','Yahoo mengembalikan 403.','Yahoo mengembalikan 403.'],
+'Official store information':['দোকানের সরকারি তথ্য','اسٹور کی سرکاری معلومات','Do‘konning rasmiy ma’lumoti','معلومات المتجر الرسمية','اطلاعات رسمی فروشگاه','Informasi resmi toko','Maklumat rasmi kedai'],
+'Allergy data is not a full ingredient list.':['অ্যালার্জির তথ্য সম্পূর্ণ উপাদানের তালিকা নয়।','الرجی کی معلومات مکمل اجزاء کی فہرست نہیں ہیں۔','Allergiya ma’lumoti to‘liq tarkib ro‘yxati emas.','بيانات الحساسية ليست قائمة كاملة للمكونات.','اطلاعات حساسیت فهرست کامل ترکیبات نیست.','Data alergi bukan daftar bahan lengkap.','Data alahan bukan senarai ramuan lengkap.']
+};
+for(const [key,values]of Object.entries(PROVIDER_TEXT))PACK_LANGS.forEach((code,i)=>LOCAL_TEXT[code][key]=values[i]);
+
+const savedRecordLabels=['প্রস্তুতকারকের সংরক্ষিত তথ্য','کمپنی کا محفوظ ریکارڈ','Ishlab chiqaruvchining saqlangan yozuvi','سجل محفوظ من المصنّع','اطلاعات ذخیره‌شده تولیدکننده','Catatan produsen tersimpan','Rekod pengilang tersimpan'];PACK_LANGS.forEach((code,i)=>LOCAL_TEXT[code]['Saved manufacturer record']=savedRecordLabels[i]);

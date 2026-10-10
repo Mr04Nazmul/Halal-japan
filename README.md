@@ -64,3 +64,18 @@ Barcode lookup queries Open Food Facts and the configured Yahoo proxy in paralle
 The proxy permits requests from `https://mr04nazmul.github.io`; add other trusted origins through comma-separated `ALLOWED_ORIGINS`. Its one-second guard is per server instance, not a shared distributed rate limiter. Retail names/images are never treated as verified ingredient data or certification. Without backend configuration the app explicitly says Yahoo is not connected.
 
 Official API reference: https://developer.yahoo.co.jp/webapi/shopping/v3/itemsearch.html
+
+
+## Connected backend and additional product sources (2026-10-10 UTC)
+
+The GitHub Pages web app now calls the `halal-product-lookup` Edge Function in the existing Supabase project. Its JWT gateway stays enabled and uses only the public anon key in the client. The function has no account/database write operations. Yahoo configuration is retained privately in deployed backend code; the public repository contains only a placeholder/environment variable name, never the Yahoo Client ID.
+
+- Backend health was live-tested with HTTP 200.
+- Yahoo returned upstream HTTP 403 with the user-provided Client ID, from both a direct request and the deployed backend. Yahoo access is **not working** until that upstream authorization issue is resolved; health/configured does not prove Yahoo lookup works.
+- UPCitemdb's free trial API is an additional exact-barcode metadata fallback (100 requests/day/IP; may return no record or quota errors). It supplies no verified ingredients or halal certification.
+- The official Suntory JAN product catalogue adapter checks the page's exact `p_jan` and extracts its product name and ingredient list. Four official JAN records were retrieved and bundled with their source links and checked dates, so these records remain available when the manufacturer's server cannot be reached. They are labelled saved manufacturer records, and are not halal certificates. Names can also be searched locally.
+- Links to official 7-Eleven, FamilyMart and Lawson ingredient/allergy guidance are available when data is missing. These are reference links, **not** a completed integration of those stores' product databases. Allergen lists are not complete ingredient lists.
+
+The free sources do not cover every convenience-store food. Package-photo OCR/manual review remains necessary for unlisted products, local prepared meals, recipe changes and missing ingredient details.
+
+Checks: `NODE_PATH=<directory-containing-linkedom> node tests/check-app.cjs` and `node tests/check-yahoo.cjs`. Browser/camera testing was not available in this environment.
