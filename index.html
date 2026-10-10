@@ -54,8 +54,52 @@ $('lookupBtn').onclick=()=>{let c=$('barcode').value.trim();if(!c){setStatus(tr(
 $('searchBtn').onclick=()=>{let q=$('productQuery').value.trim();if(!q){setStatus(tr('empty'));return}fetchProduct('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=1&fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url')}
 $('analyzeBtn').onclick=()=>{let v=$('ingredients').value.trim();if(!v){setStatus(tr('empty'));return}reviewIngredients(v,'Ingredient review')}
 $('barcode').addEventListener('keydown',e=>{if(e.key==='Enter')$('lookupBtn').click()});$('productQuery').addEventListener('keydown',e=>{if(e.key==='Enter')$('searchBtn').click()});
-$('scanBtn').onclick=async()=>{if(!window.Html5Qrcode){setStatus(tr('camError'));return}try{scanner=new Html5Qrcode('reader');$('scanBtn').disabled=true;$('stopBtn').disabled=false;await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:250,height:130},formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39]},code=>{$('barcode').value=code;stopScanner();$('lookupBtn').click()},()=>{});setStatus(tr('camera'))}catch(e){setStatus(tr('camError'));$('scanBtn').disabled=false;$('stopBtn').disabled=true}}
-async function stopScanner(){if(scanner){try{await scanner.stop();scanner.clear()}catch(e){}scanner=null}$('scanBtn').disabled=false;$('stopBtn').disabled=true;$('reader').innerHTML=''}
+let scanHandled=false;
+async function ensureScannerLibrary(){
+ if(window.Html5Qrcode)return true;
+ setStatus(tr('loading'));
+ for(const src of ['https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js']){
+  try{await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(Error('scanner library failed'));document.head.appendChild(s)});if(window.Html5Qrcode)return true}catch(e){}
+ }
+ return !!window.Html5Qrcode;
+}
+$('scanBtn').onclick=async()=>{
+ if(!window.isSecureContext){setStatus('Camera scanning needs a secure HTTPS page. Open the GitHub Pages https:// link.');return}
+ $('scanBtn').disabled=true; $('stopBtn').disabled=false; scanHandled=false;
+ try{
+  if(!await ensureScannerLibrary())throw Error('Scanner library could not load. Check internet connection and reload.');
+  scanner=new Html5Qrcode('reader',{verbose:false});
+  const formats=window.Html5QrcodeSupportedFormats;
+  const config={fps:12,qrbox:(vw,vh)=>({width:Math.min(300,Math.floor(vw*0.88)),height:Math.min(180,Math.floor(vh*0.65))}),aspectRatio:1.777};
+  if(formats)config.formatsToSupport=[formats.EAN_13,formats.EAN_8,formats.UPC_A,formats.UPC_E,formats.CODE_128,formats.CODE_39,formats.ITF];
+  try{
+   const cameras=await Html5Qrcode.getCameras();
+   const back=cameras.find(c=>/back|rear|environment|背面|後ろ/i.test(c.label||''))||cameras[cameras.length-1];
+   if(back)await scanner.start(back.id,config,onBarcodeDetected,()=>{});
+   else await scanner.start({facingMode:'environment'},config,onBarcodeDetected,()=>{});
+  }catch(firstError){
+   if(scanner&&scanner.isScanning)throw firstError;
+   await scanner.start({facingMode:'environment'},config,onBarcodeDetected,()=>{});
+  }
+  setStatus(tr('camera')+' Keep the barcode inside the frame and hold steady.');
+ }catch(e){
+  setStatus(tr('camError')+' '+(e&&e.message?e.message:'')+' You can type the barcode instead.');
+  $('scanBtn').disabled=false;$('stopBtn').disabled=true;
+  if(scanner){try{await scanner.clear()}catch(_){}scanner=null}
+ }
+};
+async function onBarcodeDetected(code){
+ if(scanHandled)return;scanHandled=true;
+ $('barcode').value=code;
+ setStatus('Barcode detected: '+code+' — looking up product…');
+ await stopScanner();
+ await fetchProduct('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url');
+}
+async function stopScanner(){
+ const active=scanner;scanner=null;
+ if(active){try{if(active.isScanning)await active.stop()}catch(e){}try{active.clear()}catch(e){}}
+ $('scanBtn').disabled=false;$('stopBtn').disabled=true;
+}
 $('stopBtn').onclick=stopScanner;
 </script>
 </body>
