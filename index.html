@@ -82,8 +82,11 @@ $('scanBtn').onclick=async()=>{
   if(scanner){try{await scanner.clear()}catch(_){}scanner=null}
  }
 };
-async function onBarcodeDetected(code){
- if(scanHandled)return;scanHandled=true;
+async function onBarcodeDetected(decodedText){
+ if(scanHandled)return;
+ const code=String(decodedText||'').replace(/\\s/g,'');
+ if(!/^(?:\\d{8}|\\d{12,14})$/.test(code))return;
+ scanHandled=true;
  $('barcode').value=code;
  setStatus('Barcode detected: '+code+' — looking up product…');
  await stopScanner();
