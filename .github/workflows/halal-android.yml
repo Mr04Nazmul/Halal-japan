@@ -67,10 +67,12 @@ jobs:
       - name: Run on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 30
           arch: x86_64
-          target: google_apis
-          profile: pixel_6
+          target: default
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -memory 2048 -cores 2
           script: |
             adb install apk/app-debug.apk
             PACKAGE=com.nazmul.japanhalalchecker
