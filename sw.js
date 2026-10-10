@@ -1,18 +1,12 @@
-const CACHE_NAME = "japan-halal-checker-shell-v2-20261010";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
-self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
-});
-self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
-});
-self.addEventListener("fetch", event => {
-  const request = event.request;
-  const url = new URL(request.url);
-  if (request.method !== "GET" || url.origin !== self.location.origin) return;
-  if (url.pathname.includes("/api/") || url.pathname.includes("/cgi/")) return;
-  event.respondWith(fetch(request).then(response => {
-    if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
-    return response;
-  }).catch(() => caches.match(request).then(cached => cached || caches.match("./index.html"))));
+const CACHE_NAME="japan-halal-checker-shell-v3-i18n";
+const SHELL=["./","./index.html","./manifest.webmanifest","./icon.svg","./languages.js?v=34-r3","./product-data.js?v=34-r3"];
+self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
+self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("japan-halal-checker-shell-")&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+self.addEventListener("fetch",event=>{
+ const request=event.request,url=new URL(request.url);
+ if(request.method!=="GET"||url.origin!==self.location.origin||url.pathname.includes("/api/"))return;
+ event.respondWith(fetch(request).then(response=>{
+  if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.put(request,copy)));}
+  return response;
+ }).catch(async()=>{const cached=await caches.match(request);if(cached)return cached;if(request.mode==="navigate"){const fallback=await caches.match("./index.html");if(fallback)return fallback;}return Response.error();}));
 });
