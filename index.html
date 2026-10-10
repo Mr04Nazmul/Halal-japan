@@ -101,7 +101,7 @@ $('scanBtn').onclick=async()=>{
   scanner=new Html5Qrcode('reader',{verbose:false});
   const formats=window.Html5QrcodeSupportedFormats;
   // Use the entire camera viewfinder: retail barcodes are long and often missed by a small scan box.
-  const config={fps:18,disableFlip:false,experimentalFeatures:{useBarCodeDetectorIfSupported:false},aspectRatio:1.7777778};
+  const config={fps:24,disableFlip:false,experimentalFeatures:{useBarCodeDetectorIfSupported:true}};
   if(formats)config.formatsToSupport=[formats.EAN_13,formats.EAN_8,formats.UPC_A,formats.UPC_E,formats.CODE_128,formats.CODE_39,formats.ITF].filter(x=>x!==undefined);
   // facingMode avoids accidentally selecting the front camera from an unordered camera list.
   await scanner.start({facingMode:'environment'},config,onBarcodeDetected,(decodeError)=>{ /* No match in this frame is normal; keep scanning. */ });
