@@ -2,6 +2,8 @@ import {MANUFACTURER_RECORDS} from './manufacturer-records.js';
 import {parseSuntory} from './suntory.js';
 import {parseHTML} from 'npm:linkedom@0.18.13';
 import './store-parser.js';
+import './gyomu.js';
+import {GYOMU_RECORDS} from './gyomu-records.js';
 import {STORE_RECORDS,STORE_PAGES} from './store-records.js';
 /* Deployed configuration remains on the backend; no Yahoo Client ID is shipped to browsers. */
 const appid = Deno.env.get('HALAL_YAHOO_CLIENT_ID') || '__YAHOO_PRIVATE_CONFIG__';
@@ -21,18 +23,19 @@ Deno.serve(async req=>{
  if(code?!/^(\d{8}|\d{12,14})$/.test(code):!q||q.length>100)return reply({error:'Invalid lookup'},400);
  if(!['yahoo','upcitemdb','suntory','stores'].includes(source))return reply({error:'Invalid source'},400);
  const store=u.searchParams.get('store')||'all',category=u.searchParams.get('category')||'all';
- if(source==='stores'&&(!['all','family','seven','lawson'].includes(store)||!['all','bento','onigiri','sandwich','noodles','pasta','fried'].includes(category)||code))return reply({error:'Invalid store filter'},400);
+ if(source==='stores'&&(!['all','family','seven','lawson','gyomu'].includes(store)||!['all','bento','onigiri','sandwich','noodles','pasta','fried','halal'].includes(category)||code))return reply({error:'Invalid store filter'},400);
  const now=Date.now(),key=source+'|'+(code||q)+'|'+store+'|'+category,stored=cache.get(key);if(stored&&stored.expires>now)return reply(stored.value);
  let result;
  if(source==='stores'){
-  const pages=STORE_PAGES.filter(p=>(store==='all'||p.store===store)&&(category==='all'||p.category===category));
+  const gyomuPages=Array.from({length:9},(_,i)=>({store:'gyomu',category:'halal',page:i+1,url:'https://www.gyomusuper.jp/product/list.php?gc_id=312&page='+(i+1)}));
+  const pages=[...STORE_PAGES,...gyomuPages].filter(p=>(store==='all'||p.store===store)&&(category==='all'||p.category===category));
   let livePages=0,savedPages=0;
   const batches=await Promise.all(pages.map(async p=>{try{
    const r=await fetch(p.url,{signal:AbortSignal.timeout(7000)});if(!r.ok)throw Error('Upstream');
-   const {document}=parseHTML(await r.text());const products=globalThis.HALAL_STORE_PARSER(document,p,new Date().toISOString().slice(0,10));if(!products.length)throw Error('Empty catalogue');livePages++;return products;
-  }catch{savedPages++;return STORE_RECORDS.filter(x=>x._store===p.store&&x._category===p.category)}}));
-  const text=q.toLowerCase(),aliases={bento:'bento',onigiri:'onigiri',sandwich:'sandwich',noodles:'noodles',pasta:'pasta',fried:'fried'};
-  const products=Array.from(new Map(batches.flat().map(p=>[p._catalogId,p])).values()).filter(p=>text==='all'||p._category===aliases[text]||(p.product_name+' '+p.brands).toLowerCase().includes(text));
+   const {document}=parseHTML(await r.text());const checkedDate=new Date(Date.now()+9*60*60*1000).toISOString().slice(0,10);const products=p.store==='gyomu'?globalThis.HALAL_GYOMU_PARSER(document,p.page,checkedDate,GYOMU_RECORDS):globalThis.HALAL_STORE_PARSER(document,p,checkedDate);if(!products.length)throw Error('Empty catalogue');livePages++;return products;
+  }catch{savedPages++;return p.store==='gyomu'?GYOMU_RECORDS.filter(x=>x._catalogPage===p.page):STORE_RECORDS.filter(x=>x._store===p.store&&x._category===p.category)}}));
+  const text=q.toLowerCase(),aliases={bento:'bento',onigiri:'onigiri',sandwich:'sandwich',noodles:'noodles',pasta:'pasta',fried:'fried',halal:'halal'};
+  const products=Array.from(new Map(batches.flat().map(p=>[p._catalogId,p])).values()).filter(p=>text==='all'||p._category===aliases[text]||(p.product_name+' '+p.brands+' '+(p._searchTerms||'')).toLowerCase().includes(text));
   result={products,source:'Official store catalogues',livePages,savedPages,halalVerified:false,ingredientsVerified:false};
  }else if(source==='suntory'){
   if(!code.startsWith('490177'))return reply({products:[],source:'Suntory'});

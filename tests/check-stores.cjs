@@ -12,12 +12,20 @@ const s=parse(parseHTML(seven).document,config('seven'),'2026-10-10');assert.equ
 const l=parse(parseHTML(lawson).document,config('lawson'),'2026-10-10');assert.equal(l.length,1);assert.equal(l[0]._nutrition.energy_kcal,'555');
 vm.runInContext(fs.readFileSync(path+'store-records.js','utf8').replaceAll('export const','const'),ctx);
 assert.equal(vm.runInContext('STORE_RECORDS.length',ctx),357);assert.ok(vm.runInContext("STORE_RECORDS.every(p=>!p.code&&!p.ingredients_text&&p._sourceUrl.startsWith('https://')&&p._snapshotDate==='2026-10-10')",ctx));
+vm.runInContext(fs.readFileSync(path+'gyomu.js','utf8'),ctx);
+vm.runInContext(fs.readFileSync(path+'gyomu-records.js','utf8').replaceAll('export const','const'),ctx);
+const gyomu=vm.runInContext('GYOMU_RECORDS',ctx);assert.equal(gyomu.length,211);assert.equal(new Set(gyomu.map(p=>p.code)).size,211);for(const p of gyomu){assert.ok(/^(?:\d{8}|\d{12,14})$/.test(p.code));const check=[...p.code.slice(0,-1)].reverse().reduce((sum,c,i)=>sum+Number(c)*(i%2?1:3),0);assert.equal((check+Number(p.code.at(-1)))%10,0);assert.ok(p._quantity&&p._country&&p._halalEvidence.kind==='retailer-listing');assert.equal(p.ingredients_text,'');assert.ok(!p.product_name.includes('...'));}
+assert.equal(gyomu.filter(p=>p._storage).length,197);assert.equal(gyomu.filter(p=>p._nutritionText).length,207);
+const halalPage='<div class="bread_cramb">HOME &gt; ハラール</div><div class="item_wrap"><div class="item"><a href="detail.php?go_id=8656"><img data-original="../onlineshop/html/upload/save_image/76901.png"><span class="item_name">シュリンプサテXO</span></a></div></div>';
+const parsed=ctx.HALAL_GYOMU_PARSER(parseHTML(halalPage).document,1,'2026-10-12',gyomu);assert.equal(parsed.length,1);assert.equal(parsed[0].code,'4942355285274');assert.equal(parsed[0]._snapshotDate,'2026-10-11');assert.equal(parsed[0]._catalogCheckedDate,'2026-10-12');assert.equal(ctx.HALAL_GYOMU_PARSER(parseHTML(halalPage.replace('ハラール','全商品')).document,1,'2026-10-12',gyomu).length,0);
 vm.runInContext(fs.readFileSync(path+'index.ts','utf8').replace(/^import .*;\n/gm,''),ctx);
 const call=async params=>{const response=await ctx.handler(new Request('https://example.com/?'+new URLSearchParams(params)));return {status:response.status,data:await response.json()}};
 (async()=>{
  const live=await call({source:'stores',query:'all',store:'family',category:'bento'});assert.equal(live.status,200);assert.equal(live.data.livePages,1);assert.equal(live.data.savedPages,0);assert.equal(live.data.products.length,1);assert.equal(live.data.halalVerified,false);assert.equal(live.data.ingredientsVerified,false);
  ctx.fetch=async()=>{throw Error('offline')};
  const saved=await call({source:'stores',query:'bento',store:'family',category:'bento'});assert.equal(saved.status,200);assert.equal(saved.data.savedPages,1);assert.equal(saved.data.products.length,21);assert.ok(saved.data.products.every(p=>p._store==='family'&&p._category==='bento'));
+ const g=await call({source:'stores',query:'halal',store:'gyomu',category:'halal'});assert.equal(g.status,200);assert.equal(g.data.savedPages,9);assert.equal(g.data.products.length,211);assert.equal(g.data.ingredientsVerified,false);
+ ctx.fetch=async()=>({ok:true,text:async()=>halalPage});const fresh=await call({source:'stores',query:'all',store:'gyomu',category:'halal'});assert.equal(fresh.status,200);assert.equal(fresh.data.livePages,9);assert.equal(fresh.data.products.length,1);assert.equal(fresh.data.products[0].code,'4942355285274');
  assert.equal((await call({source:'stores',query:'all',store:'unknown'})).status,400);assert.equal((await call({source:'stores',jan_code:'4901777411760'})).status,400);
  console.log('PASS: official IDs, allergens/nutrition, no fabricated JAN/ingredients, deduplication, live catalogue, saved fallback, filter validation');
 })().catch(e=>{console.error(e);process.exitCode=1});
