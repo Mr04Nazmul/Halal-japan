@@ -17,7 +17,7 @@
 <section class="hero"><div class="eyebrow">FOOD CHECK • JAPAN</div><h1 id="heroTitle">Know what’s<br>in your food.</h1><p id="heroDesc">Look up a barcode or search a product, then review ingredients that may need halal verification.</p><span class="pill">✦ Ingredient guidance · Not certification</span></section>
 <section class="card"><h2 id="checkTitle">Check a product</h2><p class="sub" id="checkDesc">Scan a barcode, enter its number, or search the product database.</p>
 <div class="tabs"><button class="tab active" id="barcodeTab" type="button">▦ Barcode</button><button class="tab" id="searchTab" type="button">⌕ Search product</button><button class="tab" id="ingredientTab" type="button">☷ Ingredients</button></div>
-<div id="barcodePanel" style="margin-top:16px"><div class="field"><input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Enter barcode number" aria-label="Barcode number"><button class="btn" id="lookupBtn">Check</button></div><div class="actions"><button class="btn secondary" id="scanBtn" type="button">Open camera scanner</button><button class="btn secondary" id="stopBtn" type="button" disabled>Stop camera</button></div><div id="reader" style="max-width:360px;margin-top:12px"></div></div>
+<div id="barcodePanel" style="margin-top:16px"><div class="field"><input id="barcode" inputmode="numeric" autocomplete="off" placeholder="Enter barcode number" aria-label="Barcode number"><button class="btn" id="lookupBtn">Check</button></div><div class="actions"><button class="btn secondary" id="scanBtn" type="button">Open camera scanner</button><button class="btn secondary" id="stopBtn" type="button" disabled>Stop camera</button></div><div style="margin-top:12px"><label for="barcodePhoto" class="small">Camera not detecting? Take a clear photo of the barcode and scan the image:</label><input id="barcodePhoto" type="file" accept="image/*" capture="environment" style="display:block;width:100%;margin-top:7px;padding:10px;border:1px solid #d7e3d9;border-radius:12px;background:#fbfdfb"></div><div id="reader" style="max-width:100%;margin-top:12px"></div></div>
 <div id="searchPanel" class="hidden" style="margin-top:16px"><div class="field"><input id="productQuery" placeholder="e.g. instant ramen, カップ麺" aria-label="Product search"><button class="btn" id="searchBtn">Search</button></div></div>
 <div id="ingredientPanel" class="hidden" style="margin-top:16px"><textarea id="ingredients" class="searchbox" rows="5" placeholder="Paste the ingredient list from the package (原材料名)…" aria-label="Ingredient list"></textarea><div class="actions"><button class="btn" id="analyzeBtn">Review ingredients</button></div></div>
 <div class="status" id="status" role="status" aria-live="polite"></div><div class="result" id="result" aria-live="polite"></div>
@@ -72,7 +72,7 @@ $('scanBtn').onclick=async()=>{
   const formats=window.Html5QrcodeSupportedFormats;
   // Use the entire camera viewfinder: retail barcodes are long and often missed by a small scan box.
   const config={fps:12,disableFlip:false,experimentalFeatures:{useBarCodeDetectorIfSupported:false}};
-  if(formats)config.formatsToSupport=[formats.EAN_13,formats.EAN_8,formats.UPC_A,formats.UPC_E,formats.UPC_EAN_EXTENSION,formats.CODE_128,formats.CODE_39,formats.ITF];
+  if(formats)config.formatsToSupport=[formats.EAN_13,formats.EAN_8,formats.UPC_A,formats.UPC_E,formats.CODE_128,formats.CODE_39,formats.ITF].filter(x=>x!==undefined);
   // facingMode avoids accidentally selecting the front camera from an unordered camera list.
   await scanner.start({facingMode:'environment'},config,onBarcodeDetected,(decodeError)=>{ /* No match in this frame is normal; keep scanning. */ });
   setStatus(tr('camera')+' Keep the barcode flat, well lit, and fully visible. Move closer or farther until the bars are sharp; avoid glare and hold steady for a few seconds.');
@@ -97,6 +97,23 @@ async function stopScanner(){
  if(active){try{if(active.isScanning)await active.stop()}catch(e){}try{active.clear()}catch(e){}}
  $('scanBtn').disabled=false;$('stopBtn').disabled=true;
 }
+$('barcodePhoto').addEventListener('change',async e=>{
+ const file=e.target.files&&e.target.files[0];if(!file)return;
+ setStatus('Reading barcode from photo…');$('result').classList.remove('show');
+ try{
+  if(!await ensureScannerLibrary())throw Error('Scanner library could not load.');
+  if(scanner)await stopScanner();
+  const temp=new Html5Qrcode('reader',{verbose:false});
+  try{
+   const decoded=await temp.scanFile(file,false);
+   const code=String(decoded||'').replace(/\s/g,'');
+   if(!/^(?:\d{8}|\d{12,14})$/.test(code))throw Error('Barcode was detected but its number format is not supported.');
+   $('barcode').value=code;setStatus('Barcode detected: '+code+' — looking up product…');
+   await fetchProduct('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url');
+  }finally{try{await temp.clear()}catch(_){}}
+ }catch(err){setStatus('Could not read this photo. Retake it with the whole barcode sharp, straight, close, and without glare. You can also type the barcode number.')}
+ e.target.value='';
+});
 $('stopBtn').onclick=stopScanner;
 </script>
 </body>
