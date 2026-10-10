@@ -99,3 +99,25 @@ const PROVIDER_TEXT={
 for(const [key,values]of Object.entries(PROVIDER_TEXT))PACK_LANGS.forEach((code,i)=>LOCAL_TEXT[code][key]=values[i]);
 
 const savedRecordLabels=['প্রস্তুতকারকের সংরক্ষিত তথ্য','کمپنی کا محفوظ ریکارڈ','Ishlab chiqaruvchining saqlangan yozuvi','سجل محفوظ من المصنّع','اطلاعات ذخیره‌شده تولیدکننده','Catatan produsen tersimpan','Rekod pengilang tersimpan'];PACK_LANGS.forEach((code,i)=>LOCAL_TEXT[code]['Saved manufacturer record']=savedRecordLabels[i]);
+const STORE_TEXT={
+'Convenience store foods':['কনভিনিয়েন্স স্টোরের খাবার','کنوینینس اسٹور کے کھانے','Qulay do‘kon taomlari','أطعمة المتاجر الصغيرة','غذاهای فروشگاه‌های کوچک','Makanan minimarket','Makanan kedai serbaneka'],
+'Store':['দোকান','اسٹور','Do‘kon','المتجر','فروشگاه','Toko','Kedai'],
+'All stores':['সব দোকান','تمام اسٹور','Barcha do‘konlar','جميع المتاجر','همه فروشگاه‌ها','Semua toko','Semua kedai'],
+'Food category':['খাবারের ধরন','کھانے کی قسم','Taom turi','نوع الطعام','نوع غذا','Kategori makanan','Kategori makanan'],
+'All foods':['সব খাবার','تمام کھانے','Barcha taomlar','جميع الأطعمة','همه غذاها','Semua makanan','Semua makanan'],
+'Bento':['বেন্টো','بینٹو','Bento','بنتو','بنتو','Bento','Bento'],
+'Onigiri':['ওনিগিরি','اونیگیری','Onigiri','أونيغيري','اونیگیری','Onigiri','Onigiri'],
+'Sandwiches':['স্যান্ডউইচ','سینڈوچ','Sendvichlar','شطائر','ساندویچ‌ها','Roti lapis','Sandwic'],
+'Noodles':['নুডলস','نوڈلز','Ugra','نودلز','نودل','Mi','Mi'],
+'Pasta':['পাস্তা','پاستا','Pasta','باستا','پاستا','Pasta','Pasta'],
+'Fried food':['ভাজা খাবার','تلے ہوئے کھانے','Qovurilgan taomlar','أطعمة مقلية','غذای سرخ‌شده','Makanan goreng','Makanan bergoreng'],
+'Browse foods':['খাবার দেখো','کھانے دیکھیں','Taomlarni ko‘rish','تصفح الأطعمة','مشاهده غذاها','Lihat makanan','Lihat makanan'],
+'Store catalogues do not confirm halal status. Check the package ingredients and region.':['দোকানের তালিকা হালাল অবস্থা নিশ্চিত করে না। প্যাকেটের উপাদান ও অঞ্চল যাচাই করো।','اسٹور کی فہرست حلال حیثیت کی تصدیق نہیں کرتی۔ پیکٹ کے اجزاء اور علاقہ چیک کریں۔','Do‘kon ro‘yxati halollikni tasdiqlamaydi. Qadoq tarkibi va hududni tekshiring.','قوائم المتاجر لا تؤكد الحلال. تحقق من مكونات العبوة والمنطقة.','فهرست فروشگاه حلال بودن را تأیید نمی‌کند. ترکیبات بسته و منطقه را بررسی کنید.','Katalog toko tidak memastikan status halal. Periksa bahan kemasan dan wilayah.','Katalog kedai tidak mengesahkan status halal. Semak ramuan bungkusan dan kawasan.'],
+'Store food details':['দোকানের খাবারের তথ্য','اسٹور کے کھانے کی تفصیلات','Do‘kon taomi tafsilotlari','تفاصيل طعام المتجر','جزئیات غذای فروشگاه','Detail makanan toko','Butiran makanan kedai'],
+'Published allergens':['প্রকাশিত অ্যালার্জেন','شائع شدہ الرجی پیدا کرنے والے اجزاء','E’lon qilingan allergenlar','مسببات الحساسية المنشورة','مواد حساسیت‌زای منتشرشده','Alergen yang diterbitkan','Alergen yang diterbitkan'],
+'Energy':['ক্যালরি','توانائی','Energiya','الطاقة','انرژی','Energi','Tenaga'],
+'Region':['অঞ্চল','علاقہ','Hudud','المنطقة','منطقه','Wilayah','Kawasan'],
+'Availability notes':['প্রাপ্যতার তথ্য','دستیابی کی معلومات','Mavjudlik izohlari','ملاحظات التوفر','توضیحات موجودی','Catatan ketersediaan','Nota ketersediaan'],
+'Saved store record':['দোকানের সংরক্ষিত তথ্য','اسٹور کا محفوظ ریکارڈ','Do‘konning saqlangan yozuvi','سجل محفوظ من المتجر','اطلاعات ذخیره‌شده فروشگاه','Catatan toko tersimpan','Rekod kedai tersimpan']
+};
+for(const [key,values]of Object.entries(STORE_TEXT)){if(values.length!==7)throw Error('Incomplete store translation');PACK_LANGS.forEach((code,i)=>LOCAL_TEXT[code][key]=values[i])}

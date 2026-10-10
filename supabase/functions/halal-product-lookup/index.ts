@@ -1,5 +1,8 @@
 import {MANUFACTURER_RECORDS} from './manufacturer-records.js';
 import {parseSuntory} from './suntory.js';
+import {parseHTML} from 'npm:linkedom@0.18.13';
+import './store-parser.js';
+import {STORE_RECORDS,STORE_PAGES} from './store-records.js';
 /* Deployed configuration remains on the backend; no Yahoo Client ID is shipped to browsers. */
 const appid = Deno.env.get('HALAL_YAHOO_CLIENT_ID') || '__YAHOO_PRIVATE_CONFIG__';
 const same=(a,b)=>/^\d{8,14}$/.test(String(a))&&String(a).padStart(14,'0')===String(b).padStart(14,'0');
@@ -16,10 +19,22 @@ Deno.serve(async req=>{
  const configured=appid!=='__YAHOO_PRIVATE_CONFIG__';
  if(u.searchParams.get('health')==='1')return reply({configured,backend:'online'});
  if(code?!/^(\d{8}|\d{12,14})$/.test(code):!q||q.length>100)return reply({error:'Invalid lookup'},400);
- if(!['yahoo','upcitemdb','suntory'].includes(source))return reply({error:'Invalid source'},400);
- const now=Date.now(),key=source+'|'+(code||q),stored=cache.get(key);if(stored&&stored.expires>now)return reply(stored.value);
+ if(!['yahoo','upcitemdb','suntory','stores'].includes(source))return reply({error:'Invalid source'},400);
+ const store=u.searchParams.get('store')||'all',category=u.searchParams.get('category')||'all';
+ if(source==='stores'&&(!['all','family','seven','lawson'].includes(store)||!['all','bento','onigiri','sandwich','noodles','pasta','fried'].includes(category)||code))return reply({error:'Invalid store filter'},400);
+ const now=Date.now(),key=source+'|'+(code||q)+'|'+store+'|'+category,stored=cache.get(key);if(stored&&stored.expires>now)return reply(stored.value);
  let result;
- if(source==='suntory'){
+ if(source==='stores'){
+  const pages=STORE_PAGES.filter(p=>(store==='all'||p.store===store)&&(category==='all'||p.category===category));
+  let livePages=0,savedPages=0;
+  const batches=await Promise.all(pages.map(async p=>{try{
+   const r=await fetch(p.url,{signal:AbortSignal.timeout(7000)});if(!r.ok)throw Error('Upstream');
+   const {document}=parseHTML(await r.text());const products=globalThis.HALAL_STORE_PARSER(document,p,new Date().toISOString().slice(0,10));if(!products.length)throw Error('Empty catalogue');livePages++;return products;
+  }catch{savedPages++;return STORE_RECORDS.filter(x=>x._store===p.store&&x._category===p.category)}}));
+  const text=q.toLowerCase(),aliases={bento:'bento',onigiri:'onigiri',sandwich:'sandwich',noodles:'noodles',pasta:'pasta',fried:'fried'};
+  const products=Array.from(new Map(batches.flat().map(p=>[p._catalogId,p])).values()).filter(p=>text==='all'||p._category===aliases[text]||(p.product_name+' '+p.brands).toLowerCase().includes(text));
+  result={products,source:'Official store catalogues',livePages,savedPages,halalVerified:false,ingredientsVerified:false};
+ }else if(source==='suntory'){
   if(!code.startsWith('490177'))return reply({products:[],source:'Suntory'});
   const snapshot=MANUFACTURER_RECORDS.find(p=>p.code===code);
   const fallback=()=>snapshot?reply({products:[snapshot],source:'Suntory',savedRecord:true,halalVerified:false,ingredientsVerified:true}):reply({error:'Manufacturer lookup unavailable'},502);
@@ -40,5 +55,5 @@ Deno.serve(async req=>{
   const products=(upstream.data.hits||[]).filter(x=>/^\d{8,14}$/.test(String(x.janCode))&&(!code||same(x.janCode,code))).map(x=>({code:String(x.janCode),product_name:x.name||'',brands:x.brand?.name||'',image_url:x.image?.medium||x.image?.small||'',ingredients_text:'',_source:'Yahoo! Shopping Japan',_sourceUrl:x.url||''}));
   result={products,source:'Yahoo! Shopping Japan',halalVerified:false,ingredientsVerified:false};
  }
- for(const [k,v]of cache)if(v.expires<=now)cache.delete(k);if(cache.size>=100)cache.delete(cache.keys().next().value);cache.set(key,{value:result,expires:now+60000});return reply(result);
+ for(const [k,v]of cache)if(v.expires<=now)cache.delete(k);if(cache.size>=100)cache.delete(cache.keys().next().value);cache.set(key,{value:result,expires:now+(source==='stores'?600000:60000)});return reply(result);
 });

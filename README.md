@@ -74,8 +74,18 @@ The GitHub Pages web app now calls the `halal-product-lookup` Edge Function in t
 - Yahoo returned upstream HTTP 403 with the user-provided Client ID, from both a direct request and the deployed backend. Yahoo access is **not working** until that upstream authorization issue is resolved; health/configured does not prove Yahoo lookup works.
 - UPCitemdb's free trial API is an additional exact-barcode metadata fallback (100 requests/day/IP; may return no record or quota errors). It supplies no verified ingredients or halal certification.
 - The official Suntory JAN product catalogue adapter checks the page's exact `p_jan` and extracts its product name and ingredient list. Four official JAN records were retrieved and bundled with their source links and checked dates, so these records remain available when the manufacturer's server cannot be reached. They are labelled saved manufacturer records, and are not halal certificates. Names can also be searched locally.
-- Links to official 7-Eleven, FamilyMart and Lawson ingredient/allergy guidance are available when data is missing. These are reference links, **not** a completed integration of those stores' product databases. Allergen lists are not complete ingredient lists.
+- Links to official 7-Eleven, FamilyMart and Lawson ingredient/allergy guidance are available when data is missing. The category catalogue integration described below also makes selected store products searchable. Allergen lists are not complete ingredient lists.
 
 The free sources do not cover every convenience-store food. Package-photo OCR/manual review remains necessary for unlisted products, local prepared meals, recipe changes and missing ingredient details.
 
 Checks: `NODE_PATH=<directory-containing-linkedom> node tests/check-app.cjs` and `node tests/check-yahoo.cjs`. Browser/camera testing was not available in this environment.
+
+## Convenience-store catalogue integration (2026-10-10 UTC)
+
+Search → Convenience store foods → choose store/category → Browse foods. The bundled snapshot contains 357 distinct official catalogue records from 16 category pages across FamilyMart, 7-Eleven Japan and Lawson. Categories include bento, onigiri, sandwiches, noodles, fried food and FamilyMart pasta. Name searches also include these records. The backend refreshes the selected official category pages and falls back to their saved records individually when unavailable. Responses report livePages/savedPages; catalogue cache lasts ten minutes per backend instance.
+
+Every record retains its source URL, store item ID, Japanese product name, image, category and checked date. Published regional/release notes are retained, including future releases. FamilyMart supplies published allergens and nutrition where available; some Lawson records include energy. Missing values are not invented. Store item IDs are **not JAN barcodes** and cannot match barcode scans. Distinct catalogue records retain independent scan-history entries.
+
+These are selected catalogue pages, not an exhaustive database of every store, regional variant or Japanese food. Full ingredient lists and halal certificates are not supplied by these catalogue records. They receive VERIFY, even when product names mention pork or an allergen list contains gelatin; names/allergens alone are not a full ingredient assessment. Check the exact package, region and current recipe, or use package-photo/manual ingredient review. Japanese factual product text remains original; all new controls/instructions are bundled in the seven requested UI languages.
+
+Additional checks: `NODE_PATH=<directory-containing-linkedom> node tests/check-stores.cjs` tests parser source IDs, factual allergen/nutrition extraction, deduplication, backend live parsing, saved fallback and invalid filters. UI tests cover offline store browsing, category filtering, seven-language result labels and separate history records.

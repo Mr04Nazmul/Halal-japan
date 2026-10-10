@@ -3,6 +3,8 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 const {parseHTML}=require('linkedom');
 const html=fs.readFileSync('index.html','utf8'),{window}=parseHTML(html),document=window.document;
 document.body.normalize();
+// linkedom omits the browser's select.value setter and initial first-option selection.
+for(const id of ['storeFilter','foodFilter']){const el=document.getElementById(id);let value=el.options[0].value;Object.defineProperty(el,'value',{get:()=>value,set:v=>{value=String(v)}})}
 let pending=[],requests=[],stored={};
 const visible=e=>!e.closest('.page-hidden,.hidden')&&e.style.display!=='none';
 window.HTMLElement.prototype.getClientRects=function(){return visible(this)?[{}]:[]};
@@ -41,8 +43,18 @@ async function flush(){pending=[];await run('localizeUI()');}
  assert.equal(run('currentPage'),'search');assert.match(document.querySelector('#searchResults').textContent,/No record found/);
  run("renderProduct({code:'4900000000002',product_name:'Retail only',_source:'Yahoo! Shopping Japan',ingredients_text:''})");await flush();
  assert.match(document.querySelector('#result').textContent,/VERIFY/);
+ // Catalogue browse must work offline and keep distinct non-barcode history entries.
+ run("navigate('search');$('storeFilter').value='family';$('foodFilter').value='bento'");
+ await run("$('browseStore').onclick()");await flush();
+ assert.equal(run('window.searchProducts.length'),21);assert.ok(run("window.searchProducts.every(p=>p._store==='family'&&p._category==='bento')"));
+ run("renderProduct(window.searchProducts[0])");await flush();assert.match(document.querySelector('#result').textContent,/VERIFY/);assert.match(document.querySelector('#result').textContent,/Published allergens/);assert.match(document.querySelector('#result').textContent,/857 kcal/);
+ run("renderProduct(window.searchProducts[1])");await flush();assert.equal(run("savedProducts().filter(x=>x.product?._catalogId).length"),2);
+ run("navigate('history')");document.querySelector('[data-history="1"]').click();assert.equal(run('currentPage'),'result');assert.equal(run('currentProduct._catalogId'),run('window.searchProducts[0]._catalogId'));
+ for(const l of ['bn','ur','uz','ar','fa','id','ms']){run(`lang='${l}';localeEpoch++`);await flush();assert.notEqual(document.querySelector('#result').textContent.includes('Store food details'),true);assert.notEqual(document.querySelector('#result').textContent.includes('Published allergens'),true);assert.equal(document.querySelector('#foodFilter option[value="bento"]').textContent,run("coreText('Bento')"));}
+ run("lang='en';localeEpoch++;navigate('search');$('storeFilter').value='lawson';$('foodFilter').value='noodles';$('productQuery').value='noodles'");
+ await run("fetchProduct('https://world.openfoodfacts.org/cgi/search.pl')");assert.ok(run("window.searchProducts.length>0&&window.searchProducts.every(p=>p._store==='lawson'&&p._category==='noodles')"));
  // Stale lookups must not replace a page the user already left.
  let release;ctx.fetch=()=>new Promise(r=>release=()=>r({ok:true,json:async()=>({product:{code:'4900000000003',ingredients_text:'water'}})}));
  const lookup=run("fetchProduct('https://world.openfoodfacts.org/api/v2/product/4900000000003.json')");run("navigate('home')");release();await lookup;assert.equal(run('currentPage'),'home');
- console.log('PASS: seven offline UI languages, RTL, product verdicts, absent data and lookup cancellation');
+ console.log('PASS: seven offline UI languages, RTL, product verdicts, store filters, history, absent data and lookup cancellation');
 })().catch(e=>{console.error(e);process.exitCode=1});

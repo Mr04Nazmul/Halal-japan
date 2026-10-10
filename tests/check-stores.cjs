@@ -1,0 +1,23 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),{parseHTML}=require('linkedom');
+const path='supabase/functions/halal-product-lookup/';
+const family='<ul><li><div class="conL"><img src="/content/dam/family/goods/0616461.jpg"></div><div class="item_basic_info"><p class="name"><a href="/goods/obento/0616461.html">海苔弁当</a></p></div><table class="item_allergen"><tr><td><img alt="ゼラチン"></td></tr></table><table class="item_nutritional_info"><tr>'+['857','21.5','29.2','128.7','4.50'].map(v=>'<td class="con_nut">'+v+'</td>').join('')+'</tr></table></li></ul>';
+const seven='<div class="list_inner"><div class="item_ttl"><a href="/products/a/item/040210/">Bento</a></div><img data-original="https://example.com/040210.jpg"><div class="item_region">販売地域：四国</div></div>';
+const lawson='<nav><a href="/recommend/original/detail/999_1996.html">Navigation</a></nav><ul>'+Array(2).fill('<li><p class="img"><a href="/recommend/original/detail/1533075_1996.html"><img src="/recommend/original/detail/img/l820819.jpg"></a></p><p class="ttl">幕の内</p><p>1包装当たり555kcal</p></li>').join('')+'</ul>';
+const ctx=vm.createContext({URL,AbortSignal,Date,Map,Response,parseHTML,fetch:async()=>({ok:true,text:async()=>family}),Deno:{env:{get:()=>undefined},serve:fn=>ctx.handler=fn},MANUFACTURER_RECORDS:[],parseSuntory:()=>null});
+vm.runInContext(fs.readFileSync(path+'store-parser.js','utf8'),ctx);
+const parse=ctx.HALAL_STORE_PARSER;
+const config=(store)=>({store,category:'bento',url:store==='family'?'https://www.family.co.jp/goods/safety/goods020.html':store==='seven'?'https://www.sej.co.jp/products/a/bento/':'https://www.lawson.co.jp/recommend/original/bento/'});
+const f=parse(parseHTML(family).document,config('family'),'2026-10-10');assert.equal(f.length,1);assert.equal(f[0]._catalogId,'family:0616461');assert.equal(f[0].code,'');assert.equal(f[0].ingredients_text,'');assert.equal(f[0]._allergens[0],'ゼラチン');assert.equal(f[0]._nutrition.energy_kcal,'857');assert.equal(f[0]._sourceUrl,'https://www.family.co.jp/goods/obento/0616461.html');
+const s=parse(parseHTML(seven).document,config('seven'),'2026-10-10');assert.equal(s[0]._catalogId,'seven:040210');assert.equal(s[0].image_url,'https://example.com/040210.jpg');
+const l=parse(parseHTML(lawson).document,config('lawson'),'2026-10-10');assert.equal(l.length,1);assert.equal(l[0]._nutrition.energy_kcal,'555');
+vm.runInContext(fs.readFileSync(path+'store-records.js','utf8').replaceAll('export const','const'),ctx);
+assert.equal(vm.runInContext('STORE_RECORDS.length',ctx),357);assert.ok(vm.runInContext("STORE_RECORDS.every(p=>!p.code&&!p.ingredients_text&&p._sourceUrl.startsWith('https://')&&p._snapshotDate==='2026-10-10')",ctx));
+vm.runInContext(fs.readFileSync(path+'index.ts','utf8').replace(/^import .*;\n/gm,''),ctx);
+const call=async params=>{const response=await ctx.handler(new Request('https://example.com/?'+new URLSearchParams(params)));return {status:response.status,data:await response.json()}};
+(async()=>{
+ const live=await call({source:'stores',query:'all',store:'family',category:'bento'});assert.equal(live.status,200);assert.equal(live.data.livePages,1);assert.equal(live.data.savedPages,0);assert.equal(live.data.products.length,1);assert.equal(live.data.halalVerified,false);assert.equal(live.data.ingredientsVerified,false);
+ ctx.fetch=async()=>{throw Error('offline')};
+ const saved=await call({source:'stores',query:'bento',store:'family',category:'bento'});assert.equal(saved.status,200);assert.equal(saved.data.savedPages,1);assert.equal(saved.data.products.length,21);assert.ok(saved.data.products.every(p=>p._store==='family'&&p._category==='bento'));
+ assert.equal((await call({source:'stores',query:'all',store:'unknown'})).status,400);assert.equal((await call({source:'stores',jan_code:'4901777411760'})).status,400);
+ console.log('PASS: official IDs, allergens/nutrition, no fabricated JAN/ingredients, deduplication, live catalogue, saved fallback, filter validation');
+})().catch(e=>{console.error(e);process.exitCode=1});

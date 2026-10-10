@@ -1,5 +1,5 @@
-const CACHE_NAME="japan-halal-checker-shell-v5-product-backend";
-const SHELL=["./","./index.html","./manifest.webmanifest","./icon.svg","./languages.js?v=36-r5","./product-data.js?v=36-r5","./locale-pack.js?v=36-r5","./app-config.js?v=36-r5","./manufacturer-records.js?v=36-r5"];
+const CACHE_NAME="japan-halal-checker-shell-v6-store-catalogues";
+const SHELL=["./","./index.html","./manifest.webmanifest","./icon.svg","./languages.js?v=37-r6","./product-data.js?v=37-r6","./locale-pack.js?v=37-r6","./app-config.js?v=37-r6","./manufacturer-records.js?v=37-r6","./store-records.js?v=37-r6"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("japan-halal-checker-shell-")&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener("fetch",event=>{
