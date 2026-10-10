@@ -57,8 +57,9 @@ async function fetchProduct(url){
  setStatus(tr('loading'));$('result').classList.remove('show');
  // Try the requested lookup first, then the current v3 API for barcode URLs.
  const urls=[url];
- const match=url.match(/api\\/v2\\/product\\/([^/?]+)\\.json/);
- if(match)urls.push('https://world.openfoodfacts.org/api/v3/product/'+match[1]+'.json');
+ const marker='/api/v2/product/';
+ const pos=url.indexOf(marker);
+ if(pos>=0){const code=url.slice(pos+marker.length).split('.json')[0];if(code&&Array.from(code).every(ch=>ch>='0'&&ch<='9'))urls.push('https://world.openfoodfacts.org/api/v3/product/'+code+'.json?product_type=all');}
  let lastError=null;
  for(const candidate of urls){
   try{
