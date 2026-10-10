@@ -1,4 +1,4 @@
-const CACHE_NAME = "japan-halal-checker-shell-v1";
+const CACHE_NAME = "japan-halal-checker-shell-v2-20261010";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
