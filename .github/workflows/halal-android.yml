@@ -51,6 +51,15 @@ jobs:
         run: npx expo prebuild --platform android --non-interactive --no-install
       - name: Build standalone release APK
         run: cd android && chmod +x gradlew && ./gradlew assembleRelease --stacktrace
+      - name: Verify release APK signing and package
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | head -n 5
+          EXPECTED=com.nazmul.japanhalalchecker
+          if [ "$HALAL_VARIANT" = ads ]; then EXPECTED=com.nazmul.japanhalalchecker.ads; fi
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='$EXPECTED'"
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
