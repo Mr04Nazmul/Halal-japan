@@ -34,6 +34,17 @@ jobs:
         run: |
           test -d "$ANDROID_HOME"
           echo "Android SDK found: $ANDROID_HOME"
+      - name: Install required Android NDK with retry
+        run: |
+          NDK_VERSION=27.1.12297006
+          for attempt in 1 2 3; do
+            if yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;$NDK_VERSION"; then
+              test -f "$ANDROID_HOME/ndk/$NDK_VERSION/source.properties" && break
+            fi
+            rm -rf "$ANDROID_HOME/ndk/$NDK_VERSION"
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 10
+          done
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
       - name: Generate Android native project
