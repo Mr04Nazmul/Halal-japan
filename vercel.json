@@ -1,0 +1,7 @@
+{
+  "framework": null,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "functions": {"api/yahoo-product.js": {"maxDuration": 15}},
+  "headers": [{"source": "/api/(.*)", "headers": [{"key": "X-Content-Type-Options", "value": "nosniff"}]}]
+}

@@ -48,3 +48,19 @@ A GitHub Actions workflow is included to publish the repository root to GitHub P
 ## Development notes
 
 The app is currently a prototype. Features such as a verified certification directory, restaurant and mosque map, prayer times, Qibla, and a dedicated Japanese-product data source are not implemented yet.
+## Version 2.2: requested language set and Yahoo lookup
+
+The web app language picker now contains English, Japanese, Bengali (Bangladesh), Urdu (Pakistan), Uzbek (Uzbekistan), Arabic (Iraq), Persian (Iran), Indonesian and Malay. The seven requested languages have bundled translations for app navigation, settings, guides, result concerns, scanner messages and placeholders. Product names remain original. Ingredient translation uses MyMemory online and shows the original if translation fails; it is not used to establish religious certification.
+
+Barcode lookup queries Open Food Facts and the configured Yahoo proxy in parallel, checks exact normalized barcodes, tries Open Food Facts v3 when ingredients are missing, then Wikidata if no product is available. Name search combines Open Food Facts and Yahoo and removes barcode duplicates. A missing ingredient list opens package-photo/manual review and manufacturer search. Coverage remains incomplete; this does not provide all Japanese products or a certified halal registry.
+
+### Enable Yahoo in production
+
+1. Import `Mr04Nazmul/Halal-japan` into Vercel using the included `vercel.json` (no framework/build command).
+2. Set the server environment variable `YAHOO_CLIENT_ID` to your own Yahoo Developer Client ID, then deploy. Do not commit the ID.
+3. Set `window.HALAL_API_BASE` in `app-config.js` to that deployment's HTTPS origin to enable Yahoo from GitHub Pages. If using the Vercel app itself, the empty value uses its own `/api/yahoo-product` route.
+4. In Settings, use **Check connection**, then test a known JAN barcode. `health=1` reports only whether the secret is configured; a real barcode lookup is required to verify Yahoo access.
+
+The proxy permits requests from `https://mr04nazmul.github.io`; add other trusted origins through comma-separated `ALLOWED_ORIGINS`. Its one-second guard is per server instance, not a shared distributed rate limiter. Retail names/images are never treated as verified ingredient data or certification. Without backend configuration the app explicitly says Yahoo is not connected.
+
+Official API reference: https://developer.yahoo.co.jp/webapi/shopping/v3/itemsearch.html
