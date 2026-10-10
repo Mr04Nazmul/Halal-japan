@@ -1,6 +1,7 @@
 // Two installable variants; ads SDK is intentionally not enabled without a valid
 // Interstitial Ad Unit ID and matching AdMob App ID for this Android app.
 const withAds = process.env.HALAL_VARIANT === 'ads';
+const admobAppId = process.env.HALAL_ADMOB_APP_ID || 'ca-app-pub-3940256099942544~3347511713'; // Google test app ID
 module.exports = {
   expo: {
     name: withAds ? 'Japan Halal Checker Ads' : 'Japan Halal Checker',
@@ -13,7 +14,7 @@ module.exports = {
       permissions: ['CAMERA'],
       versionCode: 1
     },
-    extra: { buildVariant: withAds ? 'ads-pending-integration' : 'adfree' },
-    plugins: []
+    extra: { buildVariant: withAds ? 'ads-test' : 'adfree' },
+    plugins: withAds ? [['react-native-google-mobile-ads', { androidAppId: admobAppId }]] : []
   }
 };
