@@ -1,46 +1,61 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, Text, Pressable, ActivityIndicator, StyleSheet, StatusBar, BackHandler } from 'react-native';
-import { WebView } from 'react-native-webview';
+import React, { useState, useRef } from 'react';
+import { SafeAreaView, View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, StyleSheet, StatusBar, Linking } from 'react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
-// The website owns the scanner and ingredient-checking logic.
-// This shell does not independently certify products or guarantee camera access.
-const APP_URL = 'https://mr04nazmul.github.io/Halal-japan/';
+const API = 'https://world.openfoodfacts.org/api/v2/product/';
+const risky = [
+  { pattern: /pork|porcine|lard|bacon|豚肉|豚脂|ラード|ポーク|猪肉/i, label: 'Pork / porcine ingredient' },
+  { pattern: /gelatin|gelatine|ゼラチン|collagen|コラーゲン/i, label: 'Gelatin or collagen: check source' },
+  { pattern: /alcohol|ethanol|wine|rum|mirin|sake|アルコール|みりん|酒精|料理酒/i, label: 'Alcohol-related ingredient: verify details' },
+  { pattern: /emulsifier|glycerin|enzymes|flavou?r|乳化剤|グリセリン|酵素|香料/i, label: 'Source-dependent ingredient: verify with manufacturer' },
+];
+const strings = {
+  en: { title:'Japan Halal Checker', intro:'Scan a Japanese barcode to review ingredients.', scan:'Scan barcode', manual:'Enter barcode', check:'Check product', back:'Back', camera:'Camera permission is needed to scan barcodes.', grant:'Allow camera', loading:'Looking up product…', missing:'No reliable product record found. Check the package and manufacturer.', warning:'Ingredient guidance only — not halal certification.', concerns:'Ingredients to verify', none:'No flagged terms found. This does not confirm halal status.', ingredients:'Ingredients', retry:'Try again', error:'Could not fetch product. Check your connection.' },
+  bn: { title:'জাপান হালাল চেকার', intro:'জাপানের খাবারের বারকোড স্ক্যান করে উপাদান যাচাই করো।', scan:'বারকোড স্ক্যান', manual:'বারকোড নম্বর', check:'পণ্য দেখো', back:'ফিরে যাও', camera:'স্ক্যান করতে ক্যামেরার অনুমতি দরকার।', grant:'ক্যামেরা অনুমতি', loading:'পণ্যের তথ্য খোঁজা হচ্ছে…', missing:'পণ্যের নির্ভরযোগ্য তথ্য নেই। প্যাকেট ও প্রস্তুতকারকের কাছে যাচাই করো।', warning:'শুধু উপাদান যাচাই — হালাল সার্টিফিকেট নয়।', concerns:'যা যাচাই করতে হবে', none:'চিহ্নিত শব্দ পাওয়া যায়নি। এতে হালাল নিশ্চিত হয় না।', ingredients:'উপাদান', retry:'আবার চেষ্টা', error:'তথ্য পাওয়া যায়নি। ইন্টারনেট পরীক্ষা করো।' },
+  ja: { title:'日本ハラールチェッカー', intro:'バーコードを読み取り、原材料を確認します。', scan:'バーコードをスキャン', manual:'バーコード番号', check:'商品を確認', back:'戻る', camera:'スキャンにはカメラの許可が必要です。', grant:'カメラを許可', loading:'商品を検索中…', missing:'信頼できる商品情報がありません。表示やメーカーに確認してください。', warning:'原材料の参考情報です。ハラール認証ではありません。', concerns:'確認が必要な原材料', none:'注意キーワードは見つかりませんでした。ハラールを保証しません。', ingredients:'原材料', retry:'再試行', error:'商品情報を取得できません。通信状態を確認してください。' }
+};
 export default function App() {
-  const [failed, setFailed] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [retryKey, setRetryKey] = useState(0);
-  return <SafeAreaView style={s.root}>
-    <StatusBar backgroundColor="#0c382b" barStyle="light-content" />
-    {failed ? <View style={s.center}>
-      <Text style={s.title}>Connection unavailable</Text>
-      <Text style={s.message}>Check your internet connection and try again.</Text>
-      <Pressable accessibilityRole="button" style={s.button} onPress={() => { setFailed(false); setLoading(true); setRetryKey(k => k + 1); }}>
-        <Text style={s.buttonText}>Retry</Text>
-      </Pressable>
-    </View> : <WebView
-      key={retryKey}
-      source={{ uri: APP_URL }}
-      originWhitelist={['https://*']}
-      javaScriptEnabled
-      domStorageEnabled
-      mediaPlaybackRequiresUserAction
-      allowsInlineMediaPlayback
-      onError={() => { setFailed(true); setLoading(false); }}
-      onHttpError={e => { if (e.nativeEvent.statusCode >= 500) setFailed(true); }}
-      onLoadEnd={() => setLoading(false)}
-      onLoadStart={() => setLoading(true)}
-      style={s.web}
-    />}
-    {loading && !failed && <View style={s.loader}><ActivityIndicator color="#0c382b" size="large" /></View>}
-  </SafeAreaView>;
+  const [lang,setLang]=useState('bn');
+  const [barcode,setBarcode]=useState('');
+  const [scanning,setScanning]=useState(false);
+  const [loading,setLoading]=useState(false);
+  const [product,setProduct]=useState(null);
+  const [error,setError]=useState('');
+  const [permission,requestPermission]=useCameraPermissions();
+  const lock=useRef(false);
+  const t=strings[lang];
+  const lookup=async (raw)=>{
+    const code=String(raw||'').replace(/\s/g,'');
+    if(!/^(\d{8}|\d{12,14})$/.test(code)){setError('Enter a valid EAN-8, UPC or JAN/EAN-13 barcode.');return;}
+    lock.current=true;setScanning(false);setBarcode(code);setLoading(true);setError('');setProduct(null);
+    try{
+      const response=await fetch(API+encodeURIComponent(code)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja');
+      if(!response.ok)throw Error('HTTP '+response.status);
+      const data=await response.json();
+      const p=data.product;
+      if(!p || data.status===0 || !(p.product_name||p.product_name_en||p.product_name_ja||p.ingredients_text||p.ingredients_text_ja)){setError(t.missing);return;}
+      const ingredients=p.ingredients_text||p.ingredients_text_ja||p.ingredients_text_en||'';
+      setProduct({name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)});
+    }catch(e){setError(t.error);}finally{setLoading(false);lock.current=false;}
+  };
+  const onScan=({data})=>{if(!lock.current){lock.current=true;lookup(data);}};
+  const openScanner=async()=>{
+    setError('');setProduct(null);
+    if(!permission?.granted){const p=await requestPermission();if(!p.granted){setError(t.camera);return;}}
+    lock.current=false;setScanning(true);
+  };
+  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#0c382b"/><ScrollView contentContainerStyle={s.container} keyboardShouldPersistTaps="handled">
+    <Text style={s.brand}>☪  {t.title}</Text>
+    <View style={s.languages}>{['bn','ja','en'].map(l=><Pressable key={l} onPress={()=>setLang(l)} style={[s.lang,lang===l&&s.selected]}><Text style={{color:lang===l?'#0c382b':'#e2f0e5',fontWeight:'700'}}>{l==='bn'?'বাংলা':l==='ja'?'日本語':'English'}</Text></Pressable>)}</View>
+    <Text style={s.intro}>{t.intro}</Text>
+    {scanning ? <View><View style={s.cameraFrame}><CameraView style={s.camera} facing="back" barcodeScannerSettings={{barcodeTypes:['ean13','ean8','upc_a','upc_e']}} onBarcodeScanned={onScan}/></View><Pressable style={s.button} onPress={()=>setScanning(false)}><Text style={s.buttonText}>{t.back}</Text></Pressable></View> : <Pressable style={s.button} onPress={openScanner}><Text style={s.buttonText}>▦  {t.scan}</Text></Pressable>}
+    <Text style={s.label}>{t.manual}</Text>
+    <TextInput value={barcode} onChangeText={setBarcode} keyboardType="number-pad" placeholder="4901234567894" style={s.input} accessibilityLabel={t.manual}/>
+    <Pressable style={s.button} onPress={()=>lookup(barcode)} disabled={loading}><Text style={s.buttonText}>{t.check}</Text></Pressable>
+    {loading&&<ActivityIndicator style={{marginTop:20}} color="#0c382b" size="large"/>}
+    {!!error&&<View style={s.card}><Text style={s.error}>{error}</Text><Pressable onPress={()=>lookup(barcode)}><Text style={s.link}>{t.retry}</Text></Pressable></View>}
+    {product&&<View style={s.card}><Text style={s.heading}>{product.name}</Text><Text style={s.muted}>{product.brand} · {product.code}</Text><Text style={s.heading}>{t.ingredients}</Text><Text style={s.body}>{product.ingredients||t.missing}</Text><Text style={s.heading}>{t.concerns}</Text>{product.flags.length?product.flags.map(f=><Text key={f} style={s.flag}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}<Pressable onPress={()=>Linking.openURL('https://world.openfoodfacts.org/product/'+encodeURIComponent(product.code))}><Text style={s.link}>Open Food Facts ↗</Text></Pressable></View>}
+    <View style={s.notice}><Text style={s.noticeText}>⚠ {t.warning}</Text><Text style={s.muted}>Database coverage varies. Always verify source-dependent ingredients and certification.</Text></View>
+  </ScrollView></SafeAreaView>;
 }
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#f4f8f3' },
-  web: { flex: 1 },
-  loader: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f4f8f3' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 },
-  title: { fontSize: 22, fontWeight: '700', color: '#0c382b' },
-  message: { textAlign: 'center', marginTop: 12, color: '#52645a' },
-  button: { backgroundColor: '#0c382b', borderRadius: 12, paddingVertical: 13, paddingHorizontal: 25, marginTop: 20 },
-  buttonText: { color: 'white', fontWeight: '700' }
-});
+const s=StyleSheet.create({root:{flex:1,backgroundColor:'#f4f8f3'},container:{padding:18,paddingBottom:45},brand:{backgroundColor:'#0c382b',color:'white',fontSize:23,fontWeight:'800',padding:20,borderTopLeftRadius:18,borderTopRightRadius:18},languages:{flexDirection:'row',backgroundColor:'#0c382b',padding:12,borderBottomLeftRadius:18,borderBottomRightRadius:18,gap:8},lang:{padding:9,borderRadius:9,borderWidth:1,borderColor:'#527362'},selected:{backgroundColor:'#c9f36a'},intro:{fontSize:17,color:'#243b2c',marginVertical:19},button:{backgroundColor:'#0c382b',padding:15,borderRadius:12,marginTop:12,alignItems:'center'},buttonText:{color:'white',fontWeight:'800',fontSize:16},label:{fontWeight:'700',color:'#0c382b',marginTop:22,marginBottom:8},input:{borderWidth:1,borderColor:'#bfd2c2',backgroundColor:'white',borderRadius:12,padding:14,fontSize:17},cameraFrame:{height:290,overflow:'hidden',borderRadius:16},camera:{flex:1},card:{backgroundColor:'white',borderRadius:15,padding:17,marginTop:18,borderWidth:1,borderColor:'#dfe8de'},heading:{fontSize:18,fontWeight:'800',marginTop:12,marginBottom:8,color:'#0c382b'},muted:{color:'#63756c',marginTop:7},body:{fontSize:15,lineHeight:23},error:{color:'#a33020'},flag:{color:'#953b16',paddingVertical:4},link:{color:'#12673e',fontWeight:'700',marginTop:15},notice:{padding:17,backgroundColor:'#fff5d8',borderRadius:13,marginTop:18},noticeText:{fontWeight:'800',color:'#775b19'}});
