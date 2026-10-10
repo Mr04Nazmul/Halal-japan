@@ -156,6 +156,7 @@ $('scanBtn').onclick=async()=>{
 async function onBarcodeDetected(decodedText){
  if(scanHandled)return;
  const code=String(decodedText||'').replace(/\s/g,'');
+ // Accept common Japanese JAN/EAN and UPC formats, plus GTIN-14; ignore partial reads.
  if(!/^(?:\d{8}|\d{12,14})$/.test(code))return;
  scanHandled=true;
  try{if(navigator.vibrate)navigator.vibrate(70)}catch(_){}
