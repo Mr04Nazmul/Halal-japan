@@ -35,13 +35,13 @@ export default function App() {
     try{
       const cached = await AsyncStorage.getItem(CACHE_PREFIX+code);
       if(cached){try{const entry=JSON.parse(cached);if(entry.savedAt && Date.now()-entry.savedAt<CACHE_AGE_MS && entry.product){setProduct(entry.product);setFromCache(true);return;}}catch(_) {}}
-      const response=await fetch(API+encodeURIComponent(code)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja');
+      const response=await fetch(API+encodeURIComponent(code)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,last_modified_t,labels_tags,countries_tags');
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
       const p=data.product;
       if(!p || data.status===0 || !(p.product_name||p.product_name_en||p.product_name_ja||p.ingredients_text||p.ingredients_text_ja)){setError(t.missing);return;}
-      const ingredients=p.ingredients_text||p.ingredients_text_ja||p.ingredients_text_en||'';
-      const found={name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)};
+      const ingredients=p.ingredients_text_ja||p.ingredients_text||p.ingredients_text_en||'';
+      const found={name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,source:'Open Food Facts',updated:p.last_modified_t||null,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)};
       setProduct(found);
       try{await AsyncStorage.setItem(CACHE_PREFIX+code,JSON.stringify({savedAt:Date.now(),product:found,source:'Open Food Facts'}));}catch(_){}
     }catch(e){setError(t.error);}finally{setLoading(false);lock.current=false;}
@@ -62,7 +62,7 @@ export default function App() {
     <Pressable style={s.button} onPress={()=>lookup(barcode)} disabled={loading}><Text style={s.buttonText}>{t.check}</Text></Pressable>
     {loading&&<ActivityIndicator style={{marginTop:20}} color="#0c382b" size="large"/>}
     {!!error&&<View style={s.card}><Text style={s.error}>{error}</Text><Pressable onPress={()=>lookup(barcode)}><Text style={s.link}>{t.retry}</Text></Pressable></View>}
-    {product&&<View style={s.card}><Text style={s.heading}>{product.name}</Text><Text style={s.muted}>{product.brand} · {product.code}</Text>{fromCache&&<Text style={s.muted}>Saved product record (up to 7 days old) · Open Food Facts</Text>}<Text style={s.heading}>{t.ingredients}</Text><Text style={s.body}>{product.ingredients||t.missing}</Text><Text style={s.heading}>{t.concerns}</Text>{product.flags.length?product.flags.map(f=><Text key={f} style={s.flag}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}<Pressable onPress={()=>Linking.openURL('https://world.openfoodfacts.org/product/'+encodeURIComponent(product.code))}><Text style={s.link}>Open Food Facts ↗</Text></Pressable></View>}
+    {product&&<View style={s.card}><Text style={s.heading}>{product.name}</Text><Text style={s.muted}>{product.brand} · {product.code}</Text>{fromCache&&<Text style={s.muted}>Saved product record (up to 7 days old) · Open Food Facts</Text>}<Text style={s.muted}>Source: {product.source||'Open Food Facts'}{product.updated?' · Updated: '+new Date(product.updated*1000).toLocaleDateString():''}</Text><Text style={s.heading}>{t.ingredients}</Text><Text style={s.body}>{product.ingredients||t.missing}</Text><Text style={s.heading}>{t.concerns}</Text>{!product.ingredients?<Text style={s.flag}>⚠ Ingredients not available — verification required.</Text>:product.flags.length?product.flags.map(f=><Text key={f} style={s.flag}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}<Pressable onPress={()=>Linking.openURL('https://world.openfoodfacts.org/product/'+encodeURIComponent(product.code))}><Text style={s.link}>Open Food Facts ↗</Text></Pressable></View>}
     <View style={s.notice}><Text style={s.noticeText}>⚠ {t.warning}</Text><Text style={s.muted}>Database coverage varies. Always verify source-dependent ingredients and certification.</Text></View>
   </ScrollView></SafeAreaView>;
 }
