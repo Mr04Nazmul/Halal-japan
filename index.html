@@ -51,7 +51,37 @@ const risky=[
 [/\b(collagen|l-cysteine|pepsin|rennet|animal fat|animal shortening)\b|コラーゲン|動物性油脂|ラード/i,'Animal-derived ingredient — source needs checking'],
 [/\b(glycerin|glycerol|mono- and diglycerides|mono and diglycerides|e471|e472|emulsifier|enzymes|flavouring|natural flavor)\b|グリセリン|乳化剤|香料|酵素|調味料/i,'Ingredient may have different sources; verify with manufacturer']
 ];
-function reviewIngredients(text,product){let hits=[];for(const [re,label] of risky)if(re.test(text))hits.push(label);let status=hits.some(x=>/Pork/.test(x))?'concern':'need';showResult('<span class="badge '+(status==='concern'?'concern':'')+'">'+tr(status==='concern'?'concern':'need')+'</span><h3 style="margin:12px 0 5px">'+(product||tr('ingredientsLabel'))+'</h3><p>'+ (hits.length?tr('concerns')+':':'')+'</p>'+(hits.length?'<ul class="concerns">'+hits.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>':'<p>'+tr('notIngredients')+'</p>')+'<div class="notice">'+tr('warning')+'</div>');setStatus('')}
+
+// Evidence-based ingredient assessment: never infer halal certification from missing keywords.
+function halalAssessment(ingredients,labels=''){
+ const t=String(ingredients||'').normalize('NFKC').toLowerCase();
+ const label=String(labels||'').toLowerCase();
+ const forbidden=[
+  [/豚肉|豚脂|豚由来|ラード|ポーク|ベーコン|pork|porcine|lard|bacon|pork fat/i,'Pork-derived ingredient'],
+  [/\b(wine|beer|rum|brandy|vodka|whisky|whiskey)\b|ワイン|ビール|ラム酒|ブランデー|ウイスキー|日本酒|料理酒|みりん/i,'Alcoholic beverage / cooking alcohol listed']
+ ];
+ const uncertain=[
+  [/ゼラチン|gelatin|gelatine|コラーゲン|collagen/i,'Gelatin/collagen source needs verification'],
+  [/乳化剤|emulsifier|e471|e472|グリセリン|glycerin|glycerol|酵素|enzymes|レンネット|rennet/i,'Additive or enzyme origin needs verification'],
+  [/香料|flavou?rings?|エキス|extract|動物性油脂|animal fat|ショートニング|shortening/i,'Flavouring/extract or fat source needs verification'],
+  [/アルコール|ethanol|alcohol|酒精/i,'Alcohol source, amount and use need verification']
+ ];
+ const hits=forbidden.filter(([re])=>re.test(t)).map(([,reason])=>reason);
+ const questions=uncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason);
+ let status='verify',reasons=[];
+ if(hits.length){status='haram';reasons=hits.concat(questions)}
+ else if(!t.trim()){reasons=['Ingredient list unavailable — cannot determine halal status']}
+ else if(questions.length){reasons=questions}
+ else if(/(?:^|[,;\s])(?:en:)?halal(?:[,;\s]|$)/i.test(label)){status='verify';reasons=['Halal label reported in community database; verify certifier and packaging']}
+ else {status='verify';reasons=['No flagged keywords; this does not establish halal status']}
+ return {status,reasons};
+}
+function halalBadge(assessment){
+ const names={haram:{en:'HARAM — flagged ingredient',bn:'হারাম — নিষিদ্ধ উপাদান শনাক্ত',ja:'ハラームの懸念 — 禁止原材料'},verify:{en:'VERIFY — halal not confirmed',bn:'যাচাই প্রয়োজন — হালাল নিশ্চিত নয়',ja:'要確認 — ハラール未確認'}};
+ return '<span class="badge '+(assessment.status==='haram'?'concern':'')+'">'+escapeHtml((names[assessment.status][lang]||names[assessment.status].en))+'</span><ul class="concerns">'+assessment.reasons.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>';
+}
+
+function reviewIngredients(text,product){const assessment=halalAssessment(text);showResult(halalBadge(assessment)+'<h3>'+escapeHtml(product||tr('ingredientsLabel'))+'</h3><p>'+escapeHtml(text)+'</p><div class="notice">'+tr('warning')+'</div>');setStatus('')}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function fetchProduct(url){
  setStatus(tr('loading'));$('result').classList.remove('show');
@@ -73,8 +103,8 @@ async function fetchProduct(url){
    const img=p.image_front_small_url||p.image_url||'';
    const link='https://world.openfoodfacts.org/product/'+encodeURIComponent(p.code||'');
    const hits=[];for(const [re,label] of risky)if(re.test(ing))hits.push(label);
-   const status=hits.some(x=>/Pork/.test(x))?'concern':'need';
-   showResult('<span class="badge '+(status==='concern'?'concern':'')+'">'+tr(status==='concern'?'concern':'need')+'</span><div class="product">'+(img?'<img src="'+escapeHtml(img)+'" alt="" loading="lazy">':'')+'<div><h3>'+escapeHtml(name)+'</h3><div class="small">'+tr('brand')+': '+escapeHtml(p.brands||'—')+'</div><div class="small">'+tr('barcodeLabel')+': '+escapeHtml(p.code||'—')+'</div></div></div><h4>'+tr('ingredientsLabel')+'</h4><p>'+escapeHtml(ing||tr('noIngredients'))+'</p>'+(hits.length?'<h4>'+tr('concerns')+'</h4><ul class="concerns">'+hits.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>':'<p>'+tr('notIngredients')+'</p>')+'<p><a href="'+link+'" target="_blank" rel="noopener">'+tr('source')+' ↗</a></p><div class="notice">'+tr('warning')+'</div>');
+   const assessment=halalAssessment(ing,p.labels_tags?.join(',')||'');
+   showResult(halalBadge(assessment)<div class="product">'+(img?'<img src="'+escapeHtml(img)+'" alt="" loading="lazy">':'')+'<div><h3>'+escapeHtml(name)+'</h3><div class="small">'+tr('brand')+': '+escapeHtml(p.brands||'—')+'</div><div class="small">'+tr('barcodeLabel')+': '+escapeHtml(p.code||'—')+'</div></div></div><h4>'+tr('ingredientsLabel')+'</h4><p>'+escapeHtml(ing||tr('noIngredients'))+'</p>'+(hits.length?'<h4>'+tr('concerns')+'</h4><ul class="concerns">'+hits.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>':'<p>'+tr('notIngredients')+'</p>')+'<p><a href="'+link+'" target="_blank" rel="noopener">'+tr('source')+' ↗</a></p><div class="notice">'+tr('warning')+'</div>');
    setStatus('');return;
   }catch(e){lastError=e}
  }
