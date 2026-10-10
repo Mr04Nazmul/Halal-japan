@@ -4,7 +4,7 @@ A mobile-friendly web app for people checking packaged food in Japan. It support
 
 ## Live deployment
 
-This repository is prepared for GitHub Pages. To publish it, open **Settings → Pages** and choose **Deploy from a branch → main → /(root) → Save**. After GitHub finishes publishing, the site should be available at:
+A GitHub Actions deployment workflow is included. Open **Settings → Pages** and select **GitHub Actions** as the build/deployment source. After the first successful run in the **Actions** tab, the site should be available at:
 
 https://mr04nazmul.github.io/Halal-japan/
 
