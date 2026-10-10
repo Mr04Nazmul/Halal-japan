@@ -53,7 +53,32 @@ const risky=[
 ];
 function reviewIngredients(text,product){let hits=[];for(const [re,label] of risky)if(re.test(text))hits.push(label);let status=hits.some(x=>/Pork/.test(x))?'concern':'need';showResult('<span class="badge '+(status==='concern'?'concern':'')+'">'+tr(status==='concern'?'concern':'need')+'</span><h3 style="margin:12px 0 5px">'+(product||tr('ingredientsLabel'))+'</h3><p>'+ (hits.length?tr('concerns')+':':'')+'</p>'+(hits.length?'<ul class="concerns">'+hits.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>':'<p>'+tr('notIngredients')+'</p>')+'<div class="notice">'+tr('warning')+'</div>');setStatus('')}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function fetchProduct(url){setStatus(tr('loading'));$('result').classList.remove('show');try{let r=await fetch(url);if(!r.ok)throw Error('HTTP '+r.status);let j=await r.json();let p=j.product||j.products?.[0];if(!p||(!p.product_name&&!p.product_name_en&&!p.ingredients_text&&!p.code)){setStatus(tr('notfound'));return}let name=p.product_name||p.product_name_en||p.product_name_ja||'Product';let ing=p.ingredients_text||p.ingredients_text_en||p.ingredients_text_ja||'';let img=p.image_front_small_url||p.image_url||'';let link='https://world.openfoodfacts.org/product/'+encodeURIComponent(p.code||'');let hits=[];for(const [re,label] of risky)if(re.test(ing))hits.push(label);let status=hits.some(x=>/Pork/.test(x))?'concern':'need';showResult('<span class="badge '+(status==='concern'?'concern':'')+'">'+tr(status==='concern'?'concern':'need')+'</span><div class="product">'+(img?'<img src="'+escapeHtml(img)+'" alt="" loading="lazy">':'')+'<div><h3>'+escapeHtml(name)+'</h3><div class="small">'+tr('brand')+': '+escapeHtml(p.brands||'—')+'</div><div class="small">'+tr('barcodeLabel')+': '+escapeHtml(p.code||'—')+'</div></div></div><h4>'+tr('ingredientsLabel')+'</h4><p>'+escapeHtml(ing||tr('noIngredients'))+'</p>'+(hits.length?'<h4>'+tr('concerns')+'</h4><ul class="concerns">'+hits.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>':'<p>'+tr('notIngredients')+'</p>')+'<p><a href="'+link+'" target="_blank" rel="noopener">'+tr('source')+' ↗</a></p><div class="notice">'+tr('warning')+'</div>');setStatus('')}catch(e){setStatus(tr('notfound')+' ('+e.message+')')}}
+async function fetchProduct(url){
+ setStatus(tr('loading'));$('result').classList.remove('show');
+ // Try the requested lookup first, then the current v3 API for barcode URLs.
+ const urls=[url];
+ const match=url.match(/api\\/v2\\/product\\/([^/?]+)\\.json/);
+ if(match)urls.push('https://world.openfoodfacts.org/api/v3/product/'+match[1]+'.json');
+ let lastError=null;
+ for(const candidate of urls){
+  try{
+   const r=await fetch(candidate);
+   if(r.status===404){lastError=404;continue}
+   if(!r.ok){lastError=r.status;continue}
+   const j=await r.json();const p=j.product||j.products?.[0];
+   if(!p||(!p.product_name&&!p.product_name_en&&!p.ingredients_text&&!p.code)){lastError=404;continue}
+   const name=p.product_name||p.product_name_en||p.product_name_ja||'Product';
+   const ing=p.ingredients_text||p.ingredients_text_en||p.ingredients_text_ja||'';
+   const img=p.image_front_small_url||p.image_url||'';
+   const link='https://world.openfoodfacts.org/product/'+encodeURIComponent(p.code||'');
+   const hits=[];for(const [re,label] of risky)if(re.test(ing))hits.push(label);
+   const status=hits.some(x=>/Pork/.test(x))?'concern':'need';
+   showResult('<span class="badge '+(status==='concern'?'concern':'')+'">'+tr(status==='concern'?'concern':'need')+'</span><div class="product">'+(img?'<img src="'+escapeHtml(img)+'" alt="" loading="lazy">':'')+'<div><h3>'+escapeHtml(name)+'</h3><div class="small">'+tr('brand')+': '+escapeHtml(p.brands||'—')+'</div><div class="small">'+tr('barcodeLabel')+': '+escapeHtml(p.code||'—')+'</div></div></div><h4>'+tr('ingredientsLabel')+'</h4><p>'+escapeHtml(ing||tr('noIngredients'))+'</p>'+(hits.length?'<h4>'+tr('concerns')+'</h4><ul class="concerns">'+hits.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul>':'<p>'+tr('notIngredients')+'</p>')+'<p><a href="'+link+'" target="_blank" rel="noopener">'+tr('source')+' ↗</a></p><div class="notice">'+tr('warning')+'</div>');
+   setStatus('');return;
+  }catch(e){lastError=e}
+ }
+ setStatus(tr('notfound')+(lastError===404?' (barcode not listed in Open Food Facts). Try Search product by Japanese/English product name, or review ingredients manually.':''));
+}
 $('lookupBtn').onclick=()=>{let c=$('barcode').value.trim();if(!c){setStatus(tr('empty'));return}fetchProduct('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(c)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url')}
 $('searchBtn').onclick=()=>{let q=$('productQuery').value.trim();if(!q){setStatus(tr('empty'));return}fetchProduct('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=1&fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url')}
 $('analyzeBtn').onclick=()=>{let v=$('ingredients').value.trim();if(!v){setStatus(tr('empty'));return}reviewIngredients(v,'Ingredient review')}
