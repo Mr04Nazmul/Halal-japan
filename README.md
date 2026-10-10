@@ -15,6 +15,8 @@ If the page does not load yet, check the Pages deployment status in the reposito
 - Responsive layout for phones and desktop
 - English / বাংলা / 日本語 interface
 - Barcode number lookup
+- Rear-camera barcode scanning for common retail formats including JAN/EAN-13, EAN-8, UPC-A/UPC-E, Code 128, Code 39 and ITF
+- Faster continuous scan loop, scan-success beep/vibration where supported, optional camera flash control where the browser exposes it, and photo-of-barcode fallback
 - Camera barcode scanner (browser camera permission required; HTTPS required)
 - Product search using Open Food Facts
 - Manual ingredient keyword review
@@ -27,6 +29,10 @@ Product information is fetched from the community-maintained Open Food Facts API
 
 **A result labelled “Needs verification” is not a halal approval.** The app does not currently connect to an authoritative halal-certification registry and does not independently verify certification. When uncertain, check the original package, contact the manufacturer, or consult a trusted halal certifying authority.
 
+## Scanner expectations
+
+This uses a phone camera, not the dedicated high-speed laser/imager hardware found at Japanese convenience-store checkouts. It can scan common product barcodes, but speed depends on the phone camera, focus, lighting, glare, browser and barcode condition. For best results, open the HTTPS site in Safari/Chrome, allow camera access, use the rear camera, keep the whole JAN barcode visible, and try the photo/manual barcode input if live scanning misses it. Flash control is not available on every phone/browser.
+
 ## Technology
 
 - Static HTML, CSS and JavaScript
@@ -34,6 +40,10 @@ Product information is fetched from the community-maintained Open Food Facts API
 - html5-qrcode browser library for barcode scanning
 
 No account or user database is required for the current version. The page sends product search requests to Open Food Facts when you search or scan a barcode. Camera access is only requested when you start the scanner.
+
+## Automatic deployment
+
+A GitHub Actions workflow is included to publish the repository root to GitHub Pages on each push to `main`. In the repository, open **Settings → Pages** and select **GitHub Actions** as the build/deployment source once. Then check **Actions** for the first deployment. The live URL is only ready after that deployment succeeds.
 
 ## Development notes
 
