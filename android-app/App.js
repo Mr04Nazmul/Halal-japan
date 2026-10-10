@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { SafeAreaView, View, Text, TextInput, Pressable, ScrollView, ActivityIndicator, StyleSheet, StatusBar, Linking } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as ImagePicker from 'expo-image-picker';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
 const CACHE_PREFIX = 'halalchecker:product:';
@@ -24,6 +26,8 @@ export default function App() {
   const [loading,setLoading]=useState(false);
   const [product,setProduct]=useState(null);
   const [fromCache,setFromCache]=useState(false);
+  const [photoText,setPhotoText]=useState('');
+  const [photoBusy,setPhotoBusy]=useState(false);
   const [error,setError]=useState('');
   const [permission,requestPermission]=useCameraPermissions();
   const lock=useRef(false);
@@ -46,6 +50,22 @@ export default function App() {
       try{await AsyncStorage.setItem(CACHE_PREFIX+code,JSON.stringify({savedAt:Date.now(),product:found,source:'Open Food Facts'}));}catch(_){}
     }catch(e){setError(t.error);}finally{setLoading(false);lock.current=false;}
   };
+  const captureIngredients=async()=>{
+    setError('');
+    try{
+      const perm=await ImagePicker.requestCameraPermissionsAsync();
+      if(!perm.granted){setError(t.camera);return;}
+      const photo=await ImagePicker.launchCameraAsync({mediaTypes:['images'],quality:0.9,allowsEditing:false});
+      if(photo.canceled||!photo.assets?.[0]?.uri)return;
+      setPhotoBusy(true);
+      const recognized=await TextRecognition.recognize(photo.assets[0].uri);
+      const extracted=(recognized.text||'').trim();
+      if(!extracted){setError('No readable text found. Retake the photo in good light.');return;}
+      setPhotoText(extracted);
+    }catch(_){setError('Photo text recognition failed. Please retry or type the ingredients manually.');}
+    finally{setPhotoBusy(false);}
+  };
+  const photoFlags=risky.filter(x=>x.pattern.test(photoText)).map(x=>x.label);
   const onScan=({data})=>{if(!lock.current){lock.current=true;lookup(data);}};
   const openScanner=async()=>{
     setError('');setProduct(null);
@@ -60,6 +80,13 @@ export default function App() {
     <Text style={s.label}>{t.manual}</Text>
     <TextInput value={barcode} onChangeText={setBarcode} keyboardType="number-pad" placeholder="4901234567894" style={s.input} accessibilityLabel={t.manual}/>
     <Pressable style={s.button} onPress={()=>lookup(barcode)} disabled={loading}><Text style={s.buttonText}>{t.check}</Text></Pressable>
+    <View style={s.card}>
+      <Text style={s.heading}>📷 Ingredient label photo / 原材料名</Text>
+      <Text style={s.muted}>On-device OCR reads packaging text. Confirm the recognized text against the original label; OCR can make mistakes.</Text>
+      <Pressable style={s.button} onPress={captureIngredients} disabled={photoBusy}><Text style={s.buttonText}>{photoBusy?'Reading text…':'Photograph ingredients'}</Text></Pressable>
+      <TextInput multiline value={photoText} onChangeText={setPhotoText} placeholder="Recognized ingredients / 原材料名 (editable)" style={[s.input,{minHeight:100,marginTop:12,textAlignVertical:'top'}]}/>
+      {!!photoText&&<><Text style={s.heading}>Ingredient review — not certification</Text>{photoFlags.length?photoFlags.map(f=><Text style={s.flag} key={f}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}</>}
+    </View>
     {loading&&<ActivityIndicator style={{marginTop:20}} color="#0c382b" size="large"/>}
     {!!error&&<View style={s.card}><Text style={s.error}>{error}</Text><Pressable onPress={()=>lookup(barcode)}><Text style={s.link}>{t.retry}</Text></Pressable></View>}
     {product&&<View style={s.card}><Text style={s.heading}>{product.name}</Text><Text style={s.muted}>{product.brand} · {product.code}</Text>{fromCache&&<Text style={s.muted}>Saved product record (up to 7 days old) · Open Food Facts</Text>}<Text style={s.muted}>Source: {product.source||'Open Food Facts'}{product.updated?' · Updated: '+new Date(product.updated*1000).toLocaleDateString():''}</Text><Text style={s.heading}>{t.ingredients}</Text><Text style={s.body}>{product.ingredients||t.missing}</Text><Text style={s.heading}>{t.concerns}</Text>{!product.ingredients?<Text style={s.flag}>⚠ Ingredients not available — verification required.</Text>:product.flags.length?product.flags.map(f=><Text key={f} style={s.flag}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}<Pressable onPress={()=>Linking.openURL('https://world.openfoodfacts.org/product/'+encodeURIComponent(product.code))}><Text style={s.link}>Open Food Facts ↗</Text></Pressable></View>}
