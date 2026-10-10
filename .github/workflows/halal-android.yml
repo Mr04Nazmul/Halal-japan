@@ -31,7 +31,9 @@ jobs:
       # GitHub's Ubuntu runner includes the Android SDK. Avoid setup-android@v3:
       # its obsolete sdkmanager 'tools' package fails on current runners.
       - name: Verify Android SDK
-        run: test -d "$ANDROID_HOME" && echo "Android SDK found: $ANDROID_HOME"
+        run: |
+          test -d "$ANDROID_HOME"
+          echo "Android SDK found: $ANDROID_HOME"
       - name: Install project dependencies
         run: npm install --no-audit --no-fund
       - name: Generate Android native project
