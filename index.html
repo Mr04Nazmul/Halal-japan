@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c382b">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="description" content="Japan Halal Checker helps you look up food products and review ingredient concerns. Results are guidance, not religious certification.">
 <title>Japan Halal Checker</title>
 <style>
@@ -115,6 +119,11 @@ $('barcodePhoto').addEventListener('change',async e=>{
  e.target.value='';
 });
 $('stopBtn').onclick=stopScanner;
+</script>
+<script>
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
 </script>
 </body>
 </html>
