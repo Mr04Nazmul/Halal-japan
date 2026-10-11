@@ -70,7 +70,7 @@ export default function App() {
   const t=strings[lang];
   const lookup=async (raw)=>{
     const code=String(raw||'').replace(/\s/g,'');
-    if(!/^(\d{8}|\d{12,14})$/.test(code)){setError('Enter a valid EAN-8, UPC or JAN/EAN-13 barcode.');return;}
+    if(!/^(\d{8}|\d{12,14})$/.test(code)){lock.current=false;setError('Enter a valid EAN-8, UPC or JAN/EAN-13 barcode.');return;}
     lock.current=true;setScanning(false);setBarcode(code);setLoading(true);setError('');setProduct(null);setFromCache(false);
     try{
       const cached = await AsyncStorage.getItem(CACHE_PREFIX+code);
