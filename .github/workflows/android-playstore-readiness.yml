@@ -1,0 +1,52 @@
+name: Play Store readiness checks
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android-app/**'
+      - '.github/workflows/android-playstore-readiness.yml'
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [adfree, ads]
+    defaults:
+      run:
+        working-directory: android-app
+    env:
+      HALAL_VARIANT: ${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install packages
+        run: npm install --no-audit --no-fund
+      - name: Validate Expo config and release identity
+        run: |
+          npx expo config --json > /tmp/halal-expo-config.json
+          node <<'NODE'
+          const fs = require('fs');
+          const c = JSON.parse(fs.readFileSync('/tmp/halal-expo-config.json','utf8'));
+          const ads = process.env.HALAL_VARIANT === 'ads';
+          const expected = ads ? 'com.nazmul.japanhalalchecker.ads' : 'com.nazmul.japanhalalchecker';
+          const fail = m => { throw new Error(m); };
+          if (c.android?.package !== expected) fail('Unexpected Android application ID');
+          if (!Number.isInteger(c.android?.versionCode) || c.android.versionCode < 1) fail('Missing positive versionCode');
+          if (!c.android?.permissions?.includes('CAMERA')) fail('Missing camera permission');
+          if (!c.extra?.eas?.projectId) fail('Expo EAS project ID missing');
+          if (!c.plugins?.some(p => Array.isArray(p) && p[0] === 'react-native-google-mobile-ads')) fail('AdMob plugin is not configured');
+          console.log('Expo configuration validated for', expected, 'versionCode', c.android.versionCode);
+          if (ads) console.log('NOTICE: The app currently uses Google test ads; configure production AdMob IDs and verify disclosures before store submission.');
+          NODE
+      - name: Verify Play Store bundle profile
+        run: |
+          node <<'NODE'
+          const eas = require('./eas.json');
+          if (eas.build?.production?.android?.buildType !== 'app-bundle') {
+            throw new Error('Production must build Android App Bundle (AAB), not APK');
+          }
+          console.log('Production AAB profile exists. This is not proof that an upload-signed release was built.');
+          NODE
