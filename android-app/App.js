@@ -10,11 +10,13 @@ import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
 const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
 const BACKEND_URL = String(Constants.expoConfig?.extra?.productApiBaseUrl || '').replace(/\/$/, '');
+const BACKEND_ANON_KEY = String(Constants.expoConfig?.extra?.backendAnonKey || '');
 const yahooLookup = async (params) => {
   if (!BACKEND_URL) return [];
-  const url = BACKEND_URL + '/api/yahoo-product?' + Object.entries(params).map(([key,value])=>encodeURIComponent(key)+'='+encodeURIComponent(String(value))).join('&');
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Yahoo backend HTTP ' + response.status);
+  const isSupabase = BACKEND_URL.includes('/functions/v1/halal-product-lookup');
+  const url = BACKEND_URL + (isSupabase ? '' : '/api/yahoo-product') + '?' + Object.entries(params).map(([key,value])=>encodeURIComponent(key)+'='+encodeURIComponent(String(value))).join('&');
+  const response = await fetch(url, {headers: isSupabase && BACKEND_ANON_KEY ? {apikey:BACKEND_ANON_KEY,Authorization:'Bearer '+BACKEND_ANON_KEY} : {}});
+  if (!response.ok) throw new Error('Product backend HTTP ' + response.status);
   const data = await response.json();
   return Array.isArray(data.products) ? data.products : [];
 };
