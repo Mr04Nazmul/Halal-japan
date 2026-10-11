@@ -58,7 +58,7 @@ export default function App() {
       const response=await fetch(url);
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
-      const items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts'}));
+      const items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts',storeVerified:false}));
       setResults(items);
       if(!items.length)setError('No matching product found in Open Food Facts. This does not mean the store does not sell it. Try searching without a store filter.');
       else showTestAd();
@@ -123,7 +123,7 @@ export default function App() {
     {scanning ? <View><View style={s.cameraFrame}><CameraView style={s.camera} facing="back" barcodeScannerSettings={{barcodeTypes:['ean13','ean8','upc_a','upc_e']}} onBarcodeScanned={onScan}/></View><Pressable style={s.button} onPress={()=>setScanning(false)}><Text style={s.buttonText}>{t.back}</Text></Pressable></View> : <Pressable style={s.button} onPress={openScanner}><Text style={s.buttonText}>▦  {t.scan}</Text></Pressable>}
     <View style={s.card}>
       <Text style={s.heading}>🔎 Product search / 商品検索</Text>
-      <Text style={s.muted}>Search Japanese product names. Store filters are keyword hints; availability is not verified.</Text>
+      <Text style={s.muted}>Search Japanese product names. Store names are search hints only. No store stock, ingredients, or halal certification is verified by these results.</Text>
       <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:12}}>{[['all','All'],['seven','7-Eleven'],['family','FamilyMart'],['lawson','Lawson'],['gyomu','業務スーパー']].map(([id,name])=><Pressable key={id} onPress={()=>setStore(id)} style={[s.lang,{backgroundColor:store===id?'#c9f36a':'#0c382b'}]}><Text style={{color:store===id?'#0c382b':'white'}}>{name}</Text></Pressable>)}</View>
       <TextInput value={query} onChangeText={setQuery} placeholder="商品名 / Product name" style={s.input}/>
       <Pressable style={s.button} onPress={searchProducts} disabled={searching}><Text style={s.buttonText}>{searching?'Searching…':'Search products'}</Text></Pressable>
