@@ -4,8 +4,13 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
+import Constants from 'expo-constants';
+import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
+const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
+// Google test interstitial only until a production ad configuration is verified.
+const interstitial = ADS_ENABLED ? InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL) : null;
 const CACHE_PREFIX = 'halalchecker:product:';
 const CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const risky = [
@@ -22,6 +27,37 @@ const strings = {
 export default function App() {
   const [lang,setLang]=useState('bn');
   const [barcode,setBarcode]=useState('');
+  const [query,setQuery]=useState('');
+  const [store,setStore]=useState('all');
+  const [results,setResults]=useState([]);
+  const [searching,setSearching]=useState(false);
+  const adReady=useRef(false);
+  React.useEffect(()=>{
+    if(!interstitial)return;
+    const unsubLoaded=interstitial.addAdEventListener(AdEventType.LOADED,()=>{adReady.current=true;});
+    const unsubClosed=interstitial.addAdEventListener(AdEventType.CLOSED,()=>{adReady.current=false;interstitial.load();});
+    const unsubError=interstitial.addAdEventListener(AdEventType.ERROR,()=>{adReady.current=false;});
+    interstitial.load();
+    return ()=>{unsubLoaded();unsubClosed();unsubError();};
+  },[]);
+  const showTestAd=()=>{if(interstitial&&adReady.current){adReady.current=false;interstitial.show().catch(()=>{});}};
+  const searchProducts=async()=>{
+    const term=query.trim();if(term.length<2){setError('Enter at least 2 characters.');return;}
+    setSearching(true);setResults([]);setError('');
+    try{
+      // Store names are search hints, not evidence of a product's actual retailer.
+      const hint=store==='gyomu'?'業務スーパー ':store==='seven'?'セブンイレブン ':store==='family'?'ファミリーマート ':store==='lawson'?'ローソン ':'';
+      const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(hint+term)+'&search_simple=1&action=process&json=1&page_size=30';
+      const response=await fetch(url);
+      if(!response.ok)throw Error('HTTP '+response.status);
+      const data=await response.json();
+      const items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts'}));
+      setResults(items);
+      if(!items.length)setError('No matching product found in Open Food Facts. This does not mean the store does not sell it.');
+      else showTestAd();
+    }catch(e){setError('Search unavailable. Check internet and try again.');}
+    finally{setSearching(false);}
+  };
   const [scanning,setScanning]=useState(false);
   const [loading,setLoading]=useState(false);
   const [product,setProduct]=useState(null);
@@ -47,6 +83,7 @@ export default function App() {
       const ingredients=p.ingredients_text_ja||p.ingredients_text||p.ingredients_text_en||'';
       const found={name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,source:'Open Food Facts',updated:p.last_modified_t||null,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)};
       setProduct(found);
+      showTestAd();
       try{await AsyncStorage.setItem(CACHE_PREFIX+code,JSON.stringify({savedAt:Date.now(),product:found,source:'Open Food Facts'}));}catch(_){}
     }catch(e){setError(t.error);}finally{setLoading(false);lock.current=false;}
   };
@@ -77,6 +114,14 @@ export default function App() {
     <View style={s.languages}>{['bn','ja','en'].map(l=><Pressable key={l} onPress={()=>setLang(l)} style={[s.lang,lang===l&&s.selected]}><Text style={{color:lang===l?'#0c382b':'#e2f0e5',fontWeight:'700'}}>{l==='bn'?'বাংলা':l==='ja'?'日本語':'English'}</Text></Pressable>)}</View>
     <Text style={s.intro}>{t.intro}</Text>
     {scanning ? <View><View style={s.cameraFrame}><CameraView style={s.camera} facing="back" barcodeScannerSettings={{barcodeTypes:['ean13','ean8','upc_a','upc_e']}} onBarcodeScanned={onScan}/></View><Pressable style={s.button} onPress={()=>setScanning(false)}><Text style={s.buttonText}>{t.back}</Text></Pressable></View> : <Pressable style={s.button} onPress={openScanner}><Text style={s.buttonText}>▦  {t.scan}</Text></Pressable>}
+    <View style={s.card}>
+      <Text style={s.heading}>🔎 Product search / 商品検索</Text>
+      <Text style={s.muted}>Search Japanese product names. Store filters are keyword hints; availability is not verified.</Text>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:12}}>{[['all','All'],['seven','7-Eleven'],['family','FamilyMart'],['lawson','Lawson'],['gyomu','業務スーパー']].map(([id,name])=><Pressable key={id} onPress={()=>setStore(id)} style={[s.lang,{backgroundColor:store===id?'#c9f36a':'#0c382b'}]}><Text style={{color:store===id?'#0c382b':'white'}}>{name}</Text></Pressable>)}</View>
+      <TextInput value={query} onChangeText={setQuery} placeholder="商品名 / Product name" style={s.input}/>
+      <Pressable style={s.button} onPress={searchProducts} disabled={searching}><Text style={s.buttonText}>{searching?'Searching…':'Search products'}</Text></Pressable>
+      {results.map((p,i)=><Pressable key={p.code||i} onPress={()=>p.code&&lookup(p.code)} style={{paddingVertical:12,borderBottomWidth:1,borderColor:'#dfe8de'}}><Text style={s.heading}>{p.name}</Text><Text style={s.muted}>{p.brand} · {p.code||'No barcode'}</Text><Text style={s.link}>View ingredients →</Text></Pressable>)}
+    </View>
     <Text style={s.label}>{t.manual}</Text>
     <TextInput value={barcode} onChangeText={setBarcode} keyboardType="number-pad" placeholder="4901234567894" style={s.input} accessibilityLabel={t.manual}/>
     <Pressable style={s.button} onPress={()=>lookup(barcode)} disabled={loading}><Text style={s.buttonText}>{t.check}</Text></Pressable>
