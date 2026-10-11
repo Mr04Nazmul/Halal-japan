@@ -98,5 +98,5 @@ jobs:
             adb shell monkey -p "com.nazmul.japanhalalchecker${{ matrix.variant == 'ads' && '.ads' || '' }}" -c android.intent.category.LAUNCHER 1
             sleep 15
             adb shell pidof "com.nazmul.japanhalalchecker${{ matrix.variant == 'ads' && '.ads' || '' }}"
-            adb logcat -d -t 1500 | grep -E 'FATAL EXCEPTION|AndroidRuntime' > crash-lines.txt || true
-            if [ -s crash-lines.txt ]; then cat crash-lines.txt; exit 1; fi
+            adb logcat -d -t 3000 | grep -E 'FATAL EXCEPTION|Process: com\.nazmul\.japanhalalchecker|AndroidRuntime: FATAL' > crash-lines.txt || true
+            if grep -q 'FATAL EXCEPTION\|AndroidRuntime: FATAL' crash-lines.txt; then cat crash-lines.txt; exit 1; fi
