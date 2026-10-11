@@ -8,7 +8,6 @@ import Constants from 'expo-constants';
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
-const PRODUCT_LOOKUP_BACKEND = 'https://halal-japan.vercel.app/api/yahoo-product'; // Optional fallback; validate deployment before enabling.
 const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
 // Google test interstitial only until a production ad configuration is verified.
 const interstitial = ADS_ENABLED ? InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL) : null;
