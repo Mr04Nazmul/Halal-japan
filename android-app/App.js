@@ -87,7 +87,7 @@ export default function App() {
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
       let items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts',storeVerified:false}));
-      if(BACKEND_URL){try{const yahoo=await yahooLookup({query:term});const known=new Set(items.map(p=>p.code));items=[...items,...yahoo.filter(p=>p.code&&!known.has(p.code)).map(p=>({code:p.code,name:p.product_name,brand:p.brands||'',ingredients:'',source:'Yahoo! Shopping Japan (ingredients not verified)',storeVerified:false}))];}catch(_){/* OFF results remain usable if backend unavailable */}}
+      if(BACKEND_URL){try{const yahoo=await yahooLookup(store==='all'?{query:term}:{query:term,source:'stores',store});const known=new Set(items.map(p=>p.code));items=[...items,...yahoo.filter(p=>p.code&&!known.has(p.code)).map(p=>({code:p.code,name:p.product_name,brand:p.brands||'',ingredients:'',source:p._source||'Store / Yahoo product metadata (ingredients not verified)',storeVerified:false}))];}catch(_){/* OFF results remain usable if backend unavailable */}}
       setResults(items);
       if(!items.length)setError('No matching product found in Open Food Facts. This does not mean the store does not sell it. Try searching without a store filter.');
       else showTestAd();
@@ -115,7 +115,7 @@ export default function App() {
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
       const p=data.product;
-      if(!p || data.status===0 || !(p.product_name||p.product_name_en||p.product_name_ja||p.ingredients_text||p.ingredients_text_ja)){if(BACKEND_URL){try{const matches=await yahooLookup({jan_code:code});const y=matches.find(x=>x.code===code);if(y){setProduct({name:y.product_name||'Product',brand:y.brands||'',ingredients:'',code,source:'Yahoo! Shopping Japan (ingredients unverified)',updated:null,flags:[]});return;}}catch(_){}}setError(t.missing);return;}
+      if(!p || data.status===0 || !(p.product_name||p.product_name_en||p.product_name_ja||p.ingredients_text||p.ingredients_text_ja)){if(BACKEND_URL){try{let matches=[];if(code.startsWith('490177')){try{matches=await yahooLookup({jan_code:code,source:'suntory'});}catch(_){}}if(!matches.length)matches=await yahooLookup({jan_code:code});const y=matches.find(x=>x.code===code);if(y){setProduct({name:y.product_name||'Product',brand:y.brands||'',ingredients:'',code,source:y._source||'Manufacturer / Yahoo product metadata (ingredients unverified)',updated:null,flags:[]});return;}}catch(_){}}setError(t.missing);return;}
       const ingredients=p.ingredients_text_ja||p.ingredients_text||p.ingredients_text_en||'';
       const found={name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,source:'Open Food Facts',updated:p.last_modified_t||null,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)};
       setProduct(found);
