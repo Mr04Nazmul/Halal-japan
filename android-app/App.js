@@ -32,6 +32,21 @@ const strings = {
   ar: { title:'فاحص الحلال في اليابان', intro:'امسح الرمز الشريطي لمراجعة المكونات.', scan:'مسح الرمز الشريطي', manual:'أدخل الرمز الشريطي', check:'فحص المنتج', back:'رجوع', camera:'يلزم إذن الكاميرا.', grant:'السماح بالكاميرا', loading:'جار البحث عن المنتج…', missing:'لم يتم العثور على بيانات موثوقة.', warning:'إرشادات المكونات فقط وليست شهادة حلال.', concerns:'مكونات تحتاج إلى التحقق', none:'لم يتم رصد مكونات محددة؛ هذا لا يؤكد الحلال.', ingredients:'المكونات', retry:'حاول مجددًا', error:'تعذر جلب بيانات المنتج.' },
   uz: { title:'Yaponiya Halol Tekshiruv', intro:'Tarkibni tekshirish uchun shtrix-kodni skanerlang.', scan:'Shtrix-kodni skanerlash', manual:'Shtrix-kodni kiriting', check:'Mahsulotni tekshirish', back:'Orqaga', camera:'Kamera ruxsati kerak.', grant:'Kameraga ruxsat', loading:'Mahsulot qidirilmoqda…', missing:'Ishonchli mahsulot maʼlumoti topilmadi.', warning:'Faqat tarkib bo‘yicha yo‘riqnoma, halol sertifikati emas.', concerns:'Tekshirilishi kerak bo‘lgan tarkib', none:'Belgilangan modda topilmadi; bu halollikni tasdiqlamaydi.', ingredients:'Tarkibi', retry:'Qayta urinish', error:'Maʼlumotni olib bo‘lmadi.' },
 };
+
+// Standard JAN/EAN product barcodes do not encode a package-specific expiry date.
+// Only accept a visible date read from the actual package, never infer it from a barcode.
+const expiryFromLabel=(value)=>{
+  const text=String(value||'');
+  const labelled=text.match(/(?:賞味期限|消費期限|best\s*before|use\s*by|expiry|exp\.?)[^\d]{0,12}(20\d{2})[\/.\-年](\d{1,2})[\/.\-月](\d{1,2})/i);
+  if(!labelled)return null;
+  const year=Number(labelled[1]),month=Number(labelled[2]),day=Number(labelled[3]);
+  const date=new Date(year,month-1,day);
+  if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==day)return null;
+  const today=new Date();today.setHours(0,0,0,0);
+  const days=Math.round((date.getTime()-today.getTime())/86400000);
+  return {date:`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`,days,type:/消費期限|use\s*by/i.test(labelled[0])?'Use by / 消費期限':'Best before / 賞味期限'};
+};
+
 export default function App() {
   const [lang,setLang]=useState('bn');
   const [barcode,setBarcode]=useState('');
@@ -110,6 +125,7 @@ export default function App() {
     }catch(_){setError('Photo text recognition failed. Please retry or type the ingredients manually.');}
     finally{setPhotoBusy(false);}
   };
+  const expiry=expiryFromLabel(photoText);
   const photoFlags=risky.filter(x=>x.pattern.test(photoText)).map(x=>x.label);
   const onScan=({data})=>{if(!lock.current){lock.current=true;lookup(data);}};
   const openScanner=async()=>{
@@ -138,7 +154,7 @@ export default function App() {
       <Text style={s.muted}>On-device OCR reads packaging text. Confirm the recognized text against the original label; OCR can make mistakes.</Text>
       <Pressable style={s.button} onPress={captureIngredients} disabled={photoBusy}><Text style={s.buttonText}>{photoBusy?'Reading text…':'Photograph ingredients'}</Text></Pressable>
       <TextInput multiline value={photoText} onChangeText={setPhotoText} placeholder="Recognized ingredients / 原材料名 (editable)" style={[s.input,{minHeight:100,marginTop:12,textAlignVertical:'top'}]}/>
-      {!!photoText&&<><Text style={s.heading}>Ingredient review — not certification</Text>{photoFlags.length?photoFlags.map(f=><Text style={s.flag} key={f}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}</>}
+      {!!photoText&&<><Text style={s.heading}>📅 Expiry label check / 期限確認</Text>{expiry?<Text style={expiry.days<0?s.flag:s.body}>{expiry.type}: {expiry.date} · {expiry.days<0?'Date passed':expiry.days===0?'Date is today':expiry.days+' days remaining'} (verify printed label)</Text>:<Text style={s.muted}>No full labelled expiry date detected. Photograph the printed 賞味期限 / 消費期限 and check manually; barcode alone cannot reveal it.</Text>}<Text style={s.heading}>Ingredient review — not certification</Text>{photoFlags.length?photoFlags.map(f=><Text style={s.flag} key={f}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}</>}
     </View>
     {loading&&<ActivityIndicator style={{marginTop:20}} color="#0c382b" size="large"/>}
     {!!error&&<View style={s.card}><Text style={s.error}>{error}</Text><Pressable onPress={()=>lookup(barcode)}><Text style={s.link}>{t.retry}</Text></Pressable></View>}
