@@ -12,7 +12,7 @@ module.exports = {
     android: {
       package: withAds ? 'com.nazmul.japanhalalchecker.ads' : 'com.nazmul.japanhalalchecker',
       permissions: ['CAMERA'],
-      versionCode: 1
+      versionCode: 2
     },
     extra: { productApiBaseUrl: process.env.HALAL_PRODUCT_API_BASE_URL || 'https://vjygltfnrmyghlwyjtwu.supabase.co/functions/v1/halal-product-lookup', backendAnonKey: process.env.HALAL_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqeWdsdGZucm15Z2hsd3lqdHd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDI1NDEsImV4cCI6MjEwNjgxODU0MX0.nwq8t1ybnwBFIYNmc1h8tbIbCGUE9FZMQErPLD3ECdQ', buildVariant: withAds ? 'ads-test' : 'adfree', eas: { projectId: 'cdaa84da-4b3b-456e-958b-baa4bc58c5f7' } },
     owner: 'money-wallet',
