@@ -12,7 +12,8 @@ const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
 // Google test interstitial only until a production ad configuration is verified.
 const interstitial = ADS_ENABLED ? InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL) : null;
 const CACHE_PREFIX = 'halalchecker:product:';
-const CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+// Online-first: always request current data. A previous record is never treated as live.
+const CACHE_AGE_MS = 0;
 const risky = [
   { pattern: /pork|porcine|lard|bacon|豚肉|豚脂|ラード|ポーク|猪肉/i, label: 'Pork / porcine ingredient' },
   { pattern: /gelatin|gelatine|ゼラチン|collagen|コラーゲン/i, label: 'Gelatin or collagen: check source' },
@@ -81,7 +82,7 @@ export default function App() {
     lock.current=true;setScanning(false);setBarcode(code);setLoading(true);setError('');setProduct(null);setFromCache(false);
     try{
       const cached = await AsyncStorage.getItem(CACHE_PREFIX+code);
-      if(cached){try{const entry=JSON.parse(cached);if(entry.savedAt && Date.now()-entry.savedAt<CACHE_AGE_MS && entry.product){setProduct(entry.product);setFromCache(true);return;}}catch(_) {}}
+      // Cached records are intentionally not returned as current product data.
       const response=await fetch(API+encodeURIComponent(code)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,last_modified_t,labels_tags,countries_tags',{headers:{'User-Agent':'JapanHalalChecker/1.1 (https://github.com/Mr04Nazmul/Halal-japan)'}});
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
@@ -91,7 +92,7 @@ export default function App() {
       const found={name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,source:'Open Food Facts',updated:p.last_modified_t||null,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)};
       setProduct(found);
       showTestAd();
-      try{await AsyncStorage.setItem(CACHE_PREFIX+code,JSON.stringify({savedAt:Date.now(),product:found,source:'Open Food Facts'}));}catch(_){}
+      // Online-only: do not persist product lookup results as current information.
     }catch(e){setError(t.error);}finally{setLoading(false);lock.current=false;}
   };
   const captureIngredients=async()=>{
