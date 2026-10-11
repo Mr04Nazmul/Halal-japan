@@ -9,10 +9,10 @@ import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile
 
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
 const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
-const BACKEND_URL = String(Constants.expoConfig?.extra?.productApiBaseUrl || '').replace(/\\/$/, '');
+const BACKEND_URL = String(Constants.expoConfig?.extra?.productApiBaseUrl || '').replace(/\/$/, '');
 const yahooLookup = async (params) => {
   if (!BACKEND_URL) return [];
-  const url = BACKEND_URL + '/api/yahoo-product?' + new URLSearchParams(params).toString();
+  const url = BACKEND_URL + '/api/yahoo-product?' + Object.entries(params).map(([key,value])=>encodeURIComponent(key)+'='+encodeURIComponent(String(value))).join('&');
   const response = await fetch(url);
   if (!response.ok) throw new Error('Yahoo backend HTTP ' + response.status);
   const data = await response.json();
