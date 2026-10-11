@@ -9,6 +9,16 @@ import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile
 
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
 const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
+const BACKEND_URL = String(Constants.expoConfig?.extra?.productApiBaseUrl || '').replace(/\\/$/, '');
+const yahooLookup = async (params) => {
+  if (!BACKEND_URL) return [];
+  const url = BACKEND_URL + '/api/yahoo-product?' + new URLSearchParams(params).toString();
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Yahoo backend HTTP ' + response.status);
+  const data = await response.json();
+  return Array.isArray(data.products) ? data.products : [];
+};
+
 // Google test interstitial only until a production ad configuration is verified.
 const interstitial = ADS_ENABLED ? InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL) : null;
 const CACHE_PREFIX = 'halalchecker:product:';
@@ -74,7 +84,8 @@ export default function App() {
       const response=await fetch(url);
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
-      const items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts',storeVerified:false}));
+      let items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts',storeVerified:false}));
+      if(BACKEND_URL){try{const yahoo=await yahooLookup({query:term});const known=new Set(items.map(p=>p.code));items=[...items,...yahoo.filter(p=>p.code&&!known.has(p.code)).map(p=>({code:p.code,name:p.product_name,brand:p.brands||'',ingredients:'',source:'Yahoo! Shopping Japan (ingredients not verified)',storeVerified:false}))];}catch(_){/* OFF results remain usable if backend unavailable */}}
       setResults(items);
       if(!items.length)setError('No matching product found in Open Food Facts. This does not mean the store does not sell it. Try searching without a store filter.');
       else showTestAd();
@@ -102,7 +113,7 @@ export default function App() {
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
       const p=data.product;
-      if(!p || data.status===0 || !(p.product_name||p.product_name_en||p.product_name_ja||p.ingredients_text||p.ingredients_text_ja)){setError(t.missing);return;}
+      if(!p || data.status===0 || !(p.product_name||p.product_name_en||p.product_name_ja||p.ingredients_text||p.ingredients_text_ja)){if(BACKEND_URL){try{const matches=await yahooLookup({jan_code:code});const y=matches.find(x=>x.code===code);if(y){setProduct({name:y.product_name||'Product',brand:y.brands||'',ingredients:'',code,source:'Yahoo! Shopping Japan (ingredients unverified)',updated:null,flags:[]});return;}}catch(_){}}setError(t.missing);return;}
       const ingredients=p.ingredients_text_ja||p.ingredients_text||p.ingredients_text_en||'';
       const found={name:p.product_name_ja||p.product_name||p.product_name_en||'Product',brand:p.brands||'',ingredients,code,source:'Open Food Facts',updated:p.last_modified_t||null,flags:risky.filter(x=>x.pattern.test(ingredients)).map(x=>x.label)};
       setProduct(found);
