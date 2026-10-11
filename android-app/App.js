@@ -8,6 +8,7 @@ import Constants from 'expo-constants';
 import { InterstitialAd, AdEventType, TestIds } from 'react-native-google-mobile-ads';
 
 const API = 'https://world.openfoodfacts.org/api/v2/product/';
+const PRODUCT_LOOKUP_BACKEND = 'https://halal-japan.vercel.app/api/yahoo-product'; // Optional fallback; validate deployment before enabling.
 const ADS_ENABLED = Constants.expoConfig?.extra?.buildVariant === 'ads-test';
 // Google test interstitial only until a production ad configuration is verified.
 const interstitial = ADS_ENABLED ? InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL) : null;
@@ -47,13 +48,13 @@ export default function App() {
     try{
       // Store names are search hints, not evidence of a product's actual retailer.
       const hint=store==='gyomu'?'業務スーパー ':store==='seven'?'セブンイレブン ':store==='family'?'ファミリーマート ':store==='lawson'?'ローソン ':'';
-      const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(hint+term)+'&search_simple=1&action=process&json=1&page_size=30';
+      const url='https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(hint+term)+'&search_simple=1&action=process&json=1&page_size=30&fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja';
       const response=await fetch(url);
       if(!response.ok)throw Error('HTTP '+response.status);
       const data=await response.json();
       const items=(data.products||[]).filter(p=>p.product_name||p.product_name_ja).map(p=>({code:p.code,name:p.product_name_ja||p.product_name,brand:p.brands||'',ingredients:p.ingredients_text_ja||p.ingredients_text||'',source:'Open Food Facts'}));
       setResults(items);
-      if(!items.length)setError('No matching product found in Open Food Facts. This does not mean the store does not sell it.');
+      if(!items.length)setError('No matching product found in Open Food Facts. This does not mean the store does not sell it. Try searching without a store filter.');
       else showTestAd();
     }catch(e){setError('Search unavailable. Check internet and try again.');}
     finally{setSearching(false);}
