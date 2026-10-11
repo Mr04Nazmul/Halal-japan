@@ -55,7 +55,9 @@ jobs:
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
           test -s "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" | tee /tmp/apk-signature.txt
+          # Reject unexpected signing changes; a different signer prevents in-place upgrades.
+          grep -F "Signer #1 certificate SHA-256 digest: fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c" /tmp/apk-signature.txt
           # A universal APK must contain native libraries for common Android CPU families.
           unzip -Z1 "$APK" | grep -E "^lib/(arm64-v8a|armeabi-v7a|x86_64)/" | cut -d/ -f2 | sort -u | tee /tmp/apk-abis.txt
           for abi in arm64-v8a armeabi-v7a x86_64; do grep -qx "$abi" /tmp/apk-abis.txt || { echo "Missing ABI: $abi"; exit 1; }; done
@@ -100,6 +102,8 @@ jobs:
           emulator-options: -no-window -no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -memory 2048 -cores 2
           script: |
             adb install apk/app-release.apk
+            # Verify the same signed APK can be reinstalled as an in-place update.
+            adb install -r apk/app-release.apk
             adb uninstall "com.nazmul.japanhalalchecker${{ matrix.variant == 'ads' && '.ads' || '' }}"
             adb install apk/app-release.apk
             adb shell monkey -p "com.nazmul.japanhalalchecker${{ matrix.variant == 'ads' && '.ads' || '' }}" -c android.intent.category.LAUNCHER 1
