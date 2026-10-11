@@ -14,7 +14,8 @@ module.exports = {
       permissions: ['CAMERA'],
       versionCode: 1
     },
-    extra: { buildVariant: withAds ? 'ads-test' : 'adfree' },
+    extra: { buildVariant: withAds ? 'ads-test' : 'adfree', eas: { projectId: 'cdaa84da-4b3b-456e-958b-baa4bc58c5f7' } },
+    owner: 'money-wallet',
     // Native module is autolinked in both builds; a valid test App ID avoids startup crashes.
     // Ad-free variant never requests or displays ads.
     plugins: [['react-native-google-mobile-ads', { androidAppId: admobAppId }]]
