@@ -1,4 +1,5 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect,useRef} from 'react';
+import styles from './IslamicTools.module.css';
 type Place={id:string;name:string;lat:number;lon:number};
 type Position={lat:number;lon:number};
 const rad=Math.PI/180;
@@ -7,6 +8,8 @@ function mapUrl(lat:number,lon:number){const d=.014;return 'https://www.openstre
 const prayers=['Fajr','Sunrise','Dhuhr','Asr','Maghrib','Isha'];
 export default function IslamicTools(){
  const [point,setPoint]=useState<Position|null>(null),[times,setTimes]=useState<Record<string,string>>({}),[places,setPlaces]=useState<Place[]>([]),[selected,setSelected]=useState<Place|null>(null),[status,setStatus]=useState(''),[method,setMethod]=useState(3),[loading,setLoading]=useState(false);
+ const requested=useRef(false);
+ useEffect(()=>{if(requested.current)return;requested.current=true;setStatus('Tap Allow when your browser requests location to load mosques, prayer times and Qibla.');load();},[]);
  const load=()=>{if(!navigator.geolocation){setStatus('Location is not available in this browser.');return;}setLoading(true);setStatus('Requesting your location…');
  navigator.geolocation.getCurrentPosition(async p=>{
   const lat=p.coords.latitude,lon=p.coords.longitude;setPoint({lat,lon});setSelected(null);setPlaces([]);setTimes({});setStatus('Loading prayer times and nearby mapped mosques…');
@@ -18,7 +21,7 @@ export default function IslamicTools(){
  },()=>{setStatus('Location access was denied or timed out. Enable location permission in your browser and retry.');setLoading(false)},{timeout:12000,enableHighAccuracy:true});
  };
  const focus=selected||point;
- return <section style={{display:'grid',gap:18}}>
+ return <section className={styles.islamic} style={{display:'grid',gap:18}}>
   <div><h2>🕌 Nearby Mosques</h2><p>See mapped prayer spaces near your current location. Tap a mosque to focus the map.</p>
    <label>Prayer calculation method <select value={method} onChange={e=>setMethod(Number(e.target.value))}><option value={3}>Muslim World League</option><option value={1}>Karachi</option><option value={4}>Umm Al-Qura</option><option value={17}>JAKIM Malaysia</option></select></label>
    <p><button onClick={load} disabled={loading} style={{padding:'11px 16px',borderRadius:12,background:'#09623d',color:'#fff',border:0,fontWeight:700}}>{loading?'Loading…':point?'Refresh nearby mosques & times':'📍 Find mosques near me'}</button></p><p role="status">{status}</p>
