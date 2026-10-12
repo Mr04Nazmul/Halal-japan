@@ -1,0 +1,5 @@
+import {z} from 'zod';
+import superjson from 'superjson';
+export const schema=z.object({query:z.string().trim().min(2).max(140)});
+export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
+export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{const res=await fetch('/_api/food-lookup',{method:'POST',headers:{'Content-Type':'application/json'},body:superjson.stringify(schema.parse(body))});const t=await res.text();const data=superjson.parse<any>(t);if(!res.ok)throw Error(data.error||'Lookup unavailable');return data as LookupResult;}
