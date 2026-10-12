@@ -29,7 +29,7 @@ jobs:
           from pathlib import Path
           p=Path('android/app/src/main/AndroidManifest.xml')
           s=p.read_text()
-          s=s.replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">', '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\\n    <uses-permission android:name="android.permission.CAMERA" />\\n    <uses-permission android:name="android.permission.INTERNET" />\\n    <uses-feature android:name="android.hardware.camera" android:required="false" />')
+          s=s.replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">', '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.INTERNET" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />')
           p.write_text(s)
           PY
       - run: flutter pub get
