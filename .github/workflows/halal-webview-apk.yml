@@ -25,9 +25,15 @@ jobs:
           echo "Java:" && java -version
           echo "Gradle:" && gradle --version
           echo "SDK:" && echo "${ANDROID_HOME:-not-set}"
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
-          sdkmanager --list_installed
+          SDK_MANAGER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -type f -name sdkmanager 2>/dev/null | head -n 1)"
+          if [ -z "$SDK_MANAGER" ]; then
+            echo "::error::Android SDK command-line tools not found."
+            exit 1
+          fi
+          echo "Using $SDK_MANAGER"
+          yes | "$SDK_MANAGER" --licenses >/dev/null || true
+          "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+          "$SDK_MANAGER" --list_installed
       - name: Build debug APK
         working-directory: android-webview
         run: gradle --no-daemon --stacktrace --console=plain assembleDebug
