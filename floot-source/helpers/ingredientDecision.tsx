@@ -4,6 +4,7 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  const s=(input||'').toLowerCase();
  const rules:{terms:string[];severity:'prohibited'|'uncertain';reason:string}[]=[
  {terms:['pork','porcine','lard','豚肉','豚脂','ラード','ポーク','豚エキス','ポークエキス','bacon','ベーコン','ham (pork)','pork gelatin','豚由来ゼラチン','pig fat'],severity:'prohibited',reason:'Pork-derived ingredient is prohibited.'},
+ {terms:['wine (alcoholic)','beer (alcoholic)','alcoholic beverage','spirits (alcoholic)','飲用アルコール'],severity:'prohibited',reason:'Alcoholic beverage explicitly listed as an ingredient.'},
  {terms:['gelatin','ゼラチン'],severity:'uncertain',reason:'Gelatin may be animal-derived; source and halal processing must be verified.'},
  {terms:['emulsifier','乳化剤','e471','e472'],severity:'uncertain',reason:'Emulsifier source can be vegetable or animal-derived; verify manufacturer information.'},
  {terms:['flavoring','flavouring','香料'],severity:'uncertain',reason:'Flavoring carriers and extraction method may require confirmation.'},
