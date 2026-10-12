@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
     layout.setPadding(36, 80, 36, 36);
     layout.setBackgroundColor(Color.rgb(9, 34, 26));
     TextView message = new TextView(this);
-    message.setText("Japan Halal Checker\n\nInternet connection is required.");
+    message.setText("Japan Halal Checker\\n\\nInternet connection is required.");
     message.setTextColor(Color.WHITE);
     message.setTextSize(20);
     Button retry = new Button(this);
