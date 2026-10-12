@@ -40,9 +40,8 @@ jobs:
       - name: Stage existing site and Floot edition
         run: |
           mkdir -p _site/floot
-          cp index.html manifest.webmanifest sw.js icon.svg _site/
+          rsync -a --exclude='.git' --exclude='.github' --exclude='floot-source' --exclude='_site' --exclude='node_modules' ./ _site/
           cp -r floot-source/dist/. _site/floot/
-          find . -maxdepth 1 -type f \( -name '*.js' -o -name '*.json' -o -name '*.css' -o -name '*.svg' -o -name '*.webmanifest' \) -exec cp {} _site/ \;
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
