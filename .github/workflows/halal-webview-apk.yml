@@ -21,11 +21,16 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Install Android platform
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Check Android build tools and install SDK
+        run: |
+          echo "Java:" && java -version
+          echo "Gradle:" && gradle --version
+          echo "SDK:" && echo "${ANDROID_HOME:-not-set}"
+          sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager --list_installed
       - name: Build debug APK
         working-directory: android-webview
-        run: gradle --no-daemon assembleDebug
+        run: gradle --no-daemon --stacktrace --console=plain assembleDebug
       - name: Verify APK exists
         run: test -s android-webview/app/build/outputs/apk/debug/app-debug.apk
       - name: Upload installable APK
