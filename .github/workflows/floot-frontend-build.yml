@@ -1,0 +1,27 @@
+name: Build Floot React Frontend
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'floot-source/**'
+      - '.github/workflows/floot-frontend-build.yml'
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        working-directory: floot-source
+        run: npm install --no-audit --no-fund
+      - name: Build React scanner and UI
+        working-directory: floot-source
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: japan-halal-checker-floot-frontend
+          path: floot-source/dist
+          retention-days: 30
