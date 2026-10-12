@@ -1,0 +1,26 @@
+name: Floot Source Export
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'floot-source/**'
+      - '.github/workflows/floot-source-archive.yml'
+  workflow_dispatch:
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify core Floot source
+        run: |
+          test -s floot-source/pages/_index.tsx
+          test -s floot-source/components/IslamicTools.tsx
+          test -s floot-source/endpoints/food-lookup_POST.ts
+          grep -q 'BrowserMultiFormatReader' floot-source/pages/_index.tsx
+      - name: Package original Floot sources
+        run: zip -r floot-source-export.zip floot-source
+      - uses: actions/upload-artifact@v4
+        with:
+          name: japan-halal-checker-floot-source
+          path: floot-source-export.zip
+          retention-days: 30
