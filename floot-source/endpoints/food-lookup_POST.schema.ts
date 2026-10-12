@@ -2,9 +2,27 @@ import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
 export const schema=z.object({query:z.string().trim().min(2).max(140)});
 export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
+const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
+const PUBLIC_KEY='sb_publishable_SL6n4Q0t_AxHywHM6iMkpg_bm-lx_Oh';
+async function lookupSaved(query:string,isBarcode:boolean){
+ const u=new URL(SUPA+'/rest/v1/jhc_floot_products');
+ u.searchParams.set('select','source_id,barcode,name,name_ja,brand,ingredients,image_url,evidence_source,evidence_url,category');
+ if(isBarcode)u.searchParams.set('barcode','eq.'+query);
+ else u.searchParams.set('or','(name.ilike.*'+query.replace(/[,*()]/g,'')+'*,name_ja.ilike.*'+query.replace(/[,*()]/g,'')+'*,brand.ilike.*'+query.replace(/[,*()]/g,'')+'*)');
+ u.searchParams.set('limit','1');
+ const r=await fetch(u,{headers:{apikey:PUBLIC_KEY}});
+ if(!r.ok)throw Error('Catalogue backend HTTP '+r.status);
+ const rows=await r.json();return rows[0]||null;
+}
+
 export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
  const isBarcode=/^\d{8,14}$/.test(query);
+ let saved:any=null;
+ try{saved=await lookupSaved(query,isBarcode)}catch(e){console.warn('Saved product catalogue unavailable',e)}
+ if(saved && (!isBarcode || saved.barcode===query)){
+   return {found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+ }
  const api=isBarcode?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json':'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(query)+'&search_simple=1&action=process&json=1&page_size=5';
  const response=await fetch(api,{headers:{Accept:'application/json'}});
  if(!response.ok)throw Error('Open Food Facts lookup unavailable (HTTP '+response.status+'). Please try again.');
