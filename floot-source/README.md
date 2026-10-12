@@ -1,31 +1,21 @@
-# Japan Halal Checker — GitHub React edition
+# Japan Halal Checker — Editable GitHub Website
 
-The original React / TypeScript source was exported from the owner's Floot app, including its camera JAN/EAN scanner, product screen, ingredient OCR, ingredient screening, mosque map, prayer times, Qibla, and settings.
+This folder is the independent React/Vite website built from the owner's **latest Floot source** (including the JAN/EAN camera scanner and Islamic emerald/gold layout). The source snapshot was synchronized on 2026-10-13 Japan time.
 
-## GitHub Pages
+**Live address after a successful GitHub Pages deployment:** https://mr04nazmul.github.io/Halal-japan/floot/
 
-The repository's `.github/workflows/pages.yml` builds the Vite frontend and stages it at `/floot/`, keeping the pre-existing website at the repository root intact.
+## Keep editing for free after publishing
 
-Expected website after a **successful** Pages build:
-https://mr04nazmul.github.io/Halal-japan/floot/
+Edit `floot-source/pages/_index.tsx` for the layout, `floot-source/pages/_index.module.css` for the main theme, `floot-source/components/IslamicTools.tsx` and its CSS for Mosque/Prayer/Qibla, and `floot-source/components/IngredientVerification.tsx` for ingredient UI. Commit your changes to `main`. The repository's `.github/workflows/pages.yml` automatically builds the Vite app and publishes the new files to GitHub Pages. No paid site builder is required within GitHub's free-plan limits.
 
-Track actual deployment status in the repository Actions tab; a source commit is not proof of successful deployment.
+Alternatively clone the repo, run `cd floot-source && npm install && npm run dev`, then `npm run build` to test locally. Push the commits to publish.
 
-## What works without the Floot backend
+## What was ported vs. the hosted original
 
-* Browser-based rear-camera JAN/EAN scanner via ZXing with native BarcodeDetector supplement where supported.
-* Photo barcode scan fallback.
-* Public product/barcode lookup via Open Food Facts, with product and ingredient details when supplied.
-* On-device OCR of Japanese ingredient labels via Tesseract.
-* Evidence-conservative ingredient keyword screening; absence of flagged ingredients is **not** proof of halal.
-* Nearby mosque search (OpenStreetMap / Overpass), calculated prayer times (AlAdhan), and Qibla bearing.
+The scanner UI, camera decoder, barcode-photo fallback, ingredient OCR, ingredient review screen, Islamic tools and theme come from Floot. The GitHub-specific product lookup code in `endpoints/food-lookup_POST.schema.ts` accesses the **610 migrated public Supabase records** and Open Food Facts directly. The catalogue accesses the Supabase public read-only table; it does not use Floot's private Postgres connection. Research sources also use the Supabase table.
 
-Browser camera functionality requires HTTPS, user camera permission, and testing on real devices.
+**Important limitations:** Floot's private backend handlers and database cannot simply run inside static GitHub Pages. Historical Floot server endpoint implementations are preserved as source files, but production GitHub Pages cannot execute them. Ingredient/certificate evidence records from Floot were empty at migration time, so no certification is invented. Data and real-device scanner behavior must be tested separately. This is a web app, not an APK.
 
-## Still requiring migration
+For safe updates: keep the `main` branch as the published version. Edit in a new branch and open a Pull Request when changing scanner/lookup behavior, then merge once checks pass.
 
-The Floot `foodProducts` database and its retailer catalogue, product verification evidence, and private Yahoo credentials have **not** been moved to GitHub. As a result, the GitHub edition cannot yet show the same retailer database or authoritative certificate records. The React catalogue UI indicates that retailer entries are unavailable rather than inventing them.
-
-The `endpoints/*GET.ts` and `*POST.ts` server handlers are preserved as source/reference, but static Pages does not run those handlers. This edition uses a separate browser-based product lookup adapter in `endpoints/food-lookup_POST.schema.ts`.
-
-This is a **web app**, not an Android APK or Play Store build. A successful Vite build verifies compilation only, not actual camera scanning on the user's phone.
+**Current workflow:** `.github/workflows/pages.yml`. Check its latest successful run in the GitHub Actions tab; a commit alone does not prove the live website updated.
