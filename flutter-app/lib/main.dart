@@ -186,22 +186,84 @@ class ScannerPage extends StatefulWidget {
   State<ScannerPage> createState() => _ScannerPageState();
 }
 class _ScannerPageState extends State<ScannerPage> {
+  final MobileScannerController controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionTimeoutMs: 450,
+    formats: [
+      BarcodeFormat.ean13,
+      BarcodeFormat.ean8,
+      BarcodeFormat.upcA,
+      BarcodeFormat.upcE,
+      BarcodeFormat.code128,
+    ],
+    autoStart: true,
+  );
   bool captured = false;
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  void onBarcode(BarcodeCapture capture) {
+    if (captured || !mounted) return;
+    for (final barcode in capture.barcodes) {
+      final code = barcode.rawValue?.trim() ?? '';
+      if (!RegExp(r'^\d{8,14}$').hasMatch(code)) continue;
+      captured = true;
+      controller.stop();
+      Navigator.of(context).pop(code);
+      return;
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Barcode scanner')),
-    body: MobileScanner(
-      onDetect: (capture) {
-        if (captured) return;
-        for (final item in capture.barcodes) {
-          final raw = item.rawValue;
-          if (raw != null && RegExp(r'^\d{8,14}$').hasMatch(raw)) {
-            captured = true;
-            Navigator.pop(context, raw);
-            break;
-          }
-        }
-      },
+    appBar: AppBar(
+      title: const Text('Scan JAN / EAN / UPC'),
+      actions: [
+        IconButton(
+          tooltip: 'Flashlight',
+          onPressed: () => controller.toggleTorch(),
+          icon: const Icon(Icons.flashlight_on_outlined),
+        ),
+      ],
+    ),
+    body: Stack(
+      fit: StackFit.expand,
+      children: [
+        MobileScanner(
+          controller: controller,
+          onDetect: onBarcode,
+          errorBuilder: (context, error) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('Camera unavailable or permission denied: $error', textAlign: TextAlign.center),
+            ),
+          ),
+        ),
+        IgnorePointer(
+          child: Center(
+            child: Container(
+              width: 300,
+              height: 165,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xff22c7a2), width: 3),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+        const Align(
+          alignment: Alignment(0, 0.4),
+          child: Text(
+            'Place the barcode inside the frame.\nHold steady in good light.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, shadows: [Shadow(color: Colors.black, blurRadius: 8)]),
+          ),
+        ),
+      ],
     ),
   );
 }
