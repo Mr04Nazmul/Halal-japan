@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
 export const schema=z.object({query:z.string().trim().min(2).max(140)});
-export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
+export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
 const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
 const PUBLIC_KEY='sb_publishable_SL6n4Q0t_AxHywHM6iMkpg_bm-lx_Oh';
 async function lookupSaved(query:string,isBarcode:boolean){
@@ -15,6 +15,15 @@ async function lookupSaved(query:string,isBarcode:boolean){
  const rows=await r.json();return rows[0]||null;
 }
 
+const wholeFoods:Record<string,string>={
+ 'banana':'Banana (whole fresh fruit)','কলা':'কলা (তাজা ফল)','バナナ':'バナナ（生の果物）',
+ 'apple':'Apple (whole fresh fruit)','আপেল':'আপেল (তাজা ফল)','りんご':'りんご（生の果物）',
+ 'orange':'Orange (whole fresh fruit)','কমলা':'কমলা (তাজা ফল)','オレンジ':'オレンジ（生の果物）',
+ 'mango':'Mango (whole fresh fruit)','আম':'আম (তাজা ফল)','マンゴー':'マンゴー（生の果物）',
+ 'grapes':'Grapes (whole fresh fruit)','আঙুর':'আঙুর (তাজা ফল)','ぶどう':'ぶどう（生の果物）',
+ 'rice':'Rice (plain, uncooked)','চাল':'চাল (সাধারণ)','米':'米（無添加）',
+ 'potato':'Potato (whole fresh vegetable)','আলু':'আলু (তাজা সবজি)','じゃがいも':'じゃがいも（生の野菜）'
+};
 export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
  const isBarcode=/^\d{8,14}$/.test(query);
