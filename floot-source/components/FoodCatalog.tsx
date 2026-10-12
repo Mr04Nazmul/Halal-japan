@@ -5,7 +5,7 @@ import styles from './FoodCatalog.module.css';
 export default function FoodCatalog({onChoose}:{onChoose:(q:string)=>void}){
  const [store,setStore]=useState('gyomu'),[page,setPage]=useState(1),[items,setItems]=useState<CatalogProduct[]>([]),[total,setTotal]=useState(0),[error,setError]=useState(''),[loading,setLoading]=useState(false);
  useEffect(()=>{let active=true;setLoading(true);getFoodCatalog(store,page).then(r=>{if(active){setItems(r.items);setTotal(r.total);setError('')}}).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[store,page]);
- return <section className={styles.wrap}><h2>Explore Japanese Food Products</h2><p>Photos and listings from retailer/manufacturer catalogues. <b>Listed here does not mean halal certified.</b></p>
+ return <section className={styles.wrap}><h2>Explore Japanese Food Products</h2><p>The original Floot retailer catalogue depends on a separate database and is not yet connected to this GitHub Pages edition. Search by barcode or product name above using Open Food Facts. No retailer listing is evidence of halal certification.</p>
  <div className={styles.stores}>{[['gyomu','業務スーパー'],['family','FamilyMart'],['seven','7-Eleven'],['lawson','Lawson'],['suntory','Suntory']].map(([value,label])=><button key={value} className={store===value?styles.active:''} onClick={()=>{setStore(value);setPage(1)}}>{label}</button>)}</div>
  <p className={styles.count}>{loading?'Loading products…':total+' catalog products'} · Tap a product to check details</p>
  {error&&<p className={styles.error}>{error}</p>}
