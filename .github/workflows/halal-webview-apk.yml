@@ -17,7 +17,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
@@ -26,6 +25,7 @@ jobs:
           echo "Java:" && java -version
           echo "Gradle:" && gradle --version
           echo "SDK:" && echo "${ANDROID_HOME:-not-set}"
+          yes | sdkmanager --licenses >/dev/null || true
           sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
           sdkmanager --list_installed
       - name: Build debug APK
