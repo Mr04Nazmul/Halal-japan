@@ -14,36 +14,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Verify standalone website
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build imported Floot React website
+        working-directory: floot-source
         run: |
-          test -s index.html
-          test -s manifest.webmanifest
-          test -s sw.js
-          test -s icon.svg
-          grep -q 'html5-qrcode' index.html
-      - name: Stage site without React dependency failures
+          npm install --no-audit --no-fund
+          npm run build
+          test -s dist/index.html
+      - name: Assemble static root and React edition
         run: |
           mkdir -p _site/floot
           rsync -a --exclude='.git' --exclude='.github' --exclude='floot-source' --exclude='_site' --exclude='node_modules' ./ _site/
-          rsync -a --exclude='.git' --exclude='.github' --exclude='floot-source' --exclude='_site' --exclude='floot' --exclude='node_modules' ./ _site/floot/
+          cp -a floot-source/dist/. _site/floot/
           test -s _site/index.html
           test -s _site/floot/index.html
-          echo "Static website staged at / and /floot/"
-      - name: Upload website
-        uses: actions/upload-pages-artifact@v3
+          grep -q '/assets/\|./assets/' _site/floot/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
   deploy:
+    runs-on: ubuntu-latest
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v4
