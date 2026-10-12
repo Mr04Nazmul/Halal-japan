@@ -28,10 +28,25 @@ jobs:
           test -f manifest.webmanifest
           test -f sw.js
           test -f icon.svg
+      - name: Prepare Floot React frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build standalone Floot UI
+        working-directory: floot-source
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Stage existing site and Floot edition
+        run: |
+          mkdir -p _site/floot
+          cp index.html manifest.webmanifest sw.js icon.svg _site/
+          cp -r floot-source/dist/. _site/floot/
+          find . -maxdepth 1 -type f \( -name '*.js' -o -name '*.json' -o -name '*.css' -o -name '*.svg' -o -name '*.webmanifest' \) -exec cp {} _site/ \;
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
   deploy:
     environment:
       name: github-pages
