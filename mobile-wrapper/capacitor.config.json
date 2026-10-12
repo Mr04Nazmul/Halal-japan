@@ -1,0 +1,11 @@
+{
+  "appId": "com.nazmul.japanhalalchecker.web",
+  "appName": "Japan Halal Checker",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
