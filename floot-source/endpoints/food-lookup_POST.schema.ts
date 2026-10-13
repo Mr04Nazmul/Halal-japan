@@ -29,6 +29,10 @@ const wholeFoods:Record<string,string>={
 };
 export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
+ // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
+ if(query==='2044706200126'){
+   return {found:true,name:'CAFE BOX チキンケバブライス / Chicken Kebab Rice',barcode:query,brand:'7-Eleven Japan',ingredients:null,image:null,source:'User-provided package photograph (barcode) + Seven-Eleven public product listing (name)',productUrl:'https://www.sej.co.jp/products/a/bento/',...ingredientDecision(null),manufacturerEvidence:[{type:'Product identity and in-store code from packaging; ingredient declaration not yet supplied',url:'https://www.sej.co.jp/products/a/bento/',issuer:'Seven-Eleven Japan',reviewedAt:null}],coverageNote:'Package-front matched to CAFE BOX チキンケバブライス; the 20-prefix may be an in-store code. This particular package ingredient list, additive sources and halal certification are NOT verified. Price/region/version may vary.'};
+ }
  // Barcode-matched official manufacturer product record, distinct from a halal certificate.
  if(query==='4902179023964'){
    const ingredients='糖類（砂糖（タイ製造）、果糖ぶどう糖液糖）、全粉乳、コーヒー、脱脂粉乳、ココナッツオイル、デキストリン、食塩／カラメル色素、香料、乳化剤、ビタミンＣ、カゼインＮａ、甘味料（アセスルファムK、ステビア）';
