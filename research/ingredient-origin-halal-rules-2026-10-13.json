@@ -1,0 +1,68 @@
+{
+  "version": "2026-10-13",
+  "purpose": "Ingredient-source classification guidance, NOT blanket halal certification",
+  "rules": [
+    {
+      "label": "ゼラチン / gelatin",
+      "when_permissible": "fish-origin when accepted by relevant halal standard; bovine or other permitted animals from halal-compliant slaughter with verifiable processing",
+      "when_not_permissible": "porcine gelatin or impermissible animal origin",
+      "when_unknown": "VERIFY",
+      "explanation_bn": "জেলাটিন প্রাণীর collagen থেকে তৈরি। উৎস ও জবাইয়ের প্রমাণের ভিত্তিতে সিদ্ধান্ত বদলায়।",
+      "evidence": [
+        "https://www.halalcertification.org/halal-information/faqs"
+      ]
+    },
+    {
+      "label": "植物性乳化剤 / plant emulsifier",
+      "when_permissible": "explicit plant-derived emulsifier with no noncompliant processing aids and otherwise compliant product",
+      "when_not_permissible": "other forbidden ingredients in the complete product",
+      "when_unknown": "VERIFY for other unverified product ingredients",
+      "explanation_bn": "উদ্ভিজ্জ উৎসের ইমালসিফায়ার একা হারাম নয়; পুরো পণ্য যাচাই দরকার।"
+    },
+    {
+      "label": "乳化剤 / emulsifier",
+      "when_permissible": "manufacturer confirms plant, acceptable synthetic, or permissible halal-compliant source",
+      "when_not_permissible": "confirmed porcine or prohibited animal-derived additive",
+      "when_unknown": "VERIFY",
+      "explanation_bn": "শুধু 乳化剤 লিখলে প্রাণিজ না উদ্ভিজ্জ বোঝা যায় না।"
+    },
+    {
+      "label": "酒 / sake or cooking wine",
+      "when_permissible": "do not auto-approve; some scholarly standards distinguish incidental naturally formed ethanol from intentionally added intoxicating drinks",
+      "when_not_permissible": "intoxicating alcoholic drink added as an ingredient under commonly applied halal certification standards",
+      "when_unknown": "VERIFY / AVOID pending evidence",
+      "explanation_bn": "খাবারে মদ বা রান্নার সাকে ইচ্ছাকৃত মেশালে সাধারণ হালাল মানদণ্ডে গ্রহণযোগ্য নয়; রান্না করলেই সব অ্যালকোহল চলে যায় না।",
+      "evidence": [
+        "https://www.halalcertification.org/halal-information/faqs",
+        "https://www.kikkoman.com/en/culture/mirinmuseum/faq.html"
+      ]
+    },
+    {
+      "label": "みりん / mirin",
+      "when_permissible": "some mirin-style non-alcoholic seasonings can be permissible if whole recipe and ingredients comply; under-1%-alcohol mirin-style is not automatically halal",
+      "when_not_permissible": "hon-mirin is an alcoholic seasoning, typically about 14% alcohol",
+      "when_unknown": "VERIFY variety and manufacturer disclosure",
+      "explanation_bn": "本みりん সাধারণত প্রায় ১৪% অ্যালকোহলযুক্ত। みりん風調味料-তে কম অ্যালকোহল থাকলেও সবসময় halal নয়।",
+      "evidence": [
+        "https://www.kikkoman.co.jp/enjoys/mirin/about.html",
+        "https://customer.kikkoman.co.jp/hc/ja/articles/12404138295833-%E6%9C%AC%E3%81%BF%E3%82%8A%E3%82%93-%E3%81%BF%E3%82%8A%E3%82%93%E9%A2%A8%E8%AA%BF%E5%91%B3%E6%96%99-%E3%81%BF%E3%82%8A%E3%82%93%E3%82%BF%E3%82%A4%E3%83%97-%E7%99%BA%E9%85%B5%E8%AA%BF%E5%91%B3%E6%96%99-%E3%81%AE%E9%81%95%E3%81%84%E3%82%92%E6%95%99%E3%81%88%E3%81%8F%E3%81%A0%E3%81%95%E3%81%84"
+      ]
+    }
+  ],
+  "app_logic": {
+    "never_haram_from_keyword_alone": [
+      "gelatin",
+      "ゼラチン",
+      "乳化剤",
+      "植物性乳化剤"
+    ],
+    "never_halal_from_keyword_absence": true,
+    "avoid_auto_halal_for": [
+      "酒",
+      "本みりん",
+      "料理酒",
+      "みりん"
+    ],
+    "manufacturer_evidence_required": true
+  }
+}
