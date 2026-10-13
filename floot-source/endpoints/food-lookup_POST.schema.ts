@@ -46,7 +46,7 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
    allManufacturers.find(p=>p.name.toLocaleLowerCase().includes(norm)):undefined);
  if(verified){
    const decision=ingredientDecision(verified.ingredients);
-   return {found:true,name:verified.name,barcode:verified.barcode,brand:verified.manufacturer,ingredients:verified.ingredients,image:null,source:verified.manufacturer+' official manufacturer product catalogue',productUrl:verified.url,...decision,manufacturerEvidence:[{type:'manufacturer product and ingredients',url:verified.url,issuer:'Sangaria',reviewedAt:null}],coverageNote:'JAN and ingredient information sourced from manufacturer. This is NOT halal certification; verify package and ingredient origins.'};
+   return {found:true,name:verified.name,barcode:verified.barcode,brand:verified.manufacturer,ingredients:verified.ingredients,image:null,source:verified.manufacturer+' official manufacturer product catalogue',productUrl:verified.url,...decision,manufacturerEvidence:[{type:'manufacturer product and ingredients',url:verified.url,issuer:verified.manufacturer,reviewedAt:null}],coverageNote:'JAN and ingredient information sourced from manufacturer. This is NOT halal certification; verify package and ingredient origins.'};
  }
 
  let saved:any=null;
@@ -54,13 +54,20 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  if(saved && (!isBarcode || saved.barcode===query)){
    return {found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
  }
- const api=isBarcode?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json':'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(query)+'&search_simple=1&action=process&json=1&page_size=5';
+ // Open Food Facts is community-maintained (ODbL); query on demand instead of copying its entire database.
+ const api=isBarcode
+  ?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json?fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url'
+  :'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(query)+'&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url,countries_tags';
  const response=await fetch(api,{headers:{Accept:'application/json'}});
  if(!response.ok)throw Error('Open Food Facts lookup unavailable (HTTP '+response.status+'). Please try again.');
  const payload=await response.json();
- const item=isBarcode?(payload.status===1?payload.product:null):payload.products?.find((p:any)=>p.product_name||p.product_name_ja);
+ const item=isBarcode?(payload.status===1?payload.product:null):
+ (payload.products||[]).filter((p:any)=>p.product_name||p.product_name_ja).sort((a:any,b:any)=>{
+   const score=(p:any)=>Number((p.countries_tags||[]).includes('en:japan'))*5+Number(!!(p.ingredients_text_ja||p.ingredients_text))*3+Number(!!p.image_front_small_url);
+   return score(b)-score(a);
+ })[0];
  if(!item)return {found:false,verdict:'unknown',reasons:['No matching public product record; do not assume halal.'],coverageNote:'This standalone GitHub Pages edition queries Open Food Facts; its coverage is incomplete.'};
  if(isBarcode && String(item.code||'')!==query)return {found:false,verdict:'unknown',reasons:['Barcode did not exactly match returned product.']};
  const ingredients=item.ingredients_text_ja||item.ingredients_text||null;
- return {found:true,name:item.product_name_ja||item.product_name||'Unnamed product',barcode:item.code||null,brand:item.brands||null,ingredients,image:item.image_front_small_url||item.image_front_url||null,source:'Open Food Facts (community supplied)',productUrl:item.url||null,...ingredientDecision(ingredients),manufacturerEvidence:[],coverageNote:'Unverified community data. No halal certification or manufacturer confirmation is implied. Check the exact package.'};
+ return {found:true,name:item.product_name_ja||item.product_name||'Unnamed product',barcode:item.code||null,brand:item.brands||null,ingredients,image:item.image_front_small_url||item.image_front_url||null,source:'Open Food Facts (community supplied; ODbL attribution)',productUrl:item.url||null,...ingredientDecision(ingredients),manufacturerEvidence:[],coverageNote:'Open Food Facts data is user-contributed under ODbL. Japanese records and labels may be incomplete; no halal certification is implied. Check the exact package.'};
 }
