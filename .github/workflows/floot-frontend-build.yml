@@ -1,7 +1,7 @@
 name: Build Floot React Frontend
 on:
   push:
-    branches: [main, review/floot-scanner-preserved-build-fix, review/product-layout-favorites]
+    branches: [main, review/floot-scanner-preserved-build-fix, review/product-layout-favorites, fix/4902179023964-source-verification]
     paths:
       - 'floot-source/**'
       - '.github/workflows/floot-frontend-build.yml'
