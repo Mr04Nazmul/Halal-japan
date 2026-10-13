@@ -48,7 +48,7 @@ export default function Home(){
  {busy&&<p className={styles.note}>{w.checking}</p>}{error&&<div className={styles.alert}><AlertTriangle size={17}/>{error}</div>}
  {result&&<article className={styles.detailCard}>
  <div className={styles.detailPhoto}>{result.image_front_small_url?<img src={result.image_front_small_url} alt={result.name}/>:<PackageSearch size={60}/>}</div>
- <div className={styles.statusLarge} data-verdict={result.verdict}><span className={styles.statusDot}></span>{result.verdict==='haram_ingredient'?'HARAM':result.verdict==='certified'?'HALAL · Certified':result.verdict==='naturally_halal'?'HALAL':result.verdict==='ingredient_clear'?'HALAL · Ingredient Check':result.verdict==='needs_review'&&result.findings?.length?'AVOID · Unverified':result.verdict==='needs_review'?'VERIFY':'UNKNOWN'}</div>
+ <div className={styles.statusLarge} data-verdict={result.verdict==='needs_review'&&result.findings?.length?'avoid':result.verdict}><span className={styles.statusDot}></span>{result.verdict==='haram_ingredient'?'HARAM':result.verdict==='certified'?'HALAL · Certified':result.verdict==='naturally_halal'?'HALAL':result.verdict==='ingredient_clear'?'HALAL · Ingredient Check':result.verdict==='needs_review'&&result.findings?.length?'AVOID · Unverified':result.verdict==='needs_review'?'VERIFY':'UNKNOWN'}</div>
  <div className={styles.detailActions}><button onClick={()=>saveFavorite(result)}><Heart size={20} fill={isFavorite(result)?'currentColor':'none'}/> {isFavorite(result)?'Saved to Favorites':'Add to Favorites'}</button></div>
  <div className={styles.detailRow}><strong>Name</strong><span>{result.name}</span></div>
  <div className={styles.detailRow}><strong>Japanese Name / 商品名</strong><span>{result.name}</span></div>
