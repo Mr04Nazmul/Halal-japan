@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
+import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
 export const schema=z.object({query:z.string().trim().min(2).max(140)});
 export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
 const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
@@ -31,7 +32,16 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
    const ingredients='糖類（砂糖（タイ製造）、果糖ぶどう糖液糖）、全粉乳、コーヒー、脱脂粉乳、ココナッツオイル、デキストリン、食塩／カラメル色素、香料、乳化剤、ビタミンＣ、カゼインＮａ、甘味料（アセスルファムK、ステビア）';
    return {found:true,name:'Ajīwau Cafe Au Lait 500ml / あじわうカフェオレ 500ml',barcode:query,brand:'Sangaria / サンガリア',ingredients,image:null,source:'Sangaria official manufacturer ingredients',productUrl:'https://sangaria.co.jp/products/ajiwau/',...ingredientDecision(ingredients),manufacturerEvidence:[{type:'official ingredient list',url:'https://sangaria.co.jp/products/ajiwau/',issuer:'Sangaria',reviewedAt:null}],coverageNote:'Official JAN-matched ingredient list. Flavoring and emulsifier sources are not certified in this record; HALAL LV3 shown in another app is not independent manufacturer certification.'};
  }
- const isBarcode=/^\d{8,14}$/.test(query);
+ const isBarcode=/^\\d{8,14}$/.test(query);
+ const norm=query.toLocaleLowerCase();
+ const verified=manufacturerDrinks.find(p=>p.barcode===query)||
+   (!isBarcode?manufacturerDrinks.find(p=>p.name.toLocaleLowerCase()===norm)||
+   manufacturerDrinks.find(p=>p.name.toLocaleLowerCase().includes(norm)):undefined);
+ if(verified){
+   const decision=ingredientDecision(verified.ingredients);
+   return {found:true,name:verified.name,barcode:verified.barcode,brand:verified.manufacturer,ingredients:verified.ingredients,image:null,source:'Sangaria official manufacturer product catalogue',productUrl:verified.url,...decision,manufacturerEvidence:[{type:'manufacturer product and ingredients',url:verified.url,issuer:'Sangaria',reviewedAt:null}],coverageNote:'JAN and ingredient information sourced from manufacturer. This is NOT halal certification; verify package and ingredient origins.'};
+ }
+
  let saved:any=null;
  try{saved=await lookupSaved(query,isBarcode)}catch(e){console.warn('Saved product catalogue unavailable',e)}
  if(saved && (!isBarcode || saved.barcode===query)){
