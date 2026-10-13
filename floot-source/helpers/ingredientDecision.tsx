@@ -2,6 +2,11 @@ export type IngredientFinding={ingredient:string;severity:'prohibited'|'uncertai
 export type IngredientDecision={verdict:'haram_ingredient'|'needs_review'|'certified'|'ingredient_clear'|'unknown';reasons:string[];confidence:'high'|'medium'|'low';findings:IngredientFinding[];};
 export function ingredientDecision(input:string|null|undefined, certificateValid=false, completeManufacturerIngredients=false):IngredientDecision{
  const s=(input||'').toLowerCase();
+ // A declared vegetable/soy-derived emulsifier is not by itself an uncertain animal additive.
+ // Normalize only explicit source-qualified phrases; unqualified 乳化剤 still needs review.
+ const normalized=s
+  .replace(/植物性乳化剤|植物由来乳化剤|植物性の乳化剤|乳化剤[（(](?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)[）)]/g,' confirmed_plant_emulsifier ')
+  .replace(/(?:plant[- ]based|vegetable[- ]derived|soy[- ]derived) emulsifiers?/g,' confirmed_plant_emulsifier ');
  const rules:{terms:string[];severity:'prohibited'|'uncertain';reason:string}[]=[
  {terms:['pork','porcine','lard','豚肉','豚脂','ラード','ポーク','豚エキス','ポークエキス'],severity:'prohibited',reason:'Pork-derived ingredient is prohibited.'},
  {terms:['gelatin','ゼラチン'],severity:'prohibited',reason:'HARAM under this website’s custom strict-screening rule for gelatin; gelatin can also come from permissible sources, so this is not a universal halal ruling.'},
@@ -15,7 +20,7 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  {terms:['shortening','ショートニング','animal fat','動物油脂'],severity:'uncertain',reason:'Fat or shortening source requires verification.'}
  ];
  const findings:IngredientFinding[]=[];
- for(const r of rules){const hit=r.terms.find(term=>s.includes(term));if(hit)findings.push({ingredient:hit,severity:r.severity,reason:r.reason})}
+ for(const r of rules){const hit=r.terms.find(term=>(r.terms.includes('乳化剤')?normalized:s).includes(term));if(hit)findings.push({ingredient:hit,severity:r.severity,reason:r.reason})}
  if(findings.some(f=>f.severity==='prohibited'))return {verdict:'haram_ingredient',reasons:findings.map(f=>f.reason),confidence:'high',findings};
  if(certificateValid)return {verdict:'certified',reasons:['Recorded certificate is reviewed and currently valid; verify exact product scope and issuing authority.'],confidence:'high',findings};
  if(!s.trim())return {verdict:'unknown',reasons:['Complete ingredient information is unavailable. No halal conclusion can be drawn.'],confidence:'low',findings};
