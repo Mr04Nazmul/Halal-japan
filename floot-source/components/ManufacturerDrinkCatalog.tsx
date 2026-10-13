@@ -16,7 +16,7 @@ export default function ManufacturerDrinkCatalog({onChoose}:{onChoose:(barcode:s
  {items.map(p=>{const d=ingredientDecision(p.ingredients);return <button key={p.barcode} onClick={()=>onChoose(p.barcode)} style={{textAlign:'left',background:'#1a3428',border:'1px solid #49674c',borderRadius:13,padding:12,color:'#ebf2e4',minWidth:0}}>
  <strong style={{fontSize:12,display:'block',lineHeight:1.45,overflowWrap:'anywhere'}}>{p.name}</strong>
  <small style={{display:'block',marginTop:8,color:'#a1b9a9'}}>{p.barcode}</small>
- <span style={{fontSize:11,color:d.verdict==='haram_ingredient'?'#ff9494':d.verdict==='needs_review'?'#f3d099':'#b6dfab',fontWeight:700}}>{d.verdict==='haram_ingredient'?'HARAM':d.verdict==='needs_review'?'VERIFY':'CHECK DETAILS'}</span>
+ <span style={{fontSize:11,color:d.verdict==='haram_ingredient'?'#ff9494':d.verdict==='needs_review'?'#f3d099':'#b6dfab',fontWeight:700}}>{d.verdict==='haram_ingredient'?'HARAM':d.verdict==='needs_review'?'VERIFY':'NO FLAGGED INGREDIENTS'}</span>
  </button>})}
  </div><p style={{fontSize:11,color:'#9fbbaa',marginTop:12}}>Source links and full ingredient information appear after selecting a product. Some additives require manufacturer origin confirmation.</p>
  </section>;
