@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-13",
+  "manufacturer": "Morinaga Seika",
+  "allergen_list": {
+    "url": "https://www.morinaga.co.jp/products/allergy/search.php?mode=PdfDownload",
+    "published": "2026-10-09",
+    "notes": "Official allergen report; not equivalent to full ingredient label or halal certification. A missing allergen mark must not be interpreted as proof of halal."
+  },
+  "products": [
+    {
+      "barcode": "4902888276392",
+      "name": "もちもちチョコボール＜ちょこもち＞",
+      "category": "chocolate",
+      "sourceUrl": "https://www.morinaga.co.jp/products/detail.php?id=PRD2026-07-0014",
+      "gelatinAllergen": "gelatin_listed",
+      "ingredients": null,
+      "fullIngredientsVerified": false,
+      "verdict": "needs_review"
+    },
+    {
+      "barcode": "4902888275876",
+      "name": "チョコボール＜パチパチソーダ＞",
+      "category": "chocolate",
+      "sourceUrl": "https://www.morinaga.co.jp/products/detail.php?id=PRD2026-05-0018",
+      "gelatinAllergen": "gelatin_not_listed_in_allergy",
+      "ingredients": null,
+      "fullIngredientsVerified": false,
+      "verdict": "needs_review"
+    },
+    {
+      "barcode": "4902888255090",
+      "name": "チョコボール＜いちご＞",
+      "category": "chocolate",
+      "sourceUrl": "https://www.morinaga.co.jp/products/detail.php?id=PRD2013-01-0209",
+      "gelatinAllergen": "gelatin_not_listed_in_allergy",
+      "ingredients": null,
+      "fullIngredientsVerified": false,
+      "verdict": "needs_review"
+    },
+    {
+      "barcode": "4902888255083",
+      "name": "チョコボール＜キャラメル＞",
+      "category": "chocolate",
+      "sourceUrl": "https://www.morinaga.co.jp/products/detail.php?id=PRD2014-06-0028",
+      "gelatinAllergen": "gelatin_not_listed_in_allergy",
+      "ingredients": null,
+      "fullIngredientsVerified": false,
+      "verdict": "needs_review"
+    },
+    {
+      "barcode": "4902888255076",
+      "name": "チョコボール＜ピーナッツ＞",
+      "category": "chocolate",
+      "sourceUrl": "https://www.morinaga.co.jp/products/detail.php?id=PRD2018-10-0054",
+      "gelatinAllergen": "gelatin_not_listed_in_allergy",
+      "ingredients": null,
+      "fullIngredientsVerified": false,
+      "verdict": "needs_review"
+    },
+    {
+      "barcode": "4902888269196",
+      "name": "チョコボール＜ピーナッツ＞大袋",
+      "category": "chocolate",
+      "sourceUrl": "https://www.morinaga.co.jp/products/detail.php?id=PRD2024-09-0004",
+      "gelatinAllergen": "gelatin_not_listed_in_allergy",
+      "ingredients": null,
+      "fullIngredientsVerified": false,
+      "verdict": "needs_review"
+    }
+  ],
+  "yamazaki": {
+    "manufacturer": "Yamazaki Baking",
+    "categories": [
+      "bread",
+      "buns",
+      "sandwiches"
+    ],
+    "records": [],
+    "note": "Official product labels and exact JANs are required before records can be added."
+  }
+}
