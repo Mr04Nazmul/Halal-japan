@@ -163,3 +163,28 @@
  .page *, .page *:before, .page *:after{animation-duration:.01ms!important;transition:none!important;scroll-behavior:auto!important}
 }
 @media (max-width:370px){.quickLinks{gap:7px}.quickLinks button{padding:12px 5px;min-height:101px}.hero{padding:24px 20px}}
+
+
+/* Layout redesign v3 – presentation only, never affects scanner/networking. */
+.heroSteps{display:flex;justify-content:space-between;gap:8px;margin:25px 0;padding:18px 12px;border:1px solid #e0c79050;border-radius:16px;background:#091e19a8;color:#edd19a;font-size:10px;font-weight:800;letter-spacing:.7px}
+.quickLinks{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:17px}
+.quickLinks button{min-height:126px;align-items:flex-start;text-align:left;padding:20px;border-radius:22px}
+.quickLinks button span{line-height:1;font-size:35px}
+.quickLinks button strong{font-size:16px}
+.quickLinks button small{font-size:12px}
+.discoverBanner{display:flex;justify-content:space-between;align-items:center;text-align:left;width:100%;padding:19px 21px;color:#192d21;background:linear-gradient(115deg,#f2e2ba,#d4b16e);border:0;border-radius:20px;box-shadow:0 12px 29px #0006;cursor:pointer}
+.discoverBanner strong{display:block;font-size:18px;margin-bottom:4px}
+.discoverBanner small{display:block;color:#4c5038;font-size:12px}
+.discoverBanner>span:last-child{font-size:31px}
+.placesIntro{padding:29px 24px;border-radius:25px;border:1px solid #c2a87366;background:linear-gradient(145deg,#214f3d,#0b2823);margin-bottom:16px}
+.placesIntro small{letter-spacing:2.3px;color:#f0d293;font-weight:800}
+.placesIntro h1{font-family:Georgia,serif;font-size:clamp(30px,7vw,45px);margin:10px 0}
+.placesIntro p{color:#d6e7da;line-height:1.7}
+.placesTabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:6px;background:#0b231d;border:1px solid #b8a16a54;border-radius:17px;margin:18px 0}
+.placesTabs button{padding:13px 8px;border-radius:12px;border:0;color:#e1d7b8;background:transparent;font-size:12px;font-weight:750;cursor:pointer}
+.placesTabs .selectedTab{color:#153022;background:#ebd39a;box-shadow:0 5px 20px #0005}
+.restaurantPanel{padding:20px 14px;background:#132e26;border:1px solid #b8a16a66;border-radius:21px}
+.restaurantPanel h2{margin:0 0 7px;color:#f3deb0}
+.restaurantPanel p{font-size:13px;color:#bed4c4;line-height:1.6}
+.restaurantLink{display:block;text-align:center;margin:16px 0;padding:14px 9px;border-radius:13px;background:#d8bd83;color:#172d20;font-weight:800;text-decoration:none}
+@media(min-width:600px){.quickLinks{grid-template-columns:repeat(4,minmax(0,1fr))}.quickLinks button{padding:14px}.quickLinks button strong{font-size:13px}}
