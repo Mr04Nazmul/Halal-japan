@@ -3,6 +3,7 @@ import {ingredientDecision} from '../helpers/ingredientDecision';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
 import {extraManufacturerDrinks} from '../helpers/extraManufacturerDrinks';
 import {verifiedFoodRecords} from '../helpers/verifiedFoodRecords';
+import {convenienceFoods} from '../helpers/convenienceFoods';
 export const schema=z.object({query:z.string().trim().min(2).max(140)});
 export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
 const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
@@ -35,6 +36,11 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
    return {found:true,name:'Ajīwau Cafe Au Lait 500ml / あじわうカフェオレ 500ml',barcode:query,brand:'Sangaria / サンガリア',ingredients,image:null,source:'Sangaria official manufacturer ingredients',productUrl:'https://sangaria.co.jp/products/ajiwau/',...ingredientDecision(ingredients),manufacturerEvidence:[{type:'official ingredient list',url:'https://sangaria.co.jp/products/ajiwau/',issuer:'Sangaria',reviewedAt:null}],coverageNote:'Official JAN-matched ingredient list. Flavoring and emulsifier sources are not certified in this record; HALAL LV3 shown in another app is not independent manufacturer certification.'};
  }
  const isBarcode=/^\\d{8,14}$/.test(query);
+ const matchedConvenience=(!isBarcode)?convenienceFoods.find(p=>p.name===query):undefined;
+ if(matchedConvenience){
+   return {found:true,name:matchedConvenience.name,barcode:null,brand:matchedConvenience.store,ingredients:null,image:null,source:matchedConvenience.store+' official product catalogue',productUrl:matchedConvenience.url,verdict:'needs_review',reasons:['Official product listing found, but the full ingredient and additive-origin information is not published in the referenced online record. Scan the exact package ingredient label for a decision.'],confidence:'low',findings:[],manufacturerEvidence:[{type:'official product listing',url:matchedConvenience.url,issuer:matchedConvenience.store,reviewedAt:null}],coverageNote:matchedConvenience.notes+' Availability: '+matchedConvenience.region};
+ }
+
  const selectedFood=verifiedFoodRecords.find(p=>p.barcode===query)||
  (!isBarcode?verifiedFoodRecords.find(p=>p.name.toLowerCase()===query.toLowerCase()||p.nameJa===query):undefined);
  if(selectedFood) return {found:true,name:selectedFood.nameJa+' / '+selectedFood.name,barcode:selectedFood.barcode,brand:selectedFood.manufacturer,ingredients:selectedFood.ingredients,image:null,source:'Nissin official ingredient excerpt',productUrl:selectedFood.url,...ingredientDecision(selectedFood.ingredients),manufacturerEvidence:[{type:'Manufacturer full ingredient declaration',url:selectedFood.url,issuer:'Nissin Foods',reviewedAt:null}],coverageNote:'Only identified prohibited ingredients are summarized here; this is NOT the full ingredients list. Open the official product page for the complete label.'};
