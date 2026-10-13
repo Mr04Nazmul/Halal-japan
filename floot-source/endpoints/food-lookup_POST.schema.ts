@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
+import {extraManufacturerDrinks} from '../helpers/extraManufacturerDrinks';
 export const schema=z.object({query:z.string().trim().min(2).max(140)});
 export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
 const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
@@ -34,12 +35,13 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  }
  const isBarcode=/^\\d{8,14}$/.test(query);
  const norm=query.toLocaleLowerCase();
- const verified=manufacturerDrinks.find(p=>p.barcode===query)||
-   (!isBarcode?manufacturerDrinks.find(p=>p.name.toLocaleLowerCase()===norm)||
-   manufacturerDrinks.find(p=>p.name.toLocaleLowerCase().includes(norm)):undefined);
+ const allManufacturers=[...manufacturerDrinks,...extraManufacturerDrinks];
+ const verified=allManufacturers.find(p=>p.barcode===query)||
+   (!isBarcode?allManufacturers.find(p=>p.name.toLocaleLowerCase()===norm)||
+   allManufacturers.find(p=>p.name.toLocaleLowerCase().includes(norm)):undefined);
  if(verified){
    const decision=ingredientDecision(verified.ingredients);
-   return {found:true,name:verified.name,barcode:verified.barcode,brand:verified.manufacturer,ingredients:verified.ingredients,image:null,source:'Sangaria official manufacturer product catalogue',productUrl:verified.url,...decision,manufacturerEvidence:[{type:'manufacturer product and ingredients',url:verified.url,issuer:'Sangaria',reviewedAt:null}],coverageNote:'JAN and ingredient information sourced from manufacturer. This is NOT halal certification; verify package and ingredient origins.'};
+   return {found:true,name:verified.name,barcode:verified.barcode,brand:verified.manufacturer,ingredients:verified.ingredients,image:null,source:verified.manufacturer+' official manufacturer product catalogue',productUrl:verified.url,...decision,manufacturerEvidence:[{type:'manufacturer product and ingredients',url:verified.url,issuer:'Sangaria',reviewedAt:null}],coverageNote:'JAN and ingredient information sourced from manufacturer. This is NOT halal certification; verify package and ingredient origins.'};
  }
 
  let saved:any=null;
