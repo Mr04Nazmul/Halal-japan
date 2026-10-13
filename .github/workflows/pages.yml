@@ -24,14 +24,13 @@ jobs:
           npm install --no-audit --no-fund
           npm run build
           test -s dist/index.html
-      - name: Assemble static root and React edition
+      - name: Assemble Floot React website as the site root
         run: |
-          mkdir -p _site/floot
-          rsync -a --exclude='.git' --exclude='.github' --exclude='floot-source' --exclude='_site' --exclude='node_modules' ./ _site/
-          cp -a floot-source/dist/. _site/floot/
+          mkdir -p _site
+          cp -a floot-source/dist/. _site/
           test -s _site/index.html
-          test -s _site/floot/index.html
-          grep -q '/assets/\|./assets/' _site/floot/index.html
+          test -d _site/assets
+          echo "Floot React prepared as site root. Scanner source is unchanged."
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
