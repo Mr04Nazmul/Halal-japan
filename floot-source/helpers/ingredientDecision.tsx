@@ -9,7 +9,9 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  {terms:['flavoring','flavouring','香料'],severity:'uncertain',reason:'Flavoring carriers and extraction method may require confirmation.'},
  {terms:['meat extract','肉エキス','ビーフエキス','チキンエキス','beef extract','chicken extract'],severity:'uncertain',reason:'Meat-derived ingredients require animal origin and slaughter verification.'},
  {terms:['enzyme','酵素','rennet','レンネット'],severity:'uncertain',reason:'Enzyme source may be microbial or animal; confirm origin.'},
- {terms:['mirin','みりん','料理酒','酒精','ethanol','alcohol','アルコール','wine','rum'],severity:'uncertain',reason:'Alcohol-related ingredient identified; verify formulation and applicable halal standard.'},
+ {terms:['酒精','ethanol','alcohol','アルコール','wine','rum'],severity:'uncertain',reason:'Alcohol-related ingredient identified; verify formulation and applicable halal standard.'},
+ {terms:['料理酒','本みりん','cooking sake','hon-mirin'],severity:'prohibited',reason:'Alcoholic cooking sake or hon-mirin identified.'},
+ {terms:['collagen','コラーゲン','placenta','プラセンタ','lecithin','レシチン','加工油脂','processed fat','hydrolyzed protein','たんぱく加水分解物','発酵調味料','fermented seasoning','マーガリン','margarine'],severity:'uncertain',reason:'Source, processing and/or alcohol-related formulation must be verified.'},
  {terms:['shortening','ショートニング','animal fat','動物油脂'],severity:'uncertain',reason:'Fat or shortening source requires verification.'}
  ];
  const findings:IngredientFinding[]=[];
