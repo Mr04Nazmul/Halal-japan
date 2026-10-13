@@ -8,7 +8,7 @@ export default function IngredientVerification({ initialText = '' }: { initialTe
   const [evidenceUrl, setEvidenceUrl] = useState('');
   const decision = useMemo(() => ingredientDecision(label, false), [label]);
   const strictAvoid = decision.verdict === 'haram_ingredient' || decision.findings.length > 0;
-  const verdict = decision.verdict === 'haram_ingredient' ? '⛔ HARAM — prohibited ingredient detected' : strictAvoid ? '⛔ HARAM / AVOID — strict precautionary screening' : decision.verdict === 'needs_review' ? '⚠️ No prohibited keyword found — not halal certified' : '⚠️ Unknown — ingredients unavailable';
+  const verdict = decision.verdict === 'haram_ingredient' ? '⛔ HARAM — prohibited ingredient detected' : strictAvoid ? '⚠️ AVOID — strict precautionary screening; origin unverified' : decision.verdict === 'needs_review' ? '⚠️ No prohibited keyword found — not halal certified' : '⚠️ Unknown — ingredients unavailable';
 
   return <section style={{ border: '1px solid #344054', borderRadius: 16, padding: 16, marginTop: 20 }}>
     <h3>Ingredient verification / 原材料チェック</h3>
