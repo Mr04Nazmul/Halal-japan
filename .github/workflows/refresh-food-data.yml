@@ -1,0 +1,32 @@
+name: Refresh public food ingredient data
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: ingredient-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch publicly shared Japanese product data
+        run: python scripts/refresh_off_products.py
+      - name: Commit changed data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/auto-products.json
+          if git diff --cached --quiet; then
+            echo "No changed data"
+          else
+            git commit -m "data: refresh attributed Japanese food records"
+            git push
+          fi
