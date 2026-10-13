@@ -1,6 +1,6 @@
 export type IngredientFinding={ingredient:string;severity:'prohibited'|'uncertain';reason:string};
-export type IngredientDecision={verdict:'haram_ingredient'|'needs_review'|'certified'|'unknown';reasons:string[];confidence:'high'|'medium'|'low';findings:IngredientFinding[];};
-export function ingredientDecision(input:string|null|undefined, certificateValid=false):IngredientDecision{
+export type IngredientDecision={verdict:'haram_ingredient'|'needs_review'|'certified'|'ingredient_clear'|'unknown';reasons:string[];confidence:'high'|'medium'|'low';findings:IngredientFinding[];};
+export function ingredientDecision(input:string|null|undefined, certificateValid=false, completeManufacturerIngredients=false):IngredientDecision{
  const s=(input||'').toLowerCase();
  const rules:{terms:string[];severity:'prohibited'|'uncertain';reason:string}[]=[
  {terms:['pork','porcine','lard','豚肉','豚脂','ラード','ポーク','豚エキス','ポークエキス'],severity:'prohibited',reason:'Pork-derived ingredient is prohibited.'},
@@ -20,5 +20,6 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  if(certificateValid)return {verdict:'certified',reasons:['Recorded certificate is reviewed and currently valid; verify exact product scope and issuing authority.'],confidence:'high',findings};
  if(!s.trim())return {verdict:'unknown',reasons:['Complete ingredient information is unavailable. No halal conclusion can be drawn.'],confidence:'low',findings};
  if(findings.length)return {verdict:'needs_review',reasons:findings.map(f=>f.reason),confidence:'medium',findings};
+ if(completeManufacturerIngredients)return {verdict:'ingredient_clear',reasons:['HALAL (ingredient screen only): no prohibited or source-uncertain ingredient detected in the manufacturer ingredient list. Not halal certified; processing and shared facilities have not been established.'],confidence:'medium',findings};
  return {verdict:'needs_review',reasons:['No clearly prohibited terms in available ingredients. This is NOT halal certification; sources, processing and cross-contact remain unverified.'],confidence:'low',findings};
 }
