@@ -9,11 +9,10 @@ const files=[
  ['verified_excerpts','floot-source/helpers/verifiedFoodRecords.tsx','verifiedFoodRecords'],
  ['suntory','supabase/functions/halal-product-lookup/manufacturer-records.js','MANUFACTURER_RECORDS']
 ];
-function checksum(s){if(!/^\\d{8}$|^\\d{13}$/.test(s))return null;const nums=[...s].map(Number),body=nums.slice(0,-1);const total=body.reduce((acc,n,i)=>acc+n*(body.length%2===i%2?3:1),0);return (10-total%10)%10===nums.at(-1)}
+function checksum(s){if(!/^\\d{8}$|^\\d{13}$/.test(s))return null;const nums=[...s].map(Number),body=nums.slice(0,-1);const total=body.reduce((acc,n,i)=>acc+n*(body.length%2===i%2?1:3),0);return (10-total%10)%10===nums.at(-1)}
 const items=[],summary=[];
 for(const [kind,path,key] of files){
  const source=readFileSync(path,'utf8');
- const match=source.match(new RegExp('(?:export\\s+(?:const|let)\\s+'+key+'(?:\\s*:[^=]+)?\\s*=)\\s*(\\\\[)')); // fallback below
  const at=source.indexOf('=',source.indexOf(key))+1;
  const begin=source.indexOf('[',at);let depth=0,inString=false,escaped=false,quote='';
  let end=-1;
