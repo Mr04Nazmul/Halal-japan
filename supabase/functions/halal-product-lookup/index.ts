@@ -1,6 +1,7 @@
 import {MANUFACTURER_RECORDS} from './manufacturer-records.js';
 import {RESEARCH_RECORDS} from './research-records.js';
 import {DRINK_RECORDS} from './drink-records.js';
+import {GLICO_RECORDS} from './glico-records.js';
 import {parseSuntory} from './suntory.js';
 import {parseHTML} from 'npm:linkedom@0.18.13';
 import './store-parser.js';
@@ -27,6 +28,8 @@ Deno.serve(async req=>{
  const store=u.searchParams.get('store')||'all',category=u.searchParams.get('category')||'all';
  if(source==='stores'&&(!['all','family','seven','lawson','gyomu'].includes(store)||!['all','bento','onigiri','sandwich','noodles','pasta','fried','halal'].includes(category)||code))return reply({error:'Invalid store filter'},400);
  // Exact-JAN product identity fallback: research records are not ingredient or halal certification.
+ const glico=code?GLICO_RECORDS.find(p=>p.code===code):undefined;
+ if(glico)return reply({products:[glico],source:'Glico official product information',savedRecord:true,halalVerified:false,ingredientsVerified:true,verificationStatus:'needs_review'});
  const drink=code?DRINK_RECORDS.find(p=>p.code===code):undefined;
  if(drink)return reply({products:[drink],source:'Manufacturer drink catalog',savedRecord:true,halalVerified:false,ingredientsVerified:drink._ingredientsVerified,verificationStatus:'needs_review'});
  const research=code?RESEARCH_RECORDS.find(p=>p.code===code):undefined;
