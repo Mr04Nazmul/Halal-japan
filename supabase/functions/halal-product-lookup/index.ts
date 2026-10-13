@@ -1,5 +1,6 @@
 import {MANUFACTURER_RECORDS} from './manufacturer-records.js';
 import {RESEARCH_RECORDS} from './research-records.js';
+import {DRINK_RECORDS} from './drink-records.js';
 import {parseSuntory} from './suntory.js';
 import {parseHTML} from 'npm:linkedom@0.18.13';
 import './store-parser.js';
@@ -26,6 +27,8 @@ Deno.serve(async req=>{
  const store=u.searchParams.get('store')||'all',category=u.searchParams.get('category')||'all';
  if(source==='stores'&&(!['all','family','seven','lawson','gyomu'].includes(store)||!['all','bento','onigiri','sandwich','noodles','pasta','fried','halal'].includes(category)||code))return reply({error:'Invalid store filter'},400);
  // Exact-JAN product identity fallback: research records are not ingredient or halal certification.
+ const drink=code?DRINK_RECORDS.find(p=>p.code===code):undefined;
+ if(drink)return reply({products:[drink],source:'Manufacturer drink catalog',savedRecord:true,halalVerified:false,ingredientsVerified:drink._ingredientsVerified,verificationStatus:'needs_review'});
  const research=code?RESEARCH_RECORDS.find(p=>p.code===code):undefined;
  if(research)return reply({products:[research],source:'Morinaga official product research',savedRecord:true,halalVerified:false,ingredientsVerified:false,verificationStatus:'needs_review'});
  const now=Date.now(),key=source+'|'+(code||q)+'|'+store+'|'+category,stored=cache.get(key);if(stored&&stored.expires>now)return reply(stored.value);
