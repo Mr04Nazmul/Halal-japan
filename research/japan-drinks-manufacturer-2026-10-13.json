@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "researched_at": "2026-10-13",
+  "policy": "Product-level ingredient research only. Unknown emulsifier origin is not evidence of haram or halal. Do not equate manufacturer with a religious verdict.",
+  "records": [
+    {
+      "company": "Asahi",
+      "name": "Wonda Morning Shot 185g",
+      "barcode": "4514603284317",
+      "ingredients_ja": "牛乳、砂糖、コーヒー、脱脂粉乳、デキストリン／カゼインNa、乳化剤、香料、酸化防止剤（ビタミンC）",
+      "source": "https://onigo.co.jp/products/b-99d/",
+      "evidence": "retailer ingredient listing; barcode Asahi catalog",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "Suntory",
+      "name": "Boss Cafe au Lait",
+      "barcode": null,
+      "ingredients_ja": "牛乳、砂糖、コーヒー、脱脂粉乳、クリーム、全粉乳、デキストリン／カゼインNa、乳化剤、香料、安定剤（カラギナン）",
+      "source": "https://products.suntory.co.jp/softdrink/ingredient.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "UCC",
+      "name": "Milk Coffee can 250g",
+      "barcode": "4901201133213",
+      "ingredients_ja": "砂糖、牛乳、脱脂粉乳、コーヒー、全粉乳／乳化剤",
+      "source": "https://www.ucc.co.jp/product/drink/coffee/milk-coffee/milk-coffee-can.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "UCC",
+      "name": "Blend Coffee can 185g",
+      "barcode": "4901201224799",
+      "ingredients_ja": "コーヒー、砂糖、脱脂粉乳、全粉乳、デキストリン／乳化剤、甘味料（アセスルファムK）",
+      "source": "https://www.ucc.co.jp/product/drink/coffee/blended/blended-coffee-blend.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "DyDo",
+      "name": "DyDo Blend Original 185g",
+      "barcode": null,
+      "ingredients_ja": "牛乳、砂糖、コーヒー、脱脂粉乳、デキストリン／乳化剤",
+      "source": "https://www.dydo.co.jp/products/detail/1083/",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "Pokka Sapporo",
+      "name": "Pokka Coffee Original 190g",
+      "barcode": "4589850821806",
+      "ingredients_ja": "砂糖、コーヒー、牛乳、全粉乳、デキストリン、乳等を主要原料とする食品／乳化剤",
+      "source": "https://www.pokkasapporo-fb.jp/products/coffee/pokkacoffee/WU50.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "Pokka Sapporo",
+      "name": "Milk Cafe 250g",
+      "barcode": "4582409170080",
+      "ingredients_ja": "砂糖、牛乳、コーヒー、全粉乳、デキストリン／乳化剤、甘味料（アセスルファムK、スクラロース）、香料",
+      "source": "https://www.pokkasapporo-fb.jp/products/coffee/other/WE67.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "Meiji",
+      "name": "Meiji COFFEE Cafe au Lait 200ml",
+      "barcode": "4902705107625",
+      "ingredients_ja": "砂糖、乳製品、コーヒー、デキストリン、食用油脂、食塩／乳化剤、香料",
+      "source": "https://www.meiji.co.jp/products/drink/4902705107625.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "Morinaga Milk",
+      "name": "Mount Rainier Caffe Latte Creamy Latte 240ml",
+      "barcode": null,
+      "ingredients_ja": "乳製品、砂糖混合果糖ぶどう糖液糖、コーヒー／乳化剤、香料",
+      "source": "https://www.morinagamilk.co.jp/products/drink/mtr_caffelatte/1589.html",
+      "emulsifier_origin": "unknown",
+      "verdict": "needs_review"
+    },
+    {
+      "company": "Morinaga Milk",
+      "name": "Mount Rainier Caffe Latte 240ml",
+      "barcode": null,
+      "ingredients_ja": "乳製品、砂糖混合果糖ぶどう糖液糖、コーヒー、乳／香料",
+      "source": "https://www.morinagamilk.co.jp/products/drink/mtr_caffelatte/29.html",
+      "emulsifier_origin": "not_listed",
+      "verdict": "needs_review"
+    }
+  ]
+}
