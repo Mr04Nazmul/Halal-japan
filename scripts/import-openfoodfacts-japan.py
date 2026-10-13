@@ -5,7 +5,7 @@ Data: Open Food Facts (ODbL 1.0); comply with attribution/share-alike.
 import json, os, pathlib, re, time, urllib.parse, urllib.request
 OUT=pathlib.Path("data/openfoodfacts-japan.json")
 TARGET=int(os.environ.get("TARGET_PRODUCTS","1200"))
-MAX_PAGES=int(os.environ.get("MAX_PAGES","12"))
+MAX_PAGES=int(os.environ.get("MAX_PAGES","35"))
 URL="https://world.openfoodfacts.org/api/v2/search"
 FIELDS="code,product_name,product_name_ja,brands,ingredients_text_ja,ingredients_text,countries_tags,url,last_modified_t"
 records={}
@@ -20,7 +20,7 @@ for page in range(1,MAX_PAGES+1):
     if not products: break
     for p in products:
         code=str(p.get("code","")).strip()
-        if not re.fullmatch(r"\\d{8}|\\d{13}",code): continue
+        if not re.fullmatch(r"\d{8}|\d{13}",code): continue
         name=(p.get("product_name_ja") or p.get("product_name") or "").strip()
         if not name: continue
         if code in records: continue
@@ -38,5 +38,5 @@ if len(records)<TARGET:
 OUT.parent.mkdir(exist_ok=True,parents=True)
 OUT.write_text(json.dumps({"source":"Open Food Facts","license":"ODbL-1.0","license_url":"https://opendatacommons.org/licenses/odbl/1-0/",
 "disclaimer":"Community product identities; not verified halal ratings. Ingredient data may be incomplete or outdated.",
-"record_count":len(records),"products":list(records.values())},ensure_ascii=False,indent=2)+"\\n",encoding="utf-8")
+"record_count":len(records),"products":list(records.values())},ensure_ascii=False,indent=2 )+"\n",encoding="utf-8")
 print("Wrote",len(records),"products to",OUT)
