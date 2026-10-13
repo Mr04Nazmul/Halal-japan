@@ -1,0 +1,306 @@
+{
+  "date": "2026-10-13",
+  "purpose": "Manufacturer research queue for Japanese foods; company inclusion is not a halal claim",
+  "total_manufacturer_entries": 41,
+  "collection_policy": {
+    "product_key": "exact JAN-8/JAN-13 + package size",
+    "required_fields": [
+      "barcode",
+      "product_name",
+      "ingredient_label",
+      "source_url",
+      "checked_at"
+    ],
+    "verdict_policy": "Pork-derived items haram; otherwise do not infer halal from missing ingredient or allergen evidence",
+    "no_auto_certification": true
+  },
+  "manufacturers": [
+    {
+      "name": "Yamazaki Baking",
+      "category": "bakery",
+      "official_site": "https://www.yamazakipan.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Shikishima Baking (Pasco)",
+      "category": "bakery",
+      "official_site": "https://www.pasconet.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Fuji Baking",
+      "category": "bakery",
+      "official_site": "https://www.fujipan.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Ito Pan",
+      "category": "bakery",
+      "official_site": "https://www.itopan.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Daiichiya Baking",
+      "category": "bakery",
+      "official_site": "https://www.daiichipan.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Morinaga Seika",
+      "category": "confectionery",
+      "official_site": "https://www.morinaga.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Meiji",
+      "category": "confectionery",
+      "official_site": "https://www.meiji.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Lotte",
+      "category": "confectionery",
+      "official_site": "https://www.lotte.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Glico",
+      "category": "confectionery",
+      "official_site": "https://www.glico.com/jp/product/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Bourbon",
+      "category": "confectionery",
+      "official_site": "https://www.bourbon.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Fujiya",
+      "category": "confectionery",
+      "official_site": "https://www.fujiya-peko.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Calbee",
+      "category": "confectionery",
+      "official_site": "https://www.calbee.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Asahi Soft Drinks",
+      "category": "beverages",
+      "official_site": "https://www.asahiinryo.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Suntory",
+      "category": "beverages",
+      "official_site": "https://products.suntory.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Kirin Beverage",
+      "category": "beverages",
+      "official_site": "https://products.kirin.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "UCC",
+      "category": "beverages",
+      "official_site": "https://www.ucc.co.jp/product/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "DyDo",
+      "category": "beverages",
+      "official_site": "https://www.dydo.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Pokka Sapporo",
+      "category": "beverages",
+      "official_site": "https://www.pokkasapporo-fb.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Sangaria",
+      "category": "beverages",
+      "official_site": "https://sangaria.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "ITO EN",
+      "category": "beverages",
+      "official_site": "https://www.itoen.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Morinaga Milk Industry",
+      "category": "dairy",
+      "official_site": "https://www.morinagamilk.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Megmilk Snow Brand",
+      "category": "dairy",
+      "official_site": "https://www.meg-snow.com/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Ohayo Dairy",
+      "category": "dairy",
+      "official_site": "https://www.ohayo-milk.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Akagi Nyugyo",
+      "category": "dairy",
+      "official_site": "https://www.akagi.com/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Chichiyasu",
+      "category": "dairy",
+      "official_site": "https://www.chichiyasu.com/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Nissin Foods",
+      "category": "noodles",
+      "official_site": "https://www.nissin.com/jp/product/items/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Toyo Suisan (Maruchan)",
+      "category": "noodles",
+      "official_site": "https://www.maruchan.co.jp/products/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Sanyo Foods",
+      "category": "noodles",
+      "official_site": "https://www.sanyofoods.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Acecook",
+      "category": "noodles",
+      "official_site": "https://www.acecook.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Myojo Foods",
+      "category": "noodles",
+      "official_site": "https://www.myojofoods.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Ajinomoto",
+      "category": "frozen_processed",
+      "official_site": "https://www.ajinomoto.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Nichirei Foods",
+      "category": "frozen_processed",
+      "official_site": "https://www.nichireifoods.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Maruha Nichiro",
+      "category": "frozen_processed",
+      "official_site": "https://www.maruha-nichiro.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Nissui",
+      "category": "frozen_processed",
+      "official_site": "https://www.nissui.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Kewpie",
+      "category": "frozen_processed",
+      "official_site": "https://www.kewpie.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "House Foods",
+      "category": "frozen_processed",
+      "official_site": "https://housefoods.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Kikkoman",
+      "category": "seasonings",
+      "official_site": "https://www.kikkoman.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Mizkan",
+      "category": "seasonings",
+      "official_site": "https://www.mizkan.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "S&B Foods",
+      "category": "seasonings",
+      "official_site": "https://www.sbfoods.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Ebara Foods",
+      "category": "seasonings",
+      "official_site": "https://www.ebarafoods.com/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    },
+    {
+      "name": "Kagome",
+      "category": "seasonings",
+      "official_site": "https://www.kagome.co.jp/",
+      "collection_status": "catalog_pending_product_review",
+      "halal_status": "not_assessed"
+    }
+  ]
+}
