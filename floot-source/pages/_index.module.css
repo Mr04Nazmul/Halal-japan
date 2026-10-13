@@ -63,3 +63,103 @@
 .favCard span{color:#a3e6af;font-weight:800;font-size:11px}
 .profileButton{width:100%;margin-top:16px}
 @media(max-width:390px){.detailPhoto{height:160px}.favCard img{height:110px}.statusLarge{font-size:19px}}
+
+
+/* Japan Halal Checker — Atelier Emerald 2026 premium interface.
+   Presentation-only layer: barcode camera, API, data, translations and routes remain untouched. */
+.page{
+ background:
+ radial-gradient(ellipse 95% 48% at 85% -8%,rgba(202,163,93,.12),transparent 70%),
+ radial-gradient(ellipse 90% 40% at -30% 25%,rgba(46,128,102,.19),transparent 75%),
+ #071412;
+ color:#f4f5ec;
+ font-family:Inter,system-ui,-apple-system,sans-serif;
+}
+.shell{max-width:780px;padding:0 clamp(16px,4vw,34px) 122px}
+.header{padding:23px 0 25px;gap:12px}
+.logo{
+ border-radius:17px;border:1px solid rgba(232,204,146,.44);
+ background:linear-gradient(145deg,#264e3c,#102a24);
+ box-shadow:0 10px 28px #010907a8,inset 0 1px #ffffff27;
+}
+.brand b{font-size:clamp(17px,4vw,22px);letter-spacing:-.45px;font-weight:800}
+.brand small{letter-spacing:2.1px;font-size:9px}
+.lang{min-height:41px;border-radius:13px;transition:border-color .2s,background .2s}
+.lang:hover{border-color:#dfc28e;background:#254336}
+.hero{
+ background:
+ radial-gradient(circle at 78% 20%,#315d45aa,transparent 44%),
+ linear-gradient(145deg,#173f32 0%,#102b28 51%,#0b2221 100%);
+ border:1px solid rgba(222,190,131,.44);
+ border-radius:30px;
+ padding:clamp(25px,6vw,44px);
+ box-shadow:0 22px 70px #0008,inset 0 1px #fff2;
+ isolation:isolate;
+}
+.hero:before{font-size:215px;right:-22px;top:28px;opacity:.8;transform:rotate(-12deg)}
+.hero:after{
+ content:"";position:absolute;inset:auto 18px 0;height:1px;
+ background:linear-gradient(90deg,transparent,#e7d4aa55,transparent)
+}
+.hero h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-1.8px;line-height:1.08;font-size:clamp(39px,8vw,58px)}
+.hero em{color:#f2daa2}
+.hero p{font-size:14px;line-height:1.8;color:#d3e4d9;max-width:350px}
+.eyebrow{letter-spacing:2.7px;font-size:10px}
+.graphic{border-radius:20px;background:linear-gradient(120deg,#0a251d9c,#21463975);border:1px solid #dbc58a3d}
+.cta{
+ min-height:54px;
+ background:linear-gradient(110deg,#f6e3b8,#d9b878 60%,#c69e55)!important;
+ color:#12291e!important;
+ border:1px solid #fff2cd7d!important;
+ box-shadow:0 8px 32px #020b087d,inset 0 1px #fff8!important;
+ transition:transform .18s,filter .18s;
+}
+.cta:hover{filter:brightness(1.07);transform:translateY(-2px)}
+.cta:active{transform:translateY(0)}
+.quickLinks{gap:12px;margin:20px 0 31px}
+.quickLinks button{
+ padding:19px 8px 17px;min-height:118px;border-radius:20px;
+ background:linear-gradient(155deg,#214236,#122c27);
+ border:1px solid #b4aa794b;
+ box-shadow:0 9px 25px #0004,inset 0 1px #ffffff0d;
+ transition:transform .18s,border-color .18s,box-shadow .18s;
+}
+.quickLinks button:hover{transform:translateY(-3px);border-color:#dec690a8;box-shadow:0 15px 30px #0005}
+.quickLinks button:active{transform:translateY(0)}
+.quickLinks button span{font-size:30px}
+.quickLinks button strong{font-size:clamp(11px,3vw,13px);letter-spacing:.05px}
+.quickLinks button small{font-size:10px}
+.sectionLabel span{letter-spacing:2.8px;color:#f4ce87}
+.section h2{font-size:clamp(17px,4vw,21px);letter-spacing:-.3px}
+.search{padding:9px;background:#112a23;border:1px solid #a3a1757d;border-radius:18px;box-shadow:0 10px 32px #0004}
+.search input{min-height:45px;font-size:15px;outline-offset:4px}
+.search button{min-height:44px;background:linear-gradient(135deg,#f0d597,#c5a15e)!important;font-weight:750}
+.product,.detailCard{
+ background:linear-gradient(160deg,#1b352b,#102721);
+ border:1px solid #b4a27465;
+ box-shadow:0 14px 40px #0005,inset 0 1px #ffffff0b;
+}
+.product{border-radius:22px}
+.detailCard{border-radius:26px}
+.detailPhoto{border-radius:19px}
+.hint{border-radius:17px;background:#163127;border-color:#a7a07566}
+.alert{border-radius:16px}
+.nav{
+ max-width:780px;
+ border:1px solid #aa946357;border-bottom:0;
+ border-radius:21px 21px 0 0;
+ background:#0d221deF;
+ -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+ box-shadow:0 -10px 34px #0005;
+}
+.nav button{min-width:52px;min-height:46px;transition:color .18s,transform .18s}
+.nav button:hover{color:#f3dca6;transform:translateY(-2px)}
+.scanner{border-radius:26px;background:#112a22;border-color:#cdb47c8f;box-shadow:0 25px 75px #000a}
+.videoWrap{border-radius:17px}
+.frame{border-width:3px;border-color:#eed293;box-shadow:0 0 0 100px #0006,0 0 26px #e1c58055}
+.photoUpload{border-radius:15px;background:#d7ba7f;color:#10251b}
+.page :is(button,input,select,textarea):focus-visible{outline:2px solid #f2d99e;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){
+ .page *, .page *:before, .page *:after{animation-duration:.01ms!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media (max-width:370px){.quickLinks{gap:7px}.quickLinks button{padding:12px 5px;min-height:101px}.hero{padding:24px 20px}}
