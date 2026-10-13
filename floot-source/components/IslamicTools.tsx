@@ -18,12 +18,29 @@ export default function IslamicTools(){
   const query='[out:json][timeout:20];(nwr(around:10000,'+lat+','+lon+')["amenity"="place_of_worship"]["religion"="muslim"];nwr(around:10000,'+lat+','+lon+')["building"="mosque"];);out center 50;';
   const fetchPrayer=async()=>{for(const base of ['https://api.aladhan.com/v1/timings','https://api.aladhan.com/v1/timingsByCity']){try{const url=base.includes('timingsByCity')?null:base+'?latitude='+lat+'&longitude='+lon+'&method='+method; if(!url)continue;const r=await fetch(url,{signal:AbortSignal.timeout(8500)});if(!r.ok)continue;const j=await r.json();if(j?.data?.timings)return j;}catch{}}throw Error('Prayer-time service unavailable')};
   const fetchMosques=async()=>{for(const endpoint of ['https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter']){try{const r=await fetch(endpoint,{method:'POST',body:new URLSearchParams({data:query}),signal:AbortSignal.timeout(6500)});if(r.ok)return await r.json()}catch{}}throw Error('Mosque directory unavailable')};
-  const results=await Promise.allSettled([fetchPrayer(),fetchMosques()]);
-  if(id!==requestId.current)return;
-  if(results[0].status==='fulfilled'&&results[0].value?.data?.timings)setTimes(results[0].value.data.timings);else setPrayerError('Prayer-time service is unavailable. Tap Retry to check again.');
-  if(results[1].status==='fulfilled')setPlaces((results[1].value?.elements||[]).map((e:any)=>({id:String(e.type)+String(e.id),name:e.tags?.name||e.tags?.['name:en']||'Mosque / prayer space',lat:e.lat??e.center?.lat,lon:e.lon??e.center?.lon})).filter((e:Place)=>Number.isFinite(e.lat)&&Number.isFinite(e.lon)).sort((a:Place,b:Place)=>(a.lat-lat)**2+(a.lon-lon)**2-(b.lat-lat)**2-(b.lon-lon)**2));
-  if(results[1].status==='rejected')setMosqueError('Mosque map service could not respond. Open Google Maps or retry.');
-  setStatus(results.every(r=>r.status==='fulfilled')?'':'Some live information could not load. Please retry.');setLoading(false);
+  // Independent requests: mosque lookup never delays prayer times.
+  fetchPrayer().then(j=>{
+   if(id!==requestId.current)return;
+   const entries=j?.data?.timings||{};
+   if(prayers.every(name=>typeof entries[name]==='string'&&entries[name].length>0)){setTimes(entries);setPrayerError('');}
+   else setPrayerError('Prayer response was incomplete. Please retry.');
+  }).catch(()=>{
+   if(id===requestId.current)setPrayerError('Could not fetch current prayer times. Retry or check your connection.');
+  });
+  fetchMosques().then(j=>{
+   if(id!==requestId.current)return;
+   const found=(j?.elements||[]).map((e:any)=>({
+    id:String(e.type)+String(e.id),name:e.tags?.name||e.tags?.['name:en']||'Mosque / prayer space',
+    lat:e.lat??e.center?.lat,lon:e.lon??e.center?.lon
+   })).filter((e:Place)=>Number.isFinite(e.lat)&&Number.isFinite(e.lon))
+     .sort((a:Place,b:Place)=>(a.lat-lat)**2+(a.lon-lon)**2-(b.lat-lat)**2-(b.lon-lon)**2);
+   setPlaces(found);if(found.length)setSelected(found[0]);setMosqueError(found.length?'':'No mapped mosques returned nearby. Use Google Maps to search a wider area.');
+  }).catch(()=>{
+   if(id===requestId.current)setMosqueError('Mosque directory temporarily unavailable. Try Google Maps or Retry.');
+  }).finally(()=>{
+   if(id===requestId.current){setLoading(false);setStatus('');}
+  });
+
  },()=>{setStatus('Location access was denied or timed out. Enable location permission in your browser and retry.');setLoading(false)},{timeout:10000,maximumAge:60000,enableHighAccuracy:false});
  };
  const focus=selected||point;
