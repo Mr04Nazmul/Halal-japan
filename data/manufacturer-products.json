@@ -112,12 +112,19 @@
         "カカオマス",
         "植物油脂",
         "全粉乳",
+        "ココアバター",
         "レシチン",
         "香料"
       ],
       "classification": "verification_required",
-      "reason": "No manufacturer halal certification confirmed; additive details not established",
-      "source": "https://www.meiji.co.jp/products/chocolate/04500.html"
+      "reason": "Lecithin identified by name; flavouring ingredients and exact origin unconfirmed; no halal certificate verified.",
+      "source": "https://www.meiji.co.jp/products/chocolate/04500.html",
+      "manufacturerLabelExact": "砂糖（外国製造）、カカオマス、植物油脂、全粉乳、ココアバター／レシチン、香料、（一部に乳成分・大豆を含む）",
+      "additiveEvidence": {
+        "emulsifier": "Label explicitly says lecithin (レシチン); soy allergen is listed, but exact source of this lecithin is not independently confirmed.",
+        "flavouring": "Label says 香料 but constituent materials and carriers are undisclosed on the public product page.",
+        "originVerified": false
+      }
     },
     {
       "name": "チョコレート効果 カカオ72％ 65g",
@@ -132,8 +139,19 @@
         "香料"
       ],
       "classification": "verification_required",
-      "reason": "Emulsifier/flavouring sources not confirmed",
-      "source": "https://www.meiji.co.jp/products/chocolate/4902777227771.html"
+      "reason": "Manufacturer ingredient label verified; precise emulsifier and flavouring sources not publicly disclosed; no halal certification verified.",
+      "source": "https://www.meiji.co.jp/products/chocolate/4902777227771.html",
+      "manufacturerLabelExact": "カカオマス（国内製造、外国製造）、砂糖、ココアパウダー、ココアバター／乳化剤、香料、（一部に乳成分・大豆を含む）",
+      "additiveEvidence": {
+        "emulsifier": "Label says only 乳化剤 (emulsifier); precise additive and source not specified. Soy allergen listed, not conclusive proof of emulsifier origin.",
+        "flavouring": "Label says only 香料, source and alcohol carrier details unavailable.",
+        "originVerified": false
+      }
     }
+  ],
+  "verificationNote": "Japanese law permits collective terms for emulsifiers and flavourings; a product listing alone cannot prove their precise origin. Never classify as certified halal without product-specific evidence.",
+  "supportingSources": [
+    "https://www.meiji.co.jp/hello-chocolate/column/109/",
+    "https://www.caa.go.jp/policies/policy/food_labeling/meeting_materials/assets/review_meeting_012_190416_0003.pdf"
   ]
 }
