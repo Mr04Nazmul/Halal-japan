@@ -15,11 +15,13 @@ jobs:
           python-version: "3.12"
       - name: Fetch 1200 unique Japanese product records
         run: python scripts/import-openfoodfacts-japan.py
+      - name: Screen available ingredient labels
+        run: python scripts/screen-ingredients.py
       - name: Commit dataset only if content changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/openfoodfacts-japan.json
+          git add data/openfoodfacts-japan.json data/ingredient-review.json
           if ! git diff --cached --quiet; then
             git commit -m "Refresh 1200+ Japanese products from Open Food Facts (unverified)"
             git push
