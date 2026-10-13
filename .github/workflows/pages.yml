@@ -28,6 +28,7 @@ jobs:
         run: |
           mkdir -p _site
           cp -a floot-source/dist/. _site/
+          cp seven-eleven-catalog.html _site/seven-eleven-catalog.html
           test -s _site/index.html
           test -d _site/assets
           echo "Floot React prepared as site root. Scanner source is unchanged."
