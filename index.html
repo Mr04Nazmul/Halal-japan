@@ -98,10 +98,29 @@ function halalAssessment(ingredients,labels=''){
   [/ブイヨン|コンソメ|スープストック|エキスパウダー|調味エキス|たん白加水分解物|蛋白加水分解物|加水分解たん白|\b(?:bouillon|stock powder|hydroly[sz]ed protein)\b/i,'Mixed extract or hydrolyzed protein — check source'],
   [/加工油脂|精製油脂|食用油脂|起泡剤|光沢剤|安定剤|増粘多糖類|\b(?:modified fats|glazing agent)\b/i,'Generic additive/fat — source details may be unavailable']
  ];
+ // Additional Japanese retail-food label vocabulary: broad candidate detection.
+ const convenienceFoodQuestions=[
+  [/調味料（アミノ酸等）|調味料\(アミノ酸等\)|うま味調味料|複合調味料|粉末調味料|シーズニング|シーズニングパウダー|魚介調味料|畜肉調味料/i,'Compound seasoning — inspect component ingredients'],
+  [/焼肉のたれ|照焼きソース|てりやきソース|デミグラスソース|ウスターソース|中濃ソース|とんかつソース|ドレッシング|マヨネーズ|カレーソース|ミートソース/i,'Mixed sauce — inspect ingredients and extracts'],
+  [/味付け肉|ハンバーグ|ミートボール|ソーセージ|ウインナー|サラミ|ベーコン風味|ハム風味|チャーシュー|焼豚|肉そぼろ|肉味噌/i,'Meat or meat-flavoured ingredient — confirm exact composition'],
+  [/魚醤|ナンプラー|オイスターソース|かつおエキス|魚介エキス|煮干しエキス|昆布エキス|かつおだし|だしの素/i,'Dashi/seafood extract — verify mixture ingredients'],
+  [/発酵エキス|酵母エキス|酵母抽出物|米発酵調味料|醸造酢|食酢|米酢|果実酢|発酵食品/i,'Fermented food or extract — check full formulation if needed'],
+  [/乳酸菌飲料|乳酸菌粉末|乳酸菌末|バター風味|チーズ風味|クリーム風味|チーズフード|発酵乳|脱脂粉乳|全粉乳/i,'Dairy/flavoured mixture — review enzymes and additives'],
+  [/マーガリン|ファットスプレッド|植物性クリーム|ホイップクリーム|コーヒーフレッシュ|クリーミングパウダー|バター代替品/i,'Fat spread or cream substitute — check emulsifiers'],
+  [/増粘剤|ゲル化剤|増粘安定剤|加工でん粉|加工澱粉|ペクチン|カラギナン|寒天|キサンタンガム|グァーガム|ローカストビーンガム/i,'Thickener or gelling agent — inspect origin and combined additives'],
+  [/着色料|赤色[0-9０-９]+号|黄色[0-9０-９]+号|青色[0-9０-９]+号|クチナシ色素|紅麹色素|アナトー色素|カラメル色素|ラック色素/i,'Colouring ingredient — inspect specific colorant'],
+  [/甘味料|アスパルテーム|スクラロース|アセスルファム[kＫ]|ステビア|ソルビトール|キシリトール|エリスリトール|還元水飴/i,'Sweetener — recorded for ingredient transparency'],
+  [/酸味料|クエン酸|乳酸|リンゴ酸|酢酸|リン酸|pH調整剤|ph調整剤|膨張剤|ベーキングパウダー|炭酸水素ナトリウム/i,'Acidity or raising agent — recorded for ingredient transparency'],
+  [/保存料|ソルビン酸|安息香酸|プロピオン酸|日持向上剤|酸化防止剤|ビタミンe|トコフェロール|エリソルビン酸/i,'Preservative or antioxidant — recorded for ingredient transparency'],
+  [/光沢剤|被膜剤|離型剤|製造用剤|加工助剤|消泡剤|乳化安定剤|香辛料抽出物|香料製剤/i,'Processing aid, coating or mixed additive — check formulation'],
+  [/粉末スープ|液体スープ|スープベース|たれ|つゆ|濃縮スープ|ラーメンスープ|中華スープ|チキンスープ|ビーフスープ/i,'Soup base — inspect extracts and sources'],
+  [/惣菜|弁当|おにぎり|サンドイッチ|菓子パン|調理パン|冷凍食品|レトルト食品|即席めん|カップめん/i,'Prepared-food label — needs complete ingredient breakdown']
+ ];
+ const convenienceQuestions=convenienceFoodQuestions.filter(([re])=>re.test(t)).map(([,reason])=>reason);
  const expandedHits=moreForbidden.filter(([re])=>re.test(t)).map(([,reason])=>reason);
  const expandedQuestions=moreUncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason);
  const hits=forbidden.filter(([re])=>re.test(t)).map(([,reason])=>reason).concat(expandedHits);
- const questions=uncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason).concat(expandedQuestions);
+ const questions=uncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason).concat(expandedQuestions,convenienceQuestions);
  let status='verify',reasons=[];
  if(hits.length){status='haram';reasons=hits.concat(questions)}
  else if(!t.trim()){reasons=['Ingredient list unavailable — cannot determine halal status']}
