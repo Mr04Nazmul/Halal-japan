@@ -77,8 +77,31 @@ function halalAssessment(ingredients,labels=''){
   [/香料|flavou?rings?|エキス|extract|動物性油脂|animal fat|ショートニング|shortening/i,'Flavouring/extract or fat source needs verification'],
   [/アルコール|ethanol|alcohol|酒精/i,'Alcohol source, amount and use need verification']
  ];
- const hits=forbidden.filter(([re])=>re.test(t)).map(([,reason])=>reason);
- const questions=uncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason);
+ // Expanded Japanese ingredient dictionary (screening, not certification).
+ // Match explicit pork/blood sources separately from source-dependent additives.
+ const moreForbidden=[
+  [/ポークエキス|豚エキス|豚骨|とんこつ|トンコツ|豚骨スープ|豚背脂|豚油|豚エキスパウダー|豚ゼラチン|豚コラーゲン|豚由来ゼラチン|豚肉エキス|豚脂肪|ポークパウダー|ポークブイヨン|ポーク調味料|豚ひき肉|豚挽肉|豚の血|豚血|豚血液/i,'Explicit pork or pork-derived extract'],
+  [/\b(?:pork extract|pork broth|pork stock|pork fat|pork gelatin|porcine gelatin|pork collagen|pig blood|pork bone|pork powder)\b/i,'Explicit pork-derived ingredient'],
+  [/血液粉末|血粉|ブラッドソーセージ|\b(?:blood meal|blood sausage)\b/i,'Blood ingredient — verify animal source and product context']
+ ];
+ const moreUncertain=[
+  [/ビーフエキス|牛肉エキス|牛脂|牛由来|牛骨|ビーフブイヨン|牛ゼラチン|牛コラーゲン|チキンエキス|鶏肉エキス|鶏油|鶏ガラ|チキンブイヨン|ミートエキス|肉エキス|肉類エキス|畜肉エキス|肉骨粉|動物エキス/i,'Meat/animal extract — species and slaughter source need checking'],
+  [/魚ゼラチン|フィッシュゼラチン|魚由来コラーゲン|海洋性コラーゲン|マリンコラーゲン/i,'Fish-derived gelatin or collagen — verify full composition'],
+  [/ゼラチン加水分解物|加水分解コラーゲン|コラーゲンペプチド|コラーゲン蛋白|\b(?:hydroly[sz]ed collagen|collagen peptides)\b/i,'Gelatin/collagen derivative — origin needs checking'],
+  [/脂肪酸グリセリンエステル|グリセリン脂肪酸エステル|ショ糖脂肪酸エステル|ソルビタン脂肪酸エステル|ポリグリセリン脂肪酸エステル|プロピレングリコール脂肪酸エステル|モノグリセリド|ジグリセリド|\be\s?4(?:71|72[a-f]?|73|74|75|76|77|78|79)\b/i,'Fatty-acid emulsifier — plant/animal origin needs checking'],
+  [/ステアリン酸|ステアリン酸マグネシウム|ステアリン酸カルシウム|パルミチン酸|オレイン酸|脂肪酸|グリセロール|\b(?:stearic acid|magnesium stearate|calcium stearate|palmitic acid|oleic acid|fatty acids)\b/i,'Fatty acid or salt — source may vary'],
+  [/酵素処理|プロテアーゼ|リパーゼ|アミラーゼ|ペプシン|キモシン|パンクレアチン|トリプシン|\b(?:lipase|protease|pepsin|chymosin|pancreatin|trypsin)\b/i,'Enzyme — processing origin may need checking'],
+  [/システイン|L[－-]?システイン|\bl[ -]?cysteine\b|シェラック|ラック色素|コチニール|カルミン|カルミン酸|\be\s?120\b|\be\s?904\b/i,'Cysteine or insect-derived additive — verify suitability'],
+  [/グミベース|ソフトカプセル|カプセル皮膜|カプセル剤|\b(?:softgel|capsule shell)\b/i,'Capsule/gummy base may use gelatin'],
+  [/発酵調味料|醸造調味料|酒粕|清酒|洋酒|リキュール|ラムエッセンス|みりん風調味料|\b(?:liqueur|rice wine|cooking wine)\b/i,'Alcohol-containing seasoning or flavour — check formulation'],
+  [/乳清|ホエイ|ホエーパウダー|カゼイン|カゼイネート|チーズパウダー|チーズ酵素|\b(?:whey|casein|caseinate)\b/i,'Dairy derivative — verify enzymes if applicable'],
+  [/ブイヨン|コンソメ|スープストック|エキスパウダー|調味エキス|たん白加水分解物|蛋白加水分解物|加水分解たん白|\b(?:bouillon|stock powder|hydroly[sz]ed protein)\b/i,'Mixed extract or hydrolyzed protein — check source'],
+  [/加工油脂|精製油脂|食用油脂|起泡剤|光沢剤|安定剤|増粘多糖類|\b(?:modified fats|glazing agent)\b/i,'Generic additive/fat — source details may be unavailable']
+ ];
+ const expandedHits=moreForbidden.filter(([re])=>re.test(t)).map(([,reason])=>reason);
+ const expandedQuestions=moreUncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason);
+ const hits=forbidden.filter(([re])=>re.test(t)).map(([,reason])=>reason).concat(expandedHits);
+ const questions=uncertain.filter(([re])=>re.test(t)).map(([,reason])=>reason).concat(expandedQuestions);
  let status='verify',reasons=[];
  if(hits.length){status='haram';reasons=hits.concat(questions)}
  else if(!t.trim()){reasons=['Ingredient list unavailable — cannot determine halal status']}
