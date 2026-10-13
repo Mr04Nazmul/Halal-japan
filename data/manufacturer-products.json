@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "description": "Manufacturer-published Japanese product ingredient highlights; NOT complete ingredient transcriptions or halal certifications. Manufacturer recipes can change. Consult package labels.",
+  "reviewedOn": "2026-10-13",
+  "records": [
+    {
+      "name": "カップヌードル",
+      "brand": "日清食品",
+      "jan": "49698626",
+      "ingredientHighlights": [
+        "チキンエキス",
+        "ポークエキス",
+        "ポーク調味料",
+        "味付豚肉",
+        "乳化剤"
+      ],
+      "classification": "haram_flag",
+      "reason": "Explicit pork meat/extract",
+      "source": "https://www.nissin.com/jp/product/items/13462/"
+    },
+    {
+      "name": "カップヌードル 辛麺",
+      "brand": "日清食品",
+      "jan": "4902105267837",
+      "ingredientHighlights": [
+        "豚脂",
+        "ポーク調味料",
+        "味付豚ミンチ",
+        "乳化剤"
+      ],
+      "classification": "haram_flag",
+      "reason": "Explicit pork fat/meat",
+      "source": "https://www.nissin.com/jp/product/items/12328/"
+    },
+    {
+      "name": "カップヌードル シーフードヌードル",
+      "brand": "日清食品",
+      "jan": "49698633",
+      "ingredientHighlights": [
+        "チキン調味料",
+        "ポーク調味料",
+        "発酵調味料",
+        "乳化剤",
+        "ゼラチン（アレルゲン表示）"
+      ],
+      "classification": "haram_flag",
+      "reason": "Explicit pork seasoning",
+      "source": "https://www.nissin.com/jp/product/items/13464/"
+    },
+    {
+      "name": "あっさりおいしいカップヌードル シーフード",
+      "brand": "日清食品",
+      "jan": "4902105252505",
+      "ingredientHighlights": [
+        "ポーク調味料",
+        "チキン調味料",
+        "発酵調味料",
+        "乳化剤",
+        "ゼラチン（アレルゲン表示）"
+      ],
+      "classification": "haram_flag",
+      "reason": "Explicit pork seasoning",
+      "source": "https://www.nissin.com/jp/product/items/13797/"
+    },
+    {
+      "name": "カップヌードル シーフードヌードル ぶっこみ飯",
+      "brand": "日清食品",
+      "jan": "4902105940433",
+      "ingredientHighlights": [
+        "ポーク調味料",
+        "豚脂",
+        "グリセリン脂肪酸エステル",
+        "ゼラチン（アレルゲン表示）"
+      ],
+      "classification": "haram_flag",
+      "reason": "Explicit pork fat/seasoning",
+      "source": "https://www.nissin.com/jp/product/items/13645/"
+    },
+    {
+      "name": "２３０ｇ バーモントカレー 中辛",
+      "brand": "ハウス食品",
+      "jan": null,
+      "ingredientHighlights": [
+        "牛脂豚脂混合油",
+        "ポークエキス",
+        "乳化剤",
+        "香料"
+      ],
+      "classification": "haram_flag",
+      "reason": "Mixed pork/beef fat and pork extract",
+      "source": "https://housefoods.jp/products/catalog/cd_1%2C091399.html"
+    },
+    {
+      "name": "特定原材料8品目不使用 はじめて食べるバーモントカレー",
+      "brand": "ハウス食品",
+      "jan": null,
+      "ingredientHighlights": [
+        "ポークエキス",
+        "豚コラーゲン",
+        "乳化剤"
+      ],
+      "classification": "haram_flag",
+      "reason": "Explicit pork extract and pork collagen",
+      "source": "https://housefoods.jp/products/catalog/cd_1%2C091850%2Ccurry%2Croux%2Ctg_v.html"
+    },
+    {
+      "name": "明治ブラックチョコレート 50g",
+      "brand": "明治",
+      "jan": null,
+      "ingredientHighlights": [
+        "砂糖",
+        "カカオマス",
+        "植物油脂",
+        "全粉乳",
+        "レシチン",
+        "香料"
+      ],
+      "classification": "verification_required",
+      "reason": "No manufacturer halal certification confirmed; additive details not established",
+      "source": "https://www.meiji.co.jp/products/chocolate/04500.html"
+    },
+    {
+      "name": "チョコレート効果 カカオ72％ 65g",
+      "brand": "明治",
+      "jan": "4902777227771",
+      "ingredientHighlights": [
+        "カカオマス",
+        "砂糖",
+        "ココアパウダー",
+        "ココアバター",
+        "乳化剤",
+        "香料"
+      ],
+      "classification": "verification_required",
+      "reason": "Emulsifier/flavouring sources not confirmed",
+      "source": "https://www.meiji.co.jp/products/chocolate/4902777227771.html"
+    }
+  ]
+}
