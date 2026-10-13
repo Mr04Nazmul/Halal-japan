@@ -41,3 +41,25 @@
 .photoUpload{background:#b9995e;color:#092418}
 @media(min-width:800px){.shell{max-width:760px}.nav{max-width:760px}}
 @media(max-width:350px){.quickLinks button strong{font-size:10px}.shell{padding-left:12px;padding-right:12px}.hero{padding:24px 18px}}
+
+
+/* Product details, favorites and profile: inspired by reference information hierarchy, original styling */
+.detailCard{margin-top:20px;background:#10251f;border:1px solid #677653;border-radius:22px;padding:16px;box-shadow:0 14px 40px #0005}
+.detailPhoto{height:195px;display:flex;align-items:center;justify-content:center;background:#f6f8f3;border-radius:16px;margin-bottom:12px;color:#37694e}
+.detailPhoto img{max-height:180px;max-width:90%;object-fit:contain}
+.statusLarge{font-size:23px;font-weight:850;display:flex;align-items:center;justify-content:center;gap:12px;color:#75e2a0;padding:15px}
+.statusLarge[data-verdict="haram_ingredient"]{color:#ff7d85}
+.statusLarge[data-verdict="needs_review"],.statusLarge[data-verdict="unknown"]{color:#efca85}
+.statusDot{height:23px;width:23px;border:4px solid currentColor;border-radius:50%;box-shadow:inset 0 0 0 3px #10251f;background:currentColor}
+.detailActions{display:flex;justify-content:center;margin:0 0 13px}
+.detailActions button,.profileButton{display:flex;justify-content:center;align-items:center;gap:9px;background:#244c37;color:#e5f9e5;border:1px solid #7f8f66;border-radius:13px;padding:11px 15px;font-weight:700;cursor:pointer}
+.detailRow{background:#182f27;border:1px solid #3c5947;border-radius:14px;margin:8px 0;padding:14px 15px;display:flex;flex-direction:column;gap:9px;min-width:0}
+.detailRow strong{font-size:14px;color:#fae3ae}
+.detailRow span{font-size:13px;line-height:1.6;color:#d4dfd5;overflow-wrap:anywhere}
+.favGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px}
+.favCard{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0;border:1px solid #597b5b;border-radius:16px;background:#172e25;color:#e3eee2;padding:12px;text-align:center;cursor:pointer}
+.favCard img{width:100%;height:140px;object-fit:contain;background:white;border-radius:10px}
+.favCard strong{font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.favCard span{color:#a3e6af;font-weight:800;font-size:11px}
+.profileButton{width:100%;margin-top:16px}
+@media(max-width:390px){.detailPhoto{height:160px}.favCard img{height:110px}.statusLarge{font-size:19px}}
