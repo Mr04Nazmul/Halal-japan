@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "description": "Manufacturer-published Japanese product ingredient highlights; NOT complete ingredient transcriptions or halal certifications. Manufacturer recipes can change. Consult package labels.",
-  "reviewedOn": "2026-10-13",
+  "description": "Source-linked Japanese manufacturer product records with ingredient highlights, NOT bulk copied full ingredients. Open source URL for original complete label. No halal certificate implied.",
+  "reviewedOn": "2026-10-14",
   "records": [
     {
       "name": "カップヌードル",
@@ -16,7 +16,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Explicit pork meat/extract",
-      "source": "https://www.nissin.com/jp/product/items/13462/"
+      "source": "https://www.nissin.com/jp/product/items/13462/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "カップヌードル 辛麺",
@@ -30,7 +33,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Explicit pork fat/meat",
-      "source": "https://www.nissin.com/jp/product/items/12328/"
+      "source": "https://www.nissin.com/jp/product/items/12328/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "カップヌードル シーフードヌードル",
@@ -45,7 +51,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Explicit pork seasoning",
-      "source": "https://www.nissin.com/jp/product/items/13464/"
+      "source": "https://www.nissin.com/jp/product/items/13464/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "あっさりおいしいカップヌードル シーフード",
@@ -60,7 +69,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Explicit pork seasoning",
-      "source": "https://www.nissin.com/jp/product/items/13797/"
+      "source": "https://www.nissin.com/jp/product/items/13797/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "カップヌードル シーフードヌードル ぶっこみ飯",
@@ -74,7 +86,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Explicit pork fat/seasoning",
-      "source": "https://www.nissin.com/jp/product/items/13645/"
+      "source": "https://www.nissin.com/jp/product/items/13645/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "２３０ｇ バーモントカレー 中辛",
@@ -88,7 +103,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Mixed pork/beef fat and pork extract",
-      "source": "https://housefoods.jp/products/catalog/cd_1%2C091399.html"
+      "source": "https://housefoods.jp/products/catalog/cd_1%2C091399.html",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "特定原材料8品目不使用 はじめて食べるバーモントカレー",
@@ -101,7 +119,10 @@
       ],
       "classification": "haram_flag",
       "reason": "Explicit pork extract and pork collagen",
-      "source": "https://housefoods.jp/products/catalog/cd_1%2C091850%2Ccurry%2Croux%2Ctg_v.html"
+      "source": "https://housefoods.jp/products/catalog/cd_1%2C091850%2Ccurry%2Croux%2Ctg_v.html",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     },
     {
       "name": "明治ブラックチョコレート 50g",
@@ -124,7 +145,10 @@
         "emulsifier": "Label explicitly says lecithin (レシチン); soy allergen is listed, but exact source of this lecithin is not independently confirmed.",
         "flavouring": "Label says 香料 but constituent materials and carriers are undisclosed on the public product page.",
         "originVerified": false
-      }
+      },
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "ingredient_label_available_additive_origin_not_fully_confirmed"
     },
     {
       "name": "チョコレート効果 カカオ72％ 65g",
@@ -146,7 +170,83 @@
         "emulsifier": "Label says only 乳化剤 (emulsifier); precise additive and source not specified. Soy allergen listed, not conclusive proof of emulsifier origin.",
         "flavouring": "Label says only 香料, source and alcohol carrier details unavailable.",
         "originVerified": false
-      }
+      },
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verificationStatus": "ingredient_label_available_additive_origin_not_fully_confirmed"
+    },
+    {
+      "name": "カップヌードル カレー",
+      "brand": "日清食品",
+      "jan": "49698640",
+      "ingredientHighlights": [
+        "ポークエキス",
+        "豚脂",
+        "ポーク調味料",
+        "豚ミンチ加工品",
+        "味付豚肉"
+      ],
+      "classification": "haram_flag",
+      "reason": "Manufacturer lists explicit pork ingredients.",
+      "source": "https://www.nissin.com/jp/product/items/13463/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verifiedHalalCertificate": false,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
+    },
+    {
+      "name": "カップヌードル チリトマトヌードル",
+      "brand": "日清食品",
+      "jan": "4902105242414",
+      "ingredientHighlights": [
+        "ポークエキス",
+        "豚脂",
+        "ポーク調味料",
+        "豚ミンチ加工品"
+      ],
+      "classification": "haram_flag",
+      "reason": "Manufacturer lists pork extract, pork fat and pork mince.",
+      "source": "https://www.nissin.com/jp/product/items/13465/",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verifiedHalalCertificate": false,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
+    },
+    {
+      "name": "２３０ｇ バーモントカレー 甘口",
+      "brand": "ハウス食品",
+      "jan": null,
+      "ingredientHighlights": [
+        "牛脂豚脂混合油",
+        "ポークエキス",
+        "乳化剤",
+        "香料"
+      ],
+      "classification": "haram_flag",
+      "reason": "Manufacturer lists mixed beef/pork fat and pork extract.",
+      "source": "https://housefoods.jp/products/catalog/cd_1%2C091398.html",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verifiedHalalCertificate": false,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
+    },
+    {
+      "name": "２３０ｇ バーモントカレー 辛口",
+      "brand": "ハウス食品",
+      "jan": null,
+      "ingredientHighlights": [
+        "牛脂豚脂混合油",
+        "ポークエキス",
+        "乳化剤",
+        "香料"
+      ],
+      "classification": "haram_flag",
+      "reason": "Manufacturer lists mixed beef/pork fat and pork extract.",
+      "source": "https://housefoods.jp/products/catalog/cd_1%2C091400%2Ccurry%2Croux%2Cvmt.html",
+      "sourceType": "official_manufacturer_product_page",
+      "fullIngredientsPublishedAtSource": true,
+      "verifiedHalalCertificate": false,
+      "verificationStatus": "explicit_pork_ingredient_in_manufacturer_label"
     }
   ],
   "verificationNote": "Japanese law permits collective terms for emulsifiers and flavourings; a product listing alone cannot prove their precise origin. Never classify as certified halal without product-specific evidence.",
