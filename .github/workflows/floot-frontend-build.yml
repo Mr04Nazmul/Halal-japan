@@ -1,7 +1,7 @@
 name: Build Floot React Frontend
 on:
   push:
-    branches: [main, review/floot-scanner-preserved-build-fix, review/product-layout-favorites, fix/4902179023964-source-verification, review/sangaria-manufacturer-drinks-2026, review/verified-manufacturer-batch-oct13, review/japan-food-noodles-batch, review/strict-ingredient-research-oct13, review/data-coverage-multisource-oct13, fix/verdict-consistency-oct13, fix/strict-avoid-label-oct13, fix/food-verdict-engine-oct13]
+    branches: [main, review/floot-scanner-preserved-build-fix, review/product-layout-favorites, fix/4902179023964-source-verification, review/sangaria-manufacturer-drinks-2026, review/verified-manufacturer-batch-oct13, review/japan-food-noodles-batch, review/strict-ingredient-research-oct13, review/data-coverage-multisource-oct13, fix/verdict-consistency-oct13, fix/strict-avoid-label-oct13, fix/food-verdict-engine-oct13, feature/additive-product-discovery-oct13]
     paths:
       - 'floot-source/**'
       - '.github/workflows/floot-frontend-build.yml'
