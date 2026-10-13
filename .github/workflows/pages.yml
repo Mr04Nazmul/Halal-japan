@@ -31,9 +31,6 @@ jobs:
           cp seven-eleven-catalog.html _site/seven-eleven-catalog.html
           cp halal-restaurants.html _site/halal-restaurants.html
           cp restaurant-data.js _site/restaurant-data.js
-          mkdir -p _site/data
-          cp data/manufacturer-products.json _site/data/manufacturer-products.json
-          if test -f data/auto-products.json; then cp data/auto-products.json _site/data/auto-products.json; fi
           test -s _site/halal-restaurants.html
           test -s _site/restaurant-data.js
           test -s _site/index.html
