@@ -63,5 +63,3 @@
 .favCard span{color:#a3e6af;font-weight:800;font-size:11px}
 .profileButton{width:100%;margin-top:16px}
 @media(max-width:390px){.detailPhoto{height:160px}.favCard img{height:110px}.statusLarge{font-size:19px}}
-
-.statusLarge[data-verdict="avoid"]{color:#ff7d85}
