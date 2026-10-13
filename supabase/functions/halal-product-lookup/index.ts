@@ -9,6 +9,7 @@ import './store-parser.js';
 import './gyomu.js';
 import {GYOMU_RECORDS} from './gyomu-records.js';
 import {STORE_RECORDS,STORE_PAGES} from './store-records.js';
+import {FAMILY_SNACK_RECORDS} from './familymart-snack-records.js';
 /* Deployed configuration remains on the backend; no Yahoo Client ID is shipped to browsers. */
 const appid = Deno.env.get('HALAL_YAHOO_CLIENT_ID') || '__YAHOO_PRIVATE_CONFIG__';
 const same=(a,b)=>/^\d{8,14}$/.test(String(a))&&String(a).padStart(14,'0')===String(b).padStart(14,'0');
@@ -48,7 +49,7 @@ Deno.serve(async req=>{
    const {document}=parseHTML(await r.text());const checkedDate=new Date(Date.now()+9*60*60*1000).toISOString().slice(0,10);const products=p.store==='gyomu'?globalThis.HALAL_GYOMU_PARSER(document,p.page,checkedDate,GYOMU_RECORDS):globalThis.HALAL_STORE_PARSER(document,p,checkedDate);if(!products.length)throw Error('Empty catalogue');livePages++;return products;
   }catch{savedPages++;return p.store==='gyomu'?GYOMU_RECORDS.filter(x=>x._catalogPage===p.page):STORE_RECORDS.filter(x=>x._store===p.store&&x._category===p.category)}}));
   const text=q.toLowerCase(),aliases={bento:'bento',onigiri:'onigiri',sandwich:'sandwich',noodles:'noodles',pasta:'pasta',fried:'fried',halal:'halal'};
-  const products=Array.from(new Map(batches.flat().map(p=>[p._catalogId,p])).values()).filter(p=>text==='all'||p._category===aliases[text]||(p.product_name+' '+p.brands+' '+(p._searchTerms||'')).toLowerCase().includes(text));
+  const products=Array.from(new Map([...batches.flat(),...FAMILY_SNACK_RECORDS.filter(p=>store==='all'||store==='family')].map(p=>[p._catalogId,p])).values()).filter(p=>text==='all'||p._category===aliases[text]||(p.product_name+' '+p.brands+' '+(p._searchTerms||'')).toLowerCase().includes(text));
   result={products,source:'Official store catalogues',livePages,savedPages,halalVerified:false,ingredientsVerified:false};
  }else if(source==='suntory'){
   if(!code.startsWith('490177'))return reply({products:[],source:'Suntory'});
