@@ -5,6 +5,7 @@ on:
     - cron: "23 3 * * 1"
   push:
     paths:
+      - "scripts/import_off_japan_dump.py"
       - "scripts/bulk_off_japan_10k.py"
       - ".github/workflows/bulk-japan-products.yml"
 permissions:
@@ -15,7 +16,7 @@ concurrency:
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,11 +24,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Collect up to 10000 distinct Japan-tagged products
+      - name: Stream official bulk export to collect 10000 Japan-tagged products
         env:
           TARGET_PRODUCTS: "10000"
-          MAX_PAGES_PER_RUN: "120"
-        run: python scripts/bulk_off_japan_10k.py
+        run: python scripts/import_off_japan_dump.py
       - name: Screen available ingredient text when dataset exists
         run: |
           if [ -f data/openfoodfacts-japan.json ]; then
