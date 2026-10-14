@@ -3,26 +3,47 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "23 3 * * 1"
+  push:
+    paths:
+      - "scripts/bulk_off_japan_10k.py"
+      - ".github/workflows/bulk-japan-products.yml"
 permissions:
   contents: write
+concurrency:
+  group: bulk-japan-products
+  cancel-in-progress: false
 jobs:
   import:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Fetch 1200 unique Japanese product records
-        run: python scripts/import-openfoodfacts-japan.py
-      - name: Screen available ingredient labels
-        run: python scripts/screen-ingredients.py
-      - name: Commit dataset only if content changed
+      - name: Collect up to 10000 distinct Japan-tagged products
+        env:
+          TARGET_PRODUCTS: "10000"
+          MAX_PAGES_PER_RUN: "120"
+        run: python scripts/bulk_off_japan_10k.py
+      - name: Screen available ingredient text when dataset exists
+        run: |
+          if [ -f data/openfoodfacts-japan.json ]; then
+            python scripts/screen-ingredients.py
+          else
+            echo "Source API unavailable and no prior data; skipping screening"
+          fi
+      - name: Commit safe research data and resume cursor
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/openfoodfacts-japan.json data/ingredient-review.json
+          for file in data/openfoodfacts-japan.json data/off-japan-import-state.json data/ingredient-review.json; do
+            if [ -f "$file" ]; then git add "$file"; fi
+          done
           if ! git diff --cached --quiet; then
-            git commit -m "Refresh 1200+ Japanese products from Open Food Facts (unverified)"
-            git push
+            git commit -m "data: bulk Japan product research (unverified; ODbL)"
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
