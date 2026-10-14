@@ -1,0 +1,43 @@
+/* Test the new standalone map/prayer page and its language/geometry contracts. */
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const js=fs.readFileSync('places-prayer.js','utf8');
+const page=fs.readFileSync('places-prayer.html','utf8');
+const main=fs.readFileSync('index.html','utf8');
+const research=JSON.parse(fs.readFileSync('data/off-japan-research.json','utf8'));
+new vm.Script(js,{filename:'places-prayer.js'});
+assert.match(page,/leaflet@1\.9\.4/);
+assert.match(page,/adhan@4\.4\.4/);
+assert.match(main,/href="\.\/places-prayer\.html"/);
+assert.match(main,/product-data\.js\?v=20261014-ingredients-2/);
+assert.match(js,/overpass-api\.de\/api\/interpreter/);
+assert.match(js,/\["diet:halal"~"\^\(yes\|only\)\$"\]/);
+assert.match(js,/navigator\.geolocation\.getCurrentPosition/);
+const dict=js.match(/const messages=([\s\S]*?);\n const state=/);
+assert.ok(dict,'missing translated messages');
+const dictionary=vm.runInNewContext('('+dict[1]+')');
+const langs=['en','bn','ja'],required=Object.keys(dictionary.en);
+assert.ok(required.length>35,'not enough translation keys');
+for(const code of langs){
+ assert.deepEqual(Object.keys(dictionary[code]).sort(),required.slice().sort(),code+' missing translations');
+ for(const key of required)assert.ok(dictionary[code][key].trim().length>0,code+' blank '+key);
+}
+const match=js.match(/function qiblaBearing\(lat,lon\)\{[\s\S]*?\n \}/);
+assert.ok(match,'qibla bearing function');
+const qibla=vm.runInNewContext('('+match[0]+')');
+assert.ok(qibla(34.6901,135.1955)>270&&qibla(34.6901,135.1955)<310,'Kobe qibla west-north-west');
+assert.ok(qibla(21.4225,39.8262)<1,'Kaaba self direction convention');
+const distanceMatch=js.match(/const distance=\(a,b,c,d\)=>\{[\s\S]*?\};/);
+assert.ok(distanceMatch);
+const distance=vm.runInNewContext(distanceMatch[0]+'distance;');
+assert.equal(distance(34.69,135.19,34.69,135.19),0);
+assert.ok(distance(34.69,135.19,35.68,139.65)>400);
+assert.equal(research.license,'ODbL-1.0');
+assert.ok(research.records.length>=180);
+assert.ok(research.records.filter(p=>p.ingredients_text&&p.ingredients_text.trim()).length>=35);
+const prod=fs.readFileSync('product-data.js','utf8');
+new vm.Script(prod,{filename:'product-data.js'});
+assert.match(prod,/offJapanProducts/);
+assert.match(prod,/supabaseBarcodeProduct/);
+console.log('PASS: Japanese product feed, trilingual map UI, location math, prayer library integration references and JS syntax');
