@@ -53,6 +53,27 @@ img,video,canvas,iframe{max-width:100%;height:auto}
  .home-tile{padding:11px 7px;font-size:12px}
 }
 </style>
+<style id="mobileViewportRepairV2">
+/* Constrain every layout to the actual iOS visual viewport, not 100vw plus padding. */
+:root{--safe-page-gutter:12px}
+html,body{margin:0!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow-x:hidden!important}
+body{position:relative}
+*,*::before,*::after{box-sizing:border-box}
+.wrap{width:100%!important;max-width:520px!important;min-width:0!important;margin-left:auto!important;margin-right:auto!important;padding-left:var(--safe-page-gutter)!important;padding-right:var(--safe-page-gutter)!important}
+.wrap,.wrap > *,main,section,header,nav,.hero,.card,.top,.settings-card,.home-tiles,.home-search,.actions{min-width:0;max-width:100%;box-sizing:border-box}
+.top{margin-left:calc(-1 * var(--safe-page-gutter))!important;margin-right:calc(-1 * var(--safe-page-gutter))!important;width:calc(100% + 2 * var(--safe-page-gutter))!important;padding-left:var(--safe-page-gutter)!important;padding-right:var(--safe-page-gutter)!important;gap:8px!important}
+.top .brand{flex:1 1 auto!important;min-width:0!important;max-width:calc(100% - 94px)!important}
+.top .brand > *{min-width:0}
+.top .lang,.top button,.top select{flex:0 1 auto;min-width:0;max-width:92px}
+.hero,.card,.settings-card,.home-search,.result{width:100%;max-width:100%;margin-left:0;margin-right:0}
+.hero h1{font-size:clamp(27px,8vw,39px)!important;line-height:1.08;overflow-wrap:anywhere}
+.home-tiles{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.home-tiles > *, .actions > *{min-width:0;max-width:100%}
+.bottom-nav{left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:100%!important;max-width:520px!important;min-width:0!important;padding-left:max(8px,env(safe-area-inset-left))!important;padding-right:max(8px,env(safe-area-inset-right))!important}
+.bottom-nav > button{flex:1 1 0!important;min-width:0!important;max-width:none!important;padding-left:2px!important;padding-right:2px!important}
+img,svg,video,canvas,iframe{max-width:100%}
+@media(max-width:360px){:root{--safe-page-gutter:10px}.hero h1{font-size:27px!important}.top .brand{font-size:13px!important}}
+</style>
 </head>
 <body>
 <div id="splashScreen" role="dialog" aria-label="Welcome to Japan Halal Checker"><div class="splash-content"><div class="splash-crescent">☪</div><svg viewBox="0 0 300 140" class="mosque" aria-hidden="true"><g fill="#fff9cb"><path d="M76 140V78C76 40 128 32 150 8c22 24 74 32 74 70v62z"/><path d="M42 140V48h15v92M243 140V48h15v92M34 48l16-29 15 29M235 48l16-29 15 29"/></g><g fill="#065a35"><path d="M127 140v-40q23-40 46 0v40zM91 140v-35q10-20 20 0v35zM188 140v-35q10-20 20 0v35z"/></g></svg><h1>Japan<br>Halal Checker</h1><p>Scan • Check • Eat Safe<br><small>安心して食べよう</small></p><svg viewBox="0 0 400 160" class="fuji" aria-hidden="true"><path fill="#296dad" d="M0 160L200 5l200 155z"/><path fill="#f1faff" d="M200 5l-63 50 32-8 21 12 17-19 25 10 23-1z"/><path fill="#104973" d="M0 150l105-35 50 45H0m400-8l-80-38-85 46h165"/></svg><p class="splash-footer">For a Halal &amp; Healthy Life in Japan</p><button id="enterApp" class="btn">Get Started →</button></div></div><div class="wrap"><div id="languageNotice" class="notice" role="status" hidden></div>
