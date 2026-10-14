@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 /** JHC ingredient research discovery and review queue.
  * Server-only credentials. Search results are leads, never ingredient evidence.
  * Requires GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_ENGINE_ID, YAHOO_CLIENT_ID,
@@ -9,6 +10,11 @@ const clean=x=>String(x||'').trim().slice(0,180);
 const allowedUrl=s=>{try{const u=new URL(s);return u.protocol==='https:'&&!u.username&&!u.password&&!/^(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(u.hostname)}catch{return false}};
 async function getJSON(url){const r=await fetch(url,{signal:AbortSignal.timeout(9000)});if(!r.ok)throw Error('Provider responded '+r.status);return r.json()}
 function cors(req,res){const origin=req.headers.origin;if(origin&&allowedOrigins.includes(origin)){res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin')}res.setHeader('Access-Control-Allow-Headers','Content-Type, X-Research-Token');res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');res.setHeader('Cache-Control','no-store')}
+function safeTokenMatch(provided,secret){
+ if(typeof provided!=='string'||typeof secret!=='string'||!secret)return false;
+ const a=Buffer.from(provided),b=Buffer.from(secret);
+ return a.length===b.length&&timingSafeEqual(a,b);
+}
 const compare=(a,b)=>String(a).padStart(14,'0')===String(b).padStart(14,'0');
 async function discover(query,jan){
  const results=[],errors=[];
@@ -32,11 +38,13 @@ async function queue(items){
  if(!r.ok)throw Error('Database queue rejected: '+r.status);return records.length;
 }
 export default async function handler(req,res){
- cors(req,res);if(req.method==='OPTIONS')return res.status(204).end();
+ cors(req,res);const requestOrigin=req.headers.origin;
+ if(requestOrigin&&!allowedOrigins.includes(requestOrigin))return res.status(403).json({error:'Origin not allowed'});
+ if(req.method==='OPTIONS')return res.status(204).end();
  if(!['GET','POST'].includes(req.method))return res.status(405).json({error:'Method not allowed'});
  // Search and queue are admin-only to prevent unauthenticated paid-API exhaustion.
  const token=process.env.RESEARCH_ADMIN_TOKEN;
- if(!token||req.headers['x-research-token']!==token)return res.status(401).json({error:'Research authorization required'});
+ if(!safeTokenMatch(req.headers['x-research-token'],token))return res.status(401).json({error:'Research authorization required'});
  const query=clean(req.method==='POST'?req.body?.query:req.query?.query);
  const jan=clean(req.method==='POST'?req.body?.jan_code:req.query?.jan_code);
  if(!(janValid(jan)||query.length>=3)||(!jan&&!query)||query.length>120)return res.status(400).json({error:'Provide valid JAN or product query (3+ chars)'});
