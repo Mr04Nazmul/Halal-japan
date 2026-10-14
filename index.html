@@ -363,8 +363,25 @@ $('torchBtn').onclick=async()=>{
 $('stopBtn').onclick=stopScanner;
 </script>
 <script>
+// Retire legacy offline shell: old service-worker caches may keep serving removed panels.
 if ("serviceWorker" in navigator && location.protocol === "https:") {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  window.addEventListener("load", async () => {
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        if (registration.scope.startsWith(new URL("./", location.href).href)) await registration.unregister();
+      }
+      if ("caches" in window) {
+        for (const key of await caches.keys()) {
+          if (key.startsWith("japan-halal-checker-shell-")) await caches.delete(key);
+        }
+      }
+      if (navigator.serviceWorker.controller && !sessionStorage.getItem("jhc-clean-cache-reloaded")) {
+        sessionStorage.setItem("jhc-clean-cache-reloaded", "1");
+        location.reload();
+      }
+    } catch (error) { console.warn("Legacy cache cleanup:", error); }
+  });
 }
 </script>
 <script id="premiumLogic">
