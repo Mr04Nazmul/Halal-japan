@@ -1,7 +1,7 @@
 /* Exact-barcode lookup only. Retail metadata never supplies a fabricated ingredient verdict. */
 let activeProduct=null,ingredientEpoch=0,ocrWorker=null,lastLookup='';
 const FOOD_FIELDS='code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url,labels_tags,lang';
-async function readJson(url,timeout=10000){const c=new AbortController(),timer=setTimeout(()=>c.abort(),timeout);try{const u=new URL(url,location.origin),headers=(window.HALAL_API_PUBLIC_KEY&&u.origin===window.HALAL_API_BASE)?{Authorization:'Bearer '+window.HALAL_API_PUBLIC_KEY}:{};const r=await fetch(u,{signal:c.signal,headers});const j=await r.json();if(!r.ok){const e=Error(j.error||String(r.status));e.providerStatus=j.upstreamStatus;throw e}return j}finally{clearTimeout(timer)}}
+async function readJson(url,timeout=10000){const c=new AbortController(),timer=setTimeout(()=>c.abort(),timeout);try{const u=new URL(url,location.origin),headers=(window.HALAL_API_PUBLIC_KEY&&u.origin===window.HALAL_API_BASE)?{apikey:window.HALAL_API_PUBLIC_KEY,Authorization:'Bearer '+window.HALAL_API_PUBLIC_KEY}:{};const r=await fetch(u,{signal:c.signal,headers});const j=await r.json();if(!r.ok){const e=Error(j.error||String(r.status));e.providerStatus=j.upstreamStatus;throw e}return j}finally{clearTimeout(timer)}}
 function sameBarcode(a,b){return /^\d{8,14}$/.test(String(a))&&String(a).padStart(14,'0')===String(b).padStart(14,'0')}
 async function wikidataProduct(code){const query='SELECT ?item ?itemLabel WHERE { ?item wdt:P3962 "'+code+'". SERVICE wikibase:label { bd:serviceParam wikibase:language "ja,en". } } LIMIT 1';const u=new URL('https://query.wikidata.org/sparql');u.searchParams.set('query',query);u.searchParams.set('format','json');const j=await readJson(u);const b=j.results?.bindings?.[0];return b?{code,product_name:b.itemLabel?.value||code,ingredients_text:'',_source:'Wikidata',_sourceUrl:b.item.value}:null}
 function otherSources(query){const q=encodeURIComponent(query||lastLookup);return '<div class="settings-card"><h3>Search other sources</h3><p>Ingredients are missing. Read the package or contact the manufacturer.</p><div class="actions"><a class="btn secondary" href="https://www.google.com/search?q='+q+'%20%E5%8E%9F%E6%9D%90%E6%96%99%20%E3%83%A1%E3%83%BC%E3%82%AB%E3%83%BC" target="_blank" rel="noopener">Manufacturer / ingredients</a><a class="btn secondary" href="https://shopping.yahoo.co.jp/search?p='+q+'" target="_blank" rel="noopener">Yahoo! Japan</a></div><button class="btn" data-go="ingredients">Read ingredient photo</button><h3>Official store information</h3><p>Allergy data is not a full ingredient list.</p><div class="actions"><a href="https://www.sej.co.jp/products/info_allergy.html" target="_blank" rel="noopener" data-original>7-Eleven</a><a href="https://www.family.co.jp/goods/safety.html" target="_blank" rel="noopener" data-original>FamilyMart</a><a href="https://www.lawson.co.jp/recommend/allergy/detail/index.html" target="_blank" rel="noopener" data-original>Lawson</a></div></div>'}
@@ -23,12 +23,32 @@ async function yahooProducts(value,isBarcode=true){
 async function checkYahooConnection(){const result=await yahooProducts('4901777411760');$('yahooConnection').textContent=result.state;queueLocalization();return result.state}
 async function upcProducts(code){const u=yahooEndpoint();if(!u||!window.HALAL_API_PATH)return [];u.searchParams.set('jan_code',code);u.searchParams.set('source','upcitemdb');try{const j=await readJson(u,9000);return (j.products||[]).filter(p=>sameBarcode(p.code,code))}catch{return []}}
 async function manufacturerProduct(code){const halalSaved=window.HALAL_SHOPPING_RECORDS?.find(p=>p.code&&sameBarcode(p.code,code));if(halalSaved)return halalSaved;const saved=window.HALAL_MANUFACTURER_RECORDS?.find(p=>sameBarcode(p.code,code));if(saved)return saved;const u=yahooEndpoint();if(!u||!window.HALAL_API_PATH||!code.startsWith('490177'))return null;u.searchParams.set('jan_code',code);u.searchParams.set('source','suntory');try{const j=await readJson(u,9000);return j.products?.find(p=>sameBarcode(p.code,code))||null}catch{return null}}
+// Read-only exact-JAN fallback: makes products in the public Supabase catalogue scannable.
+// Never treat an unreviewed ingredient list as halal certification.
+async function supabaseBarcodeProduct(code){
+ const base=String(window.HALAL_API_BASE||'').replace(/\/$/,'');
+ const key=String(window.HALAL_API_PUBLIC_KEY||'');
+ if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(base)||!key||!/^\d{8,14}$/.test(code))return null;
+ try{
+  const u=new URL(base+'/rest/v1/jhc_floot_products');
+  u.searchParams.set('select','source_id,barcode,name,name_ja,brand,ingredients,image_url,evidence_source,evidence_url,category');
+  u.searchParams.set('barcode','eq.'+code);
+  u.searchParams.set('limit','5');
+  const r=await fetch(u,{headers:{apikey:key,Authorization:'Bearer '+key},signal:typeof AbortSignal.timeout==='function'?AbortSignal.timeout(8000):undefined});
+  if(!r.ok)return null;
+  const rows=await r.json();
+  const item=Array.isArray(rows)?rows.find(p=>sameBarcode(p.barcode,code)):null;
+  if(!item)return null;
+  return {code:String(item.barcode),product_name:item.name_ja||item.name||code,brands:item.brand||'',ingredients_text:item.ingredients||'',image_url:item.image_url||'',_catalogId:'floot:'+item.source_id,_source:item.evidence_source||'Public product catalogue',_sourceUrl:item.evidence_url||'',_category:item.category||''};
+ }catch{return null;}
+}
 async function barcodeLookup(code){
  // Independent databases are queried together; one slow source cannot block the other.
- const tasks=[readJson('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields='+FOOD_FIELDS,8000),yahooProducts(code),manufacturerProduct(code)];
- const [food,yahoo,manufacturer]=await Promise.allSettled(tasks);let best=null;
+ const tasks=[readJson('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields='+FOOD_FIELDS,8000),yahooProducts(code),manufacturerProduct(code),supabaseBarcodeProduct(code)];
+ const [food,yahoo,manufacturer,catalogue]=await Promise.allSettled(tasks);let best=null;
  if(food.status==='fulfilled'&&sameBarcode(food.value.product?.code,code))best=food.value.product;
  if(manufacturer.status==='fulfilled'&&manufacturer.value){const official=manufacturer.value;best=official._halalEvidence&&best&&rawIngredients(best)?{...official,...best,_source:best._source||'Open Food Facts',_sourceUrl:best._sourceUrl||'https://world.openfoodfacts.org/product/'+encodeURIComponent(code)}:official;}
+  if(catalogue.status==='fulfilled'&&catalogue.value){const pub=catalogue.value;if(!best)best=pub;else if(!rawIngredients(best)&&rawIngredients(pub))best={...best,...pub};}
  const retail=yahoo.status==='fulfilled'?yahoo.value:{products:[],state:'Yahoo lookup unavailable.'};
  if(!best||!rawIngredients(best)){try{const fallback=await readJson('https://world.openfoodfacts.org/api/v3/product/'+code+'.json?fields='+FOOD_FIELDS,6000);if(sameBarcode(fallback.product?.code,code)&&(!best||rawIngredients(fallback.product)))best=best?{...best,...fallback.product,_source:fallback.product._source||'Open Food Facts',_sourceUrl:fallback.product._sourceUrl||'https://world.openfoodfacts.org/product/'+encodeURIComponent(code)}:fallback.product}catch{}}
  if(!best)best=retail.products[0]||null;
