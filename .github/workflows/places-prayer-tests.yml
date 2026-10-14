@@ -1,0 +1,29 @@
+name: Places and prayer regression
+on:
+  push:
+    paths:
+      - 'places-prayer.html'
+      - 'places-prayer.js'
+      - 'product-data.js'
+      - 'tests/places-prayer-regression.cjs'
+      - '.github/workflows/places-prayer-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test map, language, Qibla and food lookup integration
+        run: node tests/places-prayer-regression.cjs
+      - name: Check public map and prayer library URLs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 2 --max-time 20 --silent --output /dev/null 'https://unpkg.com/adhan@4.4.4/lib/bundles/adhan.umd.min.js'
+          curl --fail --location --retry 2 --max-time 20 --silent --output /dev/null 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
