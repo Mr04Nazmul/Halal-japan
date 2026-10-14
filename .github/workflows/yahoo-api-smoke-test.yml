@@ -1,0 +1,30 @@
+name: Yahoo API smoke test
+on:
+  push:
+    paths:
+      - '.github/workflows/yahoo-api-smoke-test.yml'
+      - 'product-data.js'
+      - 'app-config.js'
+      - 'api/yahoo-product.js'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  yahoo-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify backend configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 1 --max-time 25 'https://halal-japan-backend.vercel.app/api/yahoo-product?health=1' -o /tmp/health.json
+          jq -e '.configured == true' /tmp/health.json >/dev/null
+          echo 'Backend has Yahoo Client ID configuration'
+      - name: Verify live Yahoo product search response
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 1 --max-time 30 'https://halal-japan-backend.vercel.app/api/yahoo-product?query=%E7%B7%91%E8%8C%B6' -o /tmp/search.json
+          jq -e '.source == "Yahoo! Shopping Japan" and (.products | type == "array")' /tmp/search.json >/dev/null
+          echo 'Yahoo Shopping v3 returned a valid product search response'
