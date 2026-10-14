@@ -27,6 +27,39 @@ const wholeFoods:Record<string,string>={
  'rice':'Rice (plain, uncooked)','চাল':'চাল (সাধারণ)','米':'米（無添加）',
  'potato':'Potato (whole fresh vegetable)','আলু':'আলু (তাজা সবজি)','じゃがいも':'じゃがいも（生の野菜）'
 };
+// Separate Open Food Facts Japan research feed (ODbL): exact barcode or named
+// product leads, never treated as halal certification or manufacturer confirmation.
+type JapanResearchRow={code:string;product_name:string;brands?:string;ingredients_text?:string;source_url?:string;license?:string;};
+let japanResearchRows:JapanResearchRow[]|null=null;
+let japanResearchPending:Promise<JapanResearchRow[]>|null=null;
+async function readJapanResearch():Promise<JapanResearchRow[]>{
+ if(japanResearchRows)return japanResearchRows;
+ if(!japanResearchPending)japanResearchPending=(async()=>{
+  try{
+   const r=await fetch('./data/off-japan-research.json',{signal:AbortSignal.timeout(8000)});
+   if(!r.ok)return [];
+   const j=await r.json();
+   if(j.license!=='ODbL-1.0'||!Array.isArray(j.records))return [];
+   japanResearchRows=j.records.filter((p:JapanResearchRow)=>/^\d{8,14}$/.test(String(p.code))&&!!p.product_name);
+   return japanResearchRows||[];
+  }catch{return [];}
+  finally{japanResearchPending=null;}
+ })();
+ return japanResearchPending;
+}
+async function lookupJapanResearch(query:string,isBarcode:boolean):Promise<LookupResult|null>{
+ const rows=await readJapanResearch();
+ const lower=query.toLocaleLowerCase();
+ const matches=rows.filter(p=>isBarcode?p.code===query:(p.product_name+' '+(p.brands||'')).toLocaleLowerCase().includes(lower));
+ if(!matches.length)return null;
+ matches.sort((a,b)=>Number(!!b.ingredients_text?.trim())-Number(!!a.ingredients_text?.trim()));
+ const p=matches[0],ingredients=p.ingredients_text||null;
+ return {found:true,name:p.product_name,barcode:p.code,brand:p.brands||null,ingredients,
+  image:null,source:'Open Food Facts Japan research (ODbL; community-contributed)',
+  productUrl:p.source_url||'https://world.openfoodfacts.org/product/'+encodeURIComponent(p.code),
+  ...ingredientDecision(ingredients),coverageNote:'Japan-tagged Open Food Facts community snapshot, not verified manufacturer ingredients or halal certification. Check the actual label.'};
+}
+
 export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
  // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
@@ -58,6 +91,8 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  if(saved && (!isBarcode || saved.barcode===query)){
    return {found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
  }
+ const offlineJapan=await lookupJapanResearch(query,isBarcode);
+ if(offlineJapan)return offlineJapan;
  // Open Food Facts is community-maintained (ODbL); query on demand instead of copying its entire database.
  const api=isBarcode
   ?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json?fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url'
