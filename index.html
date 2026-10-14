@@ -244,11 +244,11 @@ async function fetchProduct(url){
  }catch(_){}
  if(sequence!==lookupSequence)return;if(window.navigate)window.navigate('search');setStatus('Product lookup unavailable or not listed. Fresh fruit? Search by name: banana / バナナ / কলা. Some produce barcodes are store-specific and cannot be identified reliably by a global JAN database.');
 }
-$('lookupBtn').onclick=()=>{let c=$('barcode').value.trim();if(!c){setStatus(tr('empty'));return}fetchProduct('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(c)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url,labels_tags')}
-function showPlainBanana(){
- const p={code:'',product_name:'Fresh banana / কলা / バナナ',brands:'Fresh unprocessed produce',ingredients_text:'Banana (fresh fruit)'};
+$('lookupBtn').onclick=()=>{let c=$('barcode').value.trim();if(!c){setStatus(tr('empty'));return}if(c==='02870472'){showPlainBanana('02870472');return}fetchProduct('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(c)+'.json?fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url,labels_tags')}
+function showPlainBanana(userReportedCode=''){
+ const p={code:userReportedCode,product_name:'Fresh banana / কলা / バナナ',brands:'Fresh unprocessed produce',ingredients_text:'Banana (fresh fruit)'};
  const assessment={status:'verify',reasons:['Plain, unprocessed banana is permissible by ingredient. This is not a certification of packaged or processed banana products.']};
- showResult('<div class="notice" style="border-color:#54aa71;background:#e1f5e7;color:#15482c"><strong>HALAL · Whole fresh fruit (ingredient check)</strong></div><div class="product"><div><h3>Fresh banana · কলা · バナナ</h3><p>Ingredient: banana only. No additives in a whole, unprocessed banana.</p></div></div><div class="notice">This result is for ordinary fresh bananas only. Packaged banana desserts or drinks require their own ingredient checks.</div>');
+ showResult('<div class="notice" style="border-color:#54aa71;background:#e1f5e7;color:#15482c"><strong>HALAL · Whole fresh fruit (ingredient check)</strong></div><div class="product"><div><h3>Fresh banana · কলা · バナナ</h3><p>Ingredient: banana only. No additives in a whole, unprocessed banana.</p></div></div><div class="notice">This result is for ordinary fresh bananas only. Barcode 02870472 was reported by a user as a fresh banana, not independently verified. Confirm the item is a whole fresh banana. Packaged banana desserts or drinks require their own ingredient checks.</div>');
  saveProduct(p,assessment);setStatus('');
 }
 function isPlainBananaQuery(q){return /^(?:banana|bananas|fresh banana|バナナ|কল|কলা)$/i.test(q.trim())}
