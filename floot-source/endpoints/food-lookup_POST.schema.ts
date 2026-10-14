@@ -71,7 +71,18 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
    const ingredients='糖類（砂糖（タイ製造）、果糖ぶどう糖液糖）、全粉乳、コーヒー、脱脂粉乳、ココナッツオイル、デキストリン、食塩／カラメル色素、香料、乳化剤、ビタミンＣ、カゼインＮａ、甘味料（アセスルファムK、ステビア）';
    return {found:true,name:'Ajīwau Cafe Au Lait 500ml / あじわうカフェオレ 500ml',barcode:query,brand:'Sangaria / サンガリア',ingredients,image:null,source:'Sangaria official manufacturer ingredients',productUrl:'https://sangaria.co.jp/products/ajiwau/',...ingredientDecision(ingredients,false,true),manufacturerEvidence:[{type:'official ingredient list',url:'https://sangaria.co.jp/products/ajiwau/',issuer:'Sangaria',reviewedAt:null}],coverageNote:'Official JAN-matched ingredient list. Flavoring and emulsifier sources are not certified in this record; HALAL LV3 shown in another app is not independent manufacturer certification.'};
  }
- const isBarcode=/^\\d{8,14}$/.test(query);
+ const isBarcode=/^\d{8,14}$/.test(query);
+ // Manufacturer-confirmed Meiji Tokachi drinking yogurt (400g).
+ // Two official JANs correspond to different product revisions; never conflate certification with ingredients.
+ const meijiTokachiPage:Record<string,string>={
+   '4902705133099':'https://www.meiji.co.jp/products/yogurt/4902705133099.html',
+   '4902705131279':'https://www.meiji.co.jp/products/yogurt/4902705131279.html'
+ };
+ if(meijiTokachiPage[query]){
+   const ingredients='乳製品（国内製造、外国製造）、砂糖';
+   const productUrl=meijiTokachiPage[query];
+   return {found:true,name:'明治北海道十勝ミルクきわだつのむヨーグルト 400g / Meiji Tokachi Drinking Yogurt',barcode:query,brand:'Meiji / 明治',ingredients,image:null,source:'Meiji official manufacturer product information',productUrl,...ingredientDecision(ingredients),manufacturerEvidence:[{type:'manufacturer ingredient declaration (NOT halal certification)',url:productUrl,issuer:'Meiji',reviewedAt:'2026-10-15'}],coverageNote:'Official listed ingredients are dairy ingredients and sugar. No prohibited ingredient is identified in this declaration, but halal certification has NOT been confirmed. Check the barcode and ingredients on your physical package; revisions may differ.'};
+ }
  const selectedFood=verifiedFoodRecords.find(p=>p.barcode===query)||
  (!isBarcode?verifiedFoodRecords.find(p=>p.name.toLowerCase()===query.toLowerCase()||p.nameJa===query):undefined);
  if(selectedFood) return {found:true,name:selectedFood.nameJa+' / '+selectedFood.name,barcode:selectedFood.barcode,brand:selectedFood.manufacturer,ingredients:selectedFood.ingredients,image:null,source:'Nissin official ingredient excerpt',productUrl:selectedFood.url,...ingredientDecision(selectedFood.ingredients),manufacturerEvidence:[{type:'Manufacturer full ingredient declaration',url:selectedFood.url,issuer:'Nissin Foods',reviewedAt:null}],coverageNote:'Only identified prohibited ingredients are summarized here; this is NOT the full ingredients list. Open the official product page for the complete label.'};
