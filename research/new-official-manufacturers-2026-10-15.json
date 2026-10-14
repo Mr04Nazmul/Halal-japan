@@ -1,0 +1,298 @@
+{
+  "researched_at": "2026-10-15",
+  "purpose": "New manufacturer ingredient evidence beyond initial 30+26 sources; do not count as halal certification",
+  "new_distinct_manufacturers": 9,
+  "manufacturer_sources": [
+    {
+      "manufacturer": "UHA Mikakuto",
+      "domain": "uha-mikakuto.co.jp",
+      "category": "candy",
+      "official_product_url": "https://www.uha-mikakuto.co.jp/catalog/softcandy/pu285.html",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": false
+    },
+    {
+      "manufacturer": "Ebara Foods",
+      "domain": "ebarafoods.com",
+      "category": "sauces",
+      "official_product_url": "https://www.ebarafoods.com/products/detail/YOJ360.html",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": false
+    },
+    {
+      "manufacturer": "MannanLife",
+      "domain": "mannanlife.co.jp",
+      "category": "konjac desserts",
+      "official_product_url": "https://www.mannanlife.co.jp/lineup/konnyakubatake/ice_coffee.html",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": true
+    },
+    {
+      "manufacturer": "Marusan-Ai",
+      "domain": "marusanai.co.jp",
+      "category": "soy beverages",
+      "official_product_url": "https://www.marusanai.co.jp/lineup/detail-64202/",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": true
+    },
+    {
+      "manufacturer": "Itoham",
+      "domain": "itoham.co.jp",
+      "category": "processed meat",
+      "official_product_url": "https://www.itoham.co.jp/product/product/detail.html?pdid=57",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": false
+    },
+    {
+      "manufacturer": "Kibun Foods",
+      "domain": "kibun.co.jp",
+      "category": "fish paste and wheat food",
+      "official_product_url": "https://www.kibun.co.jp/products/all_167050a",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": true
+    },
+    {
+      "manufacturer": "Fujiya",
+      "domain": "fujiya-peko.co.jp",
+      "category": "confectionery",
+      "official_product_url": "https://www.fujiya-peko.co.jp/sweets/item/12640.html",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": true
+    },
+    {
+      "manufacturer": "Yaokin",
+      "domain": "yaokin.com",
+      "category": "snacks",
+      "official_product_url": "https://www.yaokin.com/products_search/umaibo/item_M27002",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": true
+    },
+    {
+      "manufacturer": "Nagano Tomato",
+      "domain": "naganotomato.jp",
+      "category": "sauce and vegetables",
+      "official_product_url": "https://www.naganotomato.jp/products/001808.html",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": false
+    }
+  ],
+  "product_leads": [
+    {
+      "manufacturer": "UHA Mikakuto",
+      "name": "ぷっちょスティック ストロングメガソーダ",
+      "jan": null,
+      "official_url": "https://www.uha-mikakuto.co.jp/catalog/softcandy/pu285.html",
+      "ingredient_highlights": [
+        "ゼラチン",
+        "乳化剤",
+        "香料"
+      ],
+      "review_reason": "gelatin origin, emulsifier and flavours unresolved"
+    },
+    {
+      "manufacturer": "Ebara Foods",
+      "name": "黄金の味 濃熟 360g",
+      "jan": null,
+      "official_url": "https://www.ebarafoods.com/products/detail/YOJ360.html",
+      "ingredient_highlights": [
+        "果実ピューレ",
+        "醤油",
+        "蜂蜜",
+        "ごま"
+      ],
+      "review_reason": "full ingredients present on page; exact JAN and certification unresolved"
+    },
+    {
+      "manufacturer": "MannanLife",
+      "name": "蒟蒻畑 アイスコーヒー味",
+      "jan": "4902738270006",
+      "official_url": "https://www.mannanlife.co.jp/lineup/konnyakubatake/ice_coffee.html",
+      "ingredient_highlights": [
+        "コーヒー",
+        "こんにゃく粉",
+        "香料"
+      ],
+      "review_reason": "flavour origin unresolved"
+    },
+    {
+      "manufacturer": "MannanLife",
+      "name": "蒟蒻畑 温州みかん味",
+      "jan": "4902738270051",
+      "official_url": "https://www.mannanlife.co.jp/lineup/konnyakubatake/unshumikan.html",
+      "ingredient_highlights": [
+        "果汁",
+        "洋酒",
+        "香料"
+      ],
+      "review_reason": "liqueur ingredient specifically needs review"
+    },
+    {
+      "manufacturer": "Marusan-Ai",
+      "name": "調製豆乳 200ml",
+      "jan": "4901033630126",
+      "official_url": "https://www.marusanai.co.jp/lineup/detail-64202/",
+      "ingredient_highlights": [
+        "大豆",
+        "水あめ",
+        "乳酸カルシウム",
+        "カラギナン"
+      ],
+      "review_reason": "manufacturer-listed ingredients; halal certificate not established"
+    },
+    {
+      "manufacturer": "Marusan-Ai",
+      "name": "国産大豆の調製豆乳 1000ml",
+      "jan": "4901033631307",
+      "official_url": "https://www.marusanai.co.jp/lineup/detail-64423/",
+      "ingredient_highlights": [
+        "大豆",
+        "トレハロース",
+        "ビタミンE"
+      ],
+      "review_reason": "manufacturer-listed ingredients; halal certificate not established"
+    },
+    {
+      "manufacturer": "Itoham",
+      "name": "ポールウインナー",
+      "jan": null,
+      "official_url": "https://www.itoham.co.jp/product/product/detail.html?pdid=57",
+      "ingredient_highlights": [
+        "豚肉",
+        "豚脂肪"
+      ],
+      "review_reason": "explicit pork; halal unsuitable ingredient"
+    },
+    {
+      "manufacturer": "Kibun Foods",
+      "name": "焼ちくわ 144g",
+      "jan": "4901530240019",
+      "official_url": "https://www.kibun.co.jp/products/all_167050a",
+      "ingredient_highlights": [
+        "ラード",
+        "ゼラチン",
+        "本みりん"
+      ],
+      "review_reason": "explicit lard and gelatin listed"
+    },
+    {
+      "manufacturer": "Kibun Foods",
+      "name": "おでんちくわ 120g",
+      "jan": "4901530240026",
+      "official_url": "https://www.kibun.co.jp/products/all_240020a/index.html",
+      "ingredient_highlights": [
+        "魚肉",
+        "でん粉",
+        "発酵調味液"
+      ],
+      "review_reason": "fermented seasoning source and product-specific certification unresolved"
+    },
+    {
+      "manufacturer": "Kibun Foods",
+      "name": "ちくわぶ1本ヨコ 160g",
+      "jan": "4901530238719",
+      "official_url": "https://www.kibun.co.jp/products/all_238710a/index.html",
+      "ingredient_highlights": [
+        "小麦粉"
+      ],
+      "review_reason": "only wheat flour listed; product certification not confirmed"
+    },
+    {
+      "manufacturer": "Fujiya",
+      "name": "８４ｇアンパンマングミ４連",
+      "jan": "4902555126401",
+      "official_url": "https://www.fujiya-peko.co.jp/sweets/item/12640.html",
+      "ingredient_highlights": [
+        "ゼラチン",
+        "香料"
+      ],
+      "review_reason": "gelatin origin not established"
+    },
+    {
+      "manufacturer": "Fujiya",
+      "name": "１本パラソルチョコレート",
+      "jan": "49755640",
+      "official_url": "https://www.fujiya-peko.co.jp/sweets/item/26869.html",
+      "ingredient_highlights": [
+        "乳化剤(大豆由来)",
+        "香料(乳・大豆由来)"
+      ],
+      "review_reason": "emulsifier and flavour source specified as soy/milk; halal certification not verified"
+    },
+    {
+      "manufacturer": "Fujiya",
+      "name": "２２粒ルック（ピスタチオ＆アーモンド）",
+      "jan": "4902555269443",
+      "official_url": "https://www.fujiya-peko.co.jp/sweets/item/26944.html",
+      "ingredient_highlights": [
+        "乳化剤",
+        "香料"
+      ],
+      "review_reason": "additive origin not fully resolved"
+    },
+    {
+      "manufacturer": "Yaokin",
+      "name": "うまい棒サラミ味",
+      "jan": "49480825",
+      "official_url": "https://www.yaokin.com/products_search/umaibo/item_M27002",
+      "ingredient_highlights": [
+        "ポークパウダー",
+        "ゼラチン"
+      ],
+      "review_reason": "explicit pork powder"
+    },
+    {
+      "manufacturer": "Yaokin",
+      "name": "うまい棒めんたい味",
+      "jan": "49480856",
+      "official_url": "https://www.yaokin.com/products_search/umaibo/item_M27007",
+      "ingredient_highlights": [
+        "たら調味パウダー",
+        "ゼラチン（アレルゲン表示）"
+      ],
+      "review_reason": "gelatin listed as allergen, source of ingredient needs checking"
+    },
+    {
+      "manufacturer": "Yaokin",
+      "name": "うまい棒やきとり味",
+      "jan": "4903013270322",
+      "official_url": "https://www.yaokin.com/products_search/umaibo/item_M27032",
+      "ingredient_highlights": [
+        "鶏ガラスープ",
+        "米発酵調味料",
+        "香料"
+      ],
+      "review_reason": "chicken slaughter status/fermented ingredient/flavouring unresolved"
+    },
+    {
+      "manufacturer": "Nagano Tomato",
+      "name": "プロも認めた味わい トマトケチャップ 310g",
+      "jan": null,
+      "official_url": "https://www.naganotomato.jp/products/001808.html",
+      "ingredient_highlights": [
+        "トマト",
+        "砂糖類",
+        "醸造酢"
+      ],
+      "review_reason": "full ingredient text on official page; JAN absent"
+    },
+    {
+      "manufacturer": "Nagano Tomato",
+      "name": "なめ茸ボトル入り 210g",
+      "jan": null,
+      "official_url": "https://www.naganotomato.jp/products/002147.html",
+      "ingredient_highlights": [
+        "えのきたけ",
+        "醤油",
+        "寒天"
+      ],
+      "review_reason": "full ingredient text on official page; JAN absent"
+    }
+  ],
+  "integrity_rules": [
+    "The research list is not part of the 100000 Open Food Facts product count without JAN deduplication.",
+    "Exact JANs are recorded only when visible on an official product page; product catalog IDs must never be treated as JANs.",
+    "Ingredient highlights are not the full current label. Follow source_url for complete official ingredient list and product revision.",
+    "Never auto-certify or infer halal merely because no pork term appears; check gelatin, flavouring, processing aids and certificate evidence.",
+    "Reuse/copy permissions for full manufacturer ingredient datasets have not been granted."
+  ]
+}
