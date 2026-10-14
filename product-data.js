@@ -15,12 +15,32 @@ function yahooEndpoint(){
  if(!base&&location.hostname.endsWith('github.io'))return null;
  try{const u=new URL((base?base.replace(/\/$/,''):'')+(window.HALAL_API_PATH||'/api/yahoo-product'),location.origin);return u.protocol==='https:'||u.hostname==='localhost'?u:null}catch{return null}
 }
+function yahooShoppingEndpoint(){
+ // Shopping Search credentials live only on the Vercel backend, never in this file.
+ try{
+  const base=new URL(window.HALAL_YAHOO_PROXY||'https://halal-japan-backend.vercel.app');
+  if(base.protocol!=='https:'||base.username||base.password)return null;
+  return new URL('/api/yahoo-product',base.origin);
+ }catch{return null;}
+}
 async function yahooProducts(value,isBarcode=true){
- const url=yahooEndpoint();if(!url)return {products:[],state:'Yahoo is not connected.'};
+ const url=yahooShoppingEndpoint();if(!url)return {products:[],state:'Yahoo is not connected.'};
  url.searchParams.set(isBarcode?'jan_code':'query',value);
  try{const j=await readJson(url,9000);return {products:(j.products||[]).filter(p=>!isBarcode||sameBarcode(p.code,value)),state:'Yahoo connected.'}}catch(e){return {products:[],state:e.providerStatus===403?'Yahoo returned 403.':'Yahoo lookup unavailable.'}}
 }
-async function checkYahooConnection(){const result=await yahooProducts('4901777411760');$('yahooConnection').textContent=result.state;queueLocalization();return result.state}
+async function checkYahooConnection(){
+ const url=yahooShoppingEndpoint();
+ let state='Yahoo backend is not reachable.';
+ if(url){
+  url.searchParams.set('health','1');
+  try{
+   const health=await readJson(url,8000);
+   if(!health.configured){state='Yahoo Client ID is not configured on backend.';}
+   else {const test=await yahooProducts('緑茶',false);state=test.state;}
+  }catch(e){state='Yahoo backend health check failed.';}
+ }
+ $('yahooConnection').textContent=state;queueLocalization();return state;
+}
 async function upcProducts(code){const u=yahooEndpoint();if(!u||!window.HALAL_API_PATH)return [];u.searchParams.set('jan_code',code);u.searchParams.set('source','upcitemdb');try{const j=await readJson(u,9000);return (j.products||[]).filter(p=>sameBarcode(p.code,code))}catch{return []}}
 async function manufacturerProduct(code){const halalSaved=window.HALAL_SHOPPING_RECORDS?.find(p=>p.code&&sameBarcode(p.code,code));if(halalSaved)return halalSaved;const saved=window.HALAL_MANUFACTURER_RECORDS?.find(p=>sameBarcode(p.code,code));if(saved)return saved;const u=yahooEndpoint();if(!u||!window.HALAL_API_PATH||!code.startsWith('490177'))return null;u.searchParams.set('jan_code',code);u.searchParams.set('source','suntory');try{const j=await readJson(u,9000);return j.products?.find(p=>sameBarcode(p.code,code))||null}catch{return null}}
 // Read-only exact-JAN fallback: makes products in the public Supabase catalogue scannable.
