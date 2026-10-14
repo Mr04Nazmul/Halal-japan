@@ -9,21 +9,43 @@ let offJapanCache=null,offJapanPending=null;
 async function offJapanProducts(){
  if(offJapanCache)return offJapanCache;
  if(!offJapanPending)offJapanPending=(async()=>{
-  try{
-   const r=await fetch('./data/off-japan-research.json',{signal:typeof AbortSignal.timeout==='function'?AbortSignal.timeout(8000):undefined,cache:'no-cache'});
-   if(!r.ok)throw Error('Research feed unavailable');
-   const data=await r.json();
-   if(data.license!=='ODbL-1.0'||!Array.isArray(data.records))throw Error('Unexpected research format');
-   offJapanCache=data.records.filter(p=>/^\d{8,14}$/.test(String(p.code||''))&&p.product_name&&p.source==='Open Food Facts').map(p=>({
-    code:String(p.code),product_name:String(p.product_name),brands:String(p.brands||''),
-    ingredients_text:String(p.ingredients_text||''),_source:'Open Food Facts (community dataset; ODbL)',
-    _sourceUrl:'https://world.openfoodfacts.org/product/'+encodeURIComponent(p.code),
-    _license:'ODbL-1.0',_ingredientsVerified:false,_halalVerified:false
-   }));
-   return offJapanCache;
-  }catch{ return []; }
-  finally{ offJapanPending=null; }
- })();
+  // Read the large 10k research snapshot lazily, once per browser session.
+  // Keep Open Food Facts data independently attributed; never treat it as certification.
+  const sources=[
+   ['./data/openfoodfacts-japan.json','products'],
+   ['./data/off-japan-research.json','records']
+  ];
+  const loaded=await Promise.all(sources.map(async([url,key])=>{
+   try{
+    const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),20000);
+    try{
+     const r=await fetch(url,{signal:ctrl.signal,cache:'no-cache'});
+     if(!r.ok)return [];
+     const j=await r.json();
+     return j.license==='ODbL-1.0'&&Array.isArray(j[key])?j[key]:[];
+    }finally{clearTimeout(timer)}
+   }catch{return []}
+  }));
+  const records=new Map();
+  for(const set of loaded){
+   for(const p of set){
+    const code=String(p.code||'');
+    if(!/^\d{8,14}$/.test(code)||!p.product_name)continue;
+    if(p.source!=='Open Food Facts'&&p._source!=='Open Food Facts (community-maintained)')continue;
+    const item={
+     code,product_name:String(p.product_name),brands:String(p.brands||''),
+     ingredients_text:String(p.ingredients_text||''),
+     _source:'Open Food Facts (community dataset; ODbL)',
+     _sourceUrl:'https://world.openfoodfacts.org/product/'+encodeURIComponent(code),
+     _license:'ODbL-1.0',_ingredientsVerified:false,_halalVerified:false
+    };
+    const prev=records.get(code);
+    if(!prev||(!prev.ingredients_text&&item.ingredients_text))records.set(code,item);
+   }
+  }
+  offJapanCache=Array.from(records.values());
+  return offJapanCache;
+ })().finally(()=>{offJapanPending=null});
  return offJapanPending;
 }
 async function wikidataProduct(code){const query='SELECT ?item ?itemLabel WHERE { ?item wdt:P3962 "'+code+'". SERVICE wikibase:label { bd:serviceParam wikibase:language "ja,en". } } LIMIT 1';const u=new URL('https://query.wikidata.org/sparql');u.searchParams.set('query',query);u.searchParams.set('format','json');const j=await readJson(u);const b=j.results?.bindings?.[0];return b?{code,product_name:b.itemLabel?.value||code,ingredients_text:'',_source:'Wikidata',_sourceUrl:b.item.value}:null}
