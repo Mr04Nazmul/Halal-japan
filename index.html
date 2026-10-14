@@ -273,7 +273,7 @@ const WHOLE_PRODUCE=[
  {en:'Rice',ja:'米',bn:'চাল',aliases:['uncooked rice','plain rice grain','米','生米','চাল']}
 ];
 function findWholeProduce(q){
- const normalized=q.trim().toLocaleLowerCase().replace(/\\s+/g,' ');
+ const normalized=q.trim().toLocaleLowerCase().replace(/\s+/g,' ');
  return WHOLE_PRODUCE.find(p=>p.aliases.some(a=>a.toLocaleLowerCase()===normalized))||null;
 }
 function showWholeProduce(p,reportedCode=''){
