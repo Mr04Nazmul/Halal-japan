@@ -2,7 +2,7 @@
 """Collect Japan-tagged Open Food Facts records into a source-attributed research batch.
 This does not certify halal status or claim current availability in stores.
 """
-import json, os, pathlib, re, time, urllib.parse, urllib.request
+import json, os, pathlib, re, time, urllib.parse, urllib.request, urllib.error
 from datetime import datetime, timezone
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -18,9 +18,19 @@ def get(page):
         "fields":FIELDS,"sort_by":"last_modified_t"})
     req=urllib.request.Request("https://world.openfoodfacts.org/api/v2/search?"+params,
        headers={"User-Agent":USER_AGENT,"Accept":"application/json"})
-    with urllib.request.urlopen(req,timeout=35) as response:
-        if response.status != 200: raise RuntimeError("Unexpected HTTP status")
-        return json.load(response)
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(req, timeout=35) as response:
+                if response.status != 200: raise RuntimeError(f"Unexpected HTTP {response.status}")
+                return json.load(response)
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            if isinstance(exc, urllib.error.HTTPError) and exc.code not in (429, 500, 502, 503, 504):
+                raise
+            if attempt == 3:
+                raise
+            delay = min(30, 3 * (2 ** attempt))
+            print(f"Open Food Facts temporarily unavailable ({exc}); retrying in {delay}s", flush=True)
+            time.sleep(delay)
 def main():
     pages=max(1,min(3,int(os.environ.get("OFF_PAGES","2"))))
     previous={"records":[]}
@@ -28,7 +38,11 @@ def main():
     records={str(p["code"]):p for p in previous.get("records",[]) if p.get("code")}
     added=changed=seen=0
     for page in range(1,pages+1):
-        data=get(page)
+        try:
+            data=get(page)
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            print(f"::warning::Open Food Facts API unavailable after retries ({exc}); preserving existing dataset. No new products collected for page {page}.", flush=True)
+            break
         if not isinstance(data.get("products"),list):raise RuntimeError("Unexpected OFF schema")
         for p in data["products"]:
             seen+=1
@@ -48,7 +62,9 @@ def main():
             elif records[code]!=item:changed+=1
             records[code]=item
         if page<pages:time.sleep(2)
-    if not seen:raise RuntimeError("No products returned; old data retained")
+    if not seen:
+        print("::warning::No API products collected. Existing research data left unchanged.", flush=True)
+        return
     OUT.parent.mkdir(parents=True,exist_ok=True)
     payload={"attribution":"Contains data from Open Food Facts (https://world.openfoodfacts.org), made available under the Open Database License.",
              "license":"ODbL-1.0","scope":"en:japan country tags only; not proof of availability or halal certification",
