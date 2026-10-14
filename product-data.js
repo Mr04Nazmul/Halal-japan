@@ -3,6 +3,29 @@ let activeProduct=null,ingredientEpoch=0,ocrWorker=null,lastLookup='';
 const FOOD_FIELDS='code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url,labels_tags,lang';
 async function readJson(url,timeout=10000){const c=new AbortController(),timer=setTimeout(()=>c.abort(),timeout);try{const u=new URL(url,location.origin),headers=(window.HALAL_API_PUBLIC_KEY&&u.origin===window.HALAL_API_BASE)?{apikey:window.HALAL_API_PUBLIC_KEY,Authorization:'Bearer '+window.HALAL_API_PUBLIC_KEY}:{};const r=await fetch(u,{signal:c.signal,headers});const j=await r.json();if(!r.ok){const e=Error(j.error||String(r.status));e.providerStatus=j.upstreamStatus;throw e}return j}finally{clearTimeout(timer)}}
 function sameBarcode(a,b){return /^\d{8,14}$/.test(String(a))&&String(a).padStart(14,'0')===String(b).padStart(14,'0')}
+// Attributed ODbL Open Food Facts research snapshot, not a halal certification.
+// Kept separate from manufacturer's database to preserve attribution and licensing.
+let offJapanCache=null,offJapanPending=null;
+async function offJapanProducts(){
+ if(offJapanCache)return offJapanCache;
+ if(!offJapanPending)offJapanPending=(async()=>{
+  try{
+   const r=await fetch('./data/off-japan-research.json',{signal:typeof AbortSignal.timeout==='function'?AbortSignal.timeout(8000):undefined,cache:'no-cache'});
+   if(!r.ok)throw Error('Research feed unavailable');
+   const data=await r.json();
+   if(data.license!=='ODbL-1.0'||!Array.isArray(data.records))throw Error('Unexpected research format');
+   offJapanCache=data.records.filter(p=>/^\d{8,14}$/.test(String(p.code||''))&&p.product_name&&p.source==='Open Food Facts').map(p=>({
+    code:String(p.code),product_name:String(p.product_name),brands:String(p.brands||''),
+    ingredients_text:String(p.ingredients_text||''),_source:'Open Food Facts (community dataset; ODbL)',
+    _sourceUrl:'https://world.openfoodfacts.org/product/'+encodeURIComponent(p.code),
+    _license:'ODbL-1.0',_ingredientsVerified:false,_halalVerified:false
+   }));
+   return offJapanCache;
+  }catch{ return []; }
+  finally{ offJapanPending=null; }
+ })();
+ return offJapanPending;
+}
 async function wikidataProduct(code){const query='SELECT ?item ?itemLabel WHERE { ?item wdt:P3962 "'+code+'". SERVICE wikibase:label { bd:serviceParam wikibase:language "ja,en". } } LIMIT 1';const u=new URL('https://query.wikidata.org/sparql');u.searchParams.set('query',query);u.searchParams.set('format','json');const j=await readJson(u);const b=j.results?.bindings?.[0];return b?{code,product_name:b.itemLabel?.value||code,ingredients_text:'',_source:'Wikidata',_sourceUrl:b.item.value}:null}
 function otherSources(query){const q=encodeURIComponent(query||lastLookup);return '<div class="settings-card"><h3>Search other sources</h3><p>Ingredients are missing. Read the package or contact the manufacturer.</p><div class="actions"><a class="btn secondary" href="https://www.google.com/search?q='+q+'%20%E5%8E%9F%E6%9D%90%E6%96%99%20%E3%83%A1%E3%83%BC%E3%82%AB%E3%83%BC" target="_blank" rel="noopener">Manufacturer / ingredients</a><a class="btn secondary" href="https://shopping.yahoo.co.jp/search?p='+q+'" target="_blank" rel="noopener">Yahoo! Japan</a></div><button class="btn" data-go="ingredients">Read ingredient photo</button><h3>Official store information</h3><p>Allergy data is not a full ingredient list.</p><div class="actions"><a href="https://www.sej.co.jp/products/info_allergy.html" target="_blank" rel="noopener" data-original>7-Eleven</a><a href="https://www.family.co.jp/goods/safety.html" target="_blank" rel="noopener" data-original>FamilyMart</a><a href="https://www.lawson.co.jp/recommend/allergy/detail/index.html" target="_blank" rel="noopener" data-original>Lawson</a></div></div>'}
 function rawIngredients(p){return p.ingredients_text||p.ingredients_text_ja||p.ingredients_text_en||''}
@@ -64,11 +87,12 @@ async function supabaseBarcodeProduct(code){
 }
 async function barcodeLookup(code){
  // Independent databases are queried together; one slow source cannot block the other.
- const tasks=[readJson('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields='+FOOD_FIELDS,8000),yahooProducts(code),manufacturerProduct(code),supabaseBarcodeProduct(code)];
- const [food,yahoo,manufacturer,catalogue]=await Promise.allSettled(tasks);let best=null;
+ const tasks=[readJson('https://world.openfoodfacts.org/api/v2/product/'+code+'.json?fields='+FOOD_FIELDS,8000),yahooProducts(code),manufacturerProduct(code),supabaseBarcodeProduct(code),offJapanProducts()];
+ const [food,yahoo,manufacturer,catalogue,research]=await Promise.allSettled(tasks);let best=null;
  if(food.status==='fulfilled'&&sameBarcode(food.value.product?.code,code))best=food.value.product;
  if(manufacturer.status==='fulfilled'&&manufacturer.value){const official=manufacturer.value;best=official._halalEvidence&&best&&rawIngredients(best)?{...official,...best,_source:best._source||'Open Food Facts',_sourceUrl:best._sourceUrl||'https://world.openfoodfacts.org/product/'+encodeURIComponent(code)}:official;}
   if(catalogue.status==='fulfilled'&&catalogue.value){const pub=catalogue.value;if(!best)best=pub;else if(!rawIngredients(best)&&rawIngredients(pub))best={...best,...pub};}
+  if(research.status==='fulfilled'){const p=research.value.find(x=>sameBarcode(x.code,code));if(p&&(!best||!rawIngredients(best)&&rawIngredients(p)))best=best?{...best,...p}:p;}
  const retail=yahoo.status==='fulfilled'?yahoo.value:{products:[],state:'Yahoo lookup unavailable.'};
  if(!best||!rawIngredients(best)){try{const fallback=await readJson('https://world.openfoodfacts.org/api/v3/product/'+code+'.json?fields='+FOOD_FIELDS,6000);if(sameBarcode(fallback.product?.code,code)&&(!best||rawIngredients(fallback.product)))best=best?{...best,...fallback.product,_source:fallback.product._source||'Open Food Facts',_sourceUrl:fallback.product._sourceUrl||'https://world.openfoodfacts.org/product/'+encodeURIComponent(code)}:fallback.product}catch{}}
  if(!best)best=retail.products[0]||null;
@@ -84,7 +108,8 @@ fetchProduct=async function(url){
   const restricted=$('storeFilter').value!=='all'||$('foodFilter').value!=='all';
   const [food,retail,stores]=await Promise.allSettled([...(restricted?[Promise.resolve({products:[]}),Promise.resolve({products:[]})]:[readJson(u,9000),yahooProducts(lastLookup,false)]),findStoreProducts(lastLookup,false)]);const storeProducts=stores.status==='fulfilled'?stores.value:[];if(sequence!==lookupSequence)return;
   const official=(window.HALAL_MANUFACTURER_RECORDS||[]).filter(p=>p.product_name.toLowerCase().includes(lastLookup.toLowerCase()));
-  const candidates=[...storeProducts,...(restricted?[]:official),...(food.status==='fulfilled'?food.value.products||[]:[]),...(retail.status==='fulfilled'?retail.value.products:[])];
+  const jpResearch=restricted?[]:(await offJapanProducts()).filter(p=>(p.product_name+' '+p.brands+' '+p.code).toLowerCase().includes(lastLookup.toLowerCase())).slice(0,60);
+   const candidates=[...storeProducts,...jpResearch,...(restricted?[]:official),...(food.status==='fulfilled'?food.value.products||[]:[]),...(retail.status==='fulfilled'?retail.value.products:[])];
   const byProduct=new Map();for(const p of candidates){const code=String(p.code||''),valid=/^\d{8,14}$/.test(code);if(!p._catalogId&&!valid)continue;const key=valid?code.padStart(14,'0'):p._catalogId,previous=byProduct.get(key);if(!previous)byProduct.set(key,p);else if(rawIngredients(p)&&!rawIngredients(previous))byProduct.set(key,{...previous,...p,_source:p._source||'Open Food Facts',_sourceUrl:p._sourceUrl||'https://world.openfoodfacts.org/product/'+encodeURIComponent(code)})}const products=Array.from(byProduct.values());
   showStoreResults(products);return;
  }
