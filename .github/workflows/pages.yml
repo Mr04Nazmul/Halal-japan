@@ -39,6 +39,23 @@ jobs:
           mkdir -p _site/data
           cp data/off-japan-research.json _site/data/off-japan-research.json
           if [ -s data/openfoodfacts-japan.json ]; then cp data/openfoodfacts-japan.json _site/data/openfoodfacts-japan.json; fi
+          # Optional 100k supplemental food index. Barcode shards stay separate
+          # so one camera scan never downloads the entire database.
+          if [ -s data/food-catalog-manifest.json ]; then
+            cp data/food-catalog-manifest.json _site/data/food-catalog-manifest.json
+            cp data/world-food-name-index.json _site/data/world-food-name-index.json
+            cp -a data/world-food-shards _site/data/world-food-shards
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("_site/data")
+          manifest=json.loads((root/"food-catalog-manifest.json").read_text())
+          assert manifest["total_unique_records"]>=100000
+          assert (root/"world-food-name-index.json").stat().st_size>1000
+          assert len(list((root/"world-food-shards").glob("*.json")))==manifest["barcode_shards"]
+          print("Pages: published",manifest["total_unique_records"],"source-attributed food records")
+          PY
+          fi
           test -s _site/places-prayer.html
           test -s _site/places-prayer.js
           test -s _site/data/off-japan-research.json
