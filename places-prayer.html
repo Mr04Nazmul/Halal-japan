@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a4634">
+<meta name="description" content="Find community-listed halal food and mosques near you in Japan, calculate daily prayer times and Qibla direction.">
+<title>Nearby Halal & Mosque Map · Japan Halal Checker</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--green:#074e36;--muted:#587166;--line:#dbe8dd;--page:#f4f8f3;--ink:#122d22;--lime:#d0f47d}
+*{box-sizing:border-box}body{background:var(--page);color:var(--ink);margin:0;font:15px/1.5 system-ui,-apple-system,sans-serif}
+header{background:var(--green);color:white;padding:15px 16px;position:sticky;top:0;z-index:1200}
+header .inner{max-width:900px;margin:auto;display:flex;align-items:center;gap:10px;justify-content:space-between}
+header a{color:white;text-decoration:none;font-size:14px;font-weight:700}header select{border-radius:10px;padding:9px;border:1px solid #7eb594;background:white;color:#163529}
+main{max-width:900px;margin:auto;padding:15px 14px 80px}
+h1{font-size:27px;line-height:1.1;margin:10px 0}h2{font-size:18px;margin:0 0 10px}p{margin:8px 0}small,.muted{color:var(--muted)}
+.hero{background:linear-gradient(130deg,#08653d,#06432e);border-radius:22px;padding:19px;color:#fff;margin-bottom:13px}
+.hero p{color:#ddf2df;font-size:13px}
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:13px;box-shadow:0 5px 20px #00381909}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+label{display:block;color:#315747;font-size:13px;font-weight:750}select,input{font:inherit;border:1px solid #c6dacb;border-radius:10px;padding:10px;background:#fff;color:var(--ink);width:100%;margin-top:5px}
+button,.button{font:inherit;border:0;border-radius:12px;background:var(--green);color:#fff;padding:12px 14px;font-weight:760;cursor:pointer}
+button.secondary,.button.secondary{background:#e6f3e8;color:var(--green);border:1px solid #cfe3d4}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.row button{flex:1;min-width:135px}
+#map{height:345px;border-radius:16px;background:#e4eae4;border:1px solid #d6e4dc;z-index:0}
+#places{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.place{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fcfdfb}
+.place b{display:block;font-size:14px;overflow-wrap:anywhere}.place small{display:block;margin:5px 0}.place a{font-size:12px;color:#06643c;font-weight:700;overflow-wrap:anywhere}
+.mosque{border-left:4px solid #2a8b65}.eat{border-left:4px solid #b48b32}
+.notice{font-size:12px;background:#fff7e7;padding:11px 12px;border-radius:11px;border:1px solid #f3e4bd;color:#64501c;margin-top:10px}
+#prayerGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.prayer{background:#eff7ee;padding:12px;border-radius:13px;text-align:center}
+.prayer span{display:block;font-size:12px;color:#476b55}.prayer strong{font-size:19px;display:block;margin-top:5px;font-variant-numeric:tabular-nums}
+#qibla{display:flex;align-items:center;gap:16px}
+.compass{width:110px;height:110px;flex:0 0 110px;position:relative;border:3px solid #d7e9dc;border-radius:50%;background:#f4faf5;display:grid;place-items:center}
+.compass::before{content:"N";position:absolute;top:5px;font-size:12px;font-weight:800;color:#1a5e3b}
+#needle{font-size:49px;color:#077d4b;line-height:1;transform:rotate(0deg);transition:transform .3s}
+#qiblaDegrees{font-weight:850;font-size:30px}
+footer{padding:20px 0;text-align:center;font-size:12px;color:var(--muted)}
+.loading{color:#315848;font-size:13px}
+@media(max-width:540px){.form{grid-template-columns:1fr}#places{grid-template-columns:1fr}#map{height:310px}#prayerGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero h1{font-size:24px}}
+</style>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script src="https://unpkg.com/adhan@4.4.4/lib/bundles/adhan.umd.min.js" defer></script>
+<script src="./places-prayer.js?v=20261014b" defer></script>
+</head>
+<body>
+<header><div class="inner"><a href="./index.html">← Japan Halal Checker</a><select id="lang" aria-label="Language"><option value="en">English</option><option value="bn">বাংলা</option><option value="ja">日本語</option></select></div></header>
+<main>
+<section class="hero"><h1 data-i="title">Nearby halal food & mosques</h1><p data-i="subtitle">Explore community-mapped places and calculated prayer times in Japan.</p></section>
+<section class="card"><h2 data-i="location">Choose location</h2><div class="form">
+<label><span data-i="city">City</span><select id="city"><option value="Kobe">Kobe · 神戸</option><option value="Osaka">Osaka · 大阪</option><option value="Kyoto">Kyoto · 京都</option><option value="Tokyo">Tokyo · 東京</option><option value="Nagoya">Nagoya · 名古屋</option><option value="Fukuoka">Fukuoka · 福岡</option><option value="Sapporo">Sapporo · 札幌</option><option value="Nara">Nara · 奈良</option></select></label>
+<label><span data-i="radius">Search radius</span><select id="radius"><option value="3000">3 km</option><option value="7000" selected>7 km</option><option value="12000">12 km</option></select></label>
+</div><div class="row"><button id="gps" type="button" data-i="useGPS">Use my current location</button><button type="button" class="secondary" id="load" data-i="refresh">Refresh map</button></div><p class="muted" id="locationInfo" aria-live="polite"></p></section>
+<section class="card"><h2 data-i="mapTitle">Live OpenStreetMap listings</h2><div id="map" aria-label="Map showing mosques and community halal food listings"></div><p id="mapStatus" class="loading" role="status" aria-live="polite"></p><div class="form">
+<label><span data-i="type">Place type</span><select id="type"><option value="all" data-i="all">All places</option><option value="mosque" data-i="mosques">Mosques</option><option value="restaurant" data-i="food">Halal food listings</option></select></label>
+<label><span data-i="placeSearch">Filter results</span><input id="query" data-placeholder="search" placeholder="Search by name"></label>
+</div><div id="places"></div><p class="notice" data-i="osmDisclaimer">Locations and halal tags are community-contributed OpenStreetMap data, not checked halal certification. Ask each restaurant about ingredients and current practices.</p><p><a href="./halal-restaurants.html" data-i="directory">See our researched restaurant directory ↗</a></p></section>
+<section class="card"><h2 data-i="prayerTitle">Today's prayer times in Japan</h2><label><span data-i="method">Calculation method</span><select id="method"><option value="MWL">Muslim World League (18° / 17°)</option><option value="Egyptian">Egyptian (19.5° / 17.5°)</option><option value="Karachi">Karachi (18° / 18°)</option><option value="Singapore">Singapore (20° / 18°)</option></select></label><div style="margin-top:10px"><label><span data-i="asrRule">Asr calculation</span><select id="asr"><option value="shafi">Standard (Shafi / Maliki / Hanbali)</option><option value="hanafi">Hanafi</option></select></label></div>
+<p class="muted" id="prayerDate"></p><div id="prayerGrid" aria-live="polite"></div><p class="notice" data-i="prayerDisclaimer">Astronomical estimates in Japan Standard Time (JST). Local mosques may use different timetables; follow your mosque for exact times.</p></section>
+<section class="card"><h2 data-i="qiblaTitle">Qibla direction</h2><div id="qibla"><div class="compass"><div id="needle" aria-label="Direction from North">↑</div></div><div><div id="qiblaDegrees">—</div><span id="qiblaDesc" class="muted"></span><p class="muted" data-i="qiblaNote">Bearing clockwise from true north. Align north using a compass before following the arrow.</p></div></div></section>
+<footer>© Japan Halal Checker · <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">© OpenStreetMap contributors</a> · <a href="https://github.com/batoulapps/adhan-js" target="_blank" rel="noopener">Adhan</a></footer>
+</main></body></html>
