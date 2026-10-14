@@ -16,10 +16,10 @@ jobs:
         run: |
           set -euo pipefail
           for i in 1 2 3 4 5; do
-            if curl -fLsS --max-time 15 -o /tmp/index-live.html 'https://mr04nazmul.github.io/Halal-japan/' && grep -q 'places-prayer.html' /tmp/index-live.html; then
-              echo 'Homepage includes Places link'; break
+            if curl -fLsS --max-time 15 -o /tmp/index-live.html 'https://mr04nazmul.github.io/Halal-japan/' && grep -Eq 'assets/[^" ]+\.js' /tmp/index-live.html; then
+              echo 'Published Floot React homepage reachable'; break
             fi
-            if [ "$i" = 5 ]; then echo 'Live homepage not updated'; exit 1; fi
+            if [ "$i" = 5 ]; then echo 'Live Floot homepage not available'; exit 1; fi
             sleep 10
           done
       - name: Check live multilingual map and prayer page
@@ -31,6 +31,10 @@ jobs:
           curl -fLsS --max-time 20 'https://mr04nazmul.github.io/Halal-japan/places-prayer.js' -o /tmp/places.js
           grep -q 'overpass.private.coffee' /tmp/places.js
           grep -q 'externalMosques' /tmp/places.js
+          bundle=$(grep -oE 'assets/[^" ]+\.js' /tmp/index-live.html | head -n 1)
+          curl -fLsS --max-time 20 "https://mr04nazmul.github.io/Halal-japan/$bundle" -o /tmp/floot.js
+          grep -q 'places-prayer.html' /tmp/floot.js
+          echo 'Published React app references live Places & Prayer page'
           echo 'Published places/prayer page and script reachable'
       - name: Check attributed Japanese research is published
         run: |
