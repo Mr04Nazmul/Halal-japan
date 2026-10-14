@@ -3,6 +3,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Bulk Import Japan Food Products"]
+    types: [completed]
 permissions:
   contents: read
   pages: write
@@ -35,6 +38,7 @@ jobs:
           cp places-prayer.js _site/places-prayer.js
           mkdir -p _site/data
           cp data/off-japan-research.json _site/data/off-japan-research.json
+          if [ -s data/openfoodfacts-japan.json ]; then cp data/openfoodfacts-japan.json _site/data/openfoodfacts-japan.json; fi
           test -s _site/places-prayer.html
           test -s _site/places-prayer.js
           test -s _site/data/off-japan-research.json
