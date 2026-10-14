@@ -199,8 +199,10 @@ async function fetchProduct(url){
   const raw=localStorage.getItem('jhc_yahoo_proxy')||'https://halal-japan-backend.vercel.app';
   const base=new URL(raw);
   if(base.protocol==='https:'&&!base.username&&!base.password){
-   const u=new URL(url),m=u.pathname.match(/\\/product\\/(\\d{8,14})\\.json/);
-   const c=m?m[1]:'',q=!c?(u.searchParams.get('search_terms')||''):'';
+   const u=new URL(url),last=u.pathname.split('/').pop()||'';
+   const candidate=last.endsWith('.json')?last.slice(0,-5):'';
+   const c=Array.from(candidate).every(ch=>ch>='0'&&ch<='9')&&candidate.length>=8&&candidate.length<=14?candidate:'';
+   const q=!c?(u.searchParams.get('search_terms')||''):'';
    if(c||q){
     for(const path of ['/api/free-product','/api/yahoo-product']){
      const endpoint=new URL(path,base);endpoint.searchParams.set(c?'jan_code':'query',c||q);
@@ -209,7 +211,7 @@ async function fetchProduct(url){
      const p=data.products?.[0];if(!p)continue;
      const ing=String(p.ingredients_text||''),fromYahoo=path.includes('yahoo-product');
      const display={code:p.code||'',product_name:p.product_name||'',brands:p.brands||'',image_url:p.image_url||'',ingredients_text:ing};
-     const safeUrl=String(p._sourceUrl||'');const link=/^https:\\/\\//.test(safeUrl)?safeUrl:'https://world.openfoodfacts.org/';
+     const safeUrl=String(p._sourceUrl||'');const link=safeUrl.startsWith('https://')?safeUrl:'https://world.openfoodfacts.org/';
      // Community and retail listings never count as official halal certification.
      const assessment=ing?halalAssessment(ing):{status:'verify',reasons:['Ingredients are unavailable']};
      const verdict=ing?halalBadge(assessment):'<div class="badge">NEEDS VERIFICATION · Ingredients unavailable</div>';
