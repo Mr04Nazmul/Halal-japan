@@ -36,6 +36,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --retry 2 --retry-all-errors --retry-delay 2 -fsSL --max-time 35             --data-urlencode 'data=[out:json][timeout:20];nwr(around:3000,34.6901,135.1955)["amenity"="place_of_worship"]["religion"="muslim"];out center 5;'             'https://overpass-api.de/api/interpreter' -o /tmp/overpass.json
+          curl -A 'JapanHalalChecker/1.0 (+https://mr04nazmul.github.io/Halal-japan/)' -H 'Referer: https://mr04nazmul.github.io/Halal-japan/places-prayer.html' -H 'Accept: application/json' --retry 1 --retry-all-errors --retry-delay 3 -fsSL --max-time 35 --data-urlencode 'data=[out:json][timeout:20];nwr(around:3000,34.6901,135.1955)["amenity"="place_of_worship"]["religion"="muslim"];out center 5;' 'https://overpass.private.coffee/api/interpreter' -o /tmp/overpass.json
           jq -e '.elements | type == "array"' /tmp/overpass.json >/dev/null
           echo 'OpenStreetMap live API response schema OK'
