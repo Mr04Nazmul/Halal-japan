@@ -4,7 +4,7 @@ on:
     branches: [main]
   workflow_dispatch:
   workflow_run:
-    workflows: ["Bulk Import Japan Food Products"]
+    workflows: ["Bulk Import Japan Food Products", "Expand Food Catalog to 100k"]
     types: [completed]
 permissions:
   contents: read
