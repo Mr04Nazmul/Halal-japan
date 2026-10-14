@@ -1,0 +1,63 @@
+name: Expand Food Catalog to 100k
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/build_world_100k_food.py"
+      - ".github/workflows/world-100k-products.yml"
+  schedule:
+    - cron: "44 2 * * 1"
+permissions:
+  contents: write
+concurrency:
+  group: world-100k-food
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Stream OFF official food export and build real barcode shards
+        env:
+          FOOD_CATALOG_TARGET: "100000"
+        run: python scripts/build_world_100k_food.py
+      - name: Verify manifest, 100k unique count and shard consistency
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          base=json.loads(Path('data/openfoodfacts-japan.json').read_text())
+          man=json.loads(Path('data/food-catalog-manifest.json').read_text())
+          shards=list(Path('data/world-food-shards').glob('*.json'))
+          jp={str(x['code']) for x in base['products']}
+          extra=set()
+          for file in shards:
+              data=json.loads(file.read_text())
+              assert data['license']=='ODbL-1.0'
+              for item in data['records']:
+                  assert item['code'].startswith(file.stem)
+                  assert item['code'] not in jp
+                  assert item['code'] not in extra
+                  assert item['_halalVerified'] is False
+                  extra.add(item['code'])
+          assert len(jp)+len(extra)==man['total_unique_records']==100000
+          assert len(extra)==man['additional_records']
+          assert man['barcode_shards']==len(shards)
+          print('VERIFIED',len(jp),'Japan-tag records +',len(extra),'supplemental records = 100000 unique barcodes')
+          PY
+      - name: Commit indexed database only if valid and changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/world-food-shards/ data/world-food-name-index.json data/food-catalog-manifest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: 100k real OFF food products, separate Japan and worldwide scope"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
