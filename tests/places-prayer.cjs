@@ -10,7 +10,7 @@ new vm.Script(js,{filename:'places-prayer.js'});
 assert.match(page,/leaflet@1\.9\.4/);
 assert.match(page,/adhan@4\.4\.4/);
 assert.match(main,/href="\.\/places-prayer\.html"/);
-assert.match(main,/product-data\.js\?v=20261014-ingredients-2/);
+assert.match(main,/product-data\.js\?v=20261014-ocr-3/);
 assert.match(js,/overpass-api\.de\/api\/interpreter/);
 assert.match(js,/\["diet:halal"~"\^\(yes\|only\)\$"\]/);
 assert.match(js,/navigator\.geolocation\.getCurrentPosition/);
