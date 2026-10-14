@@ -194,28 +194,27 @@ async function fetchProduct(url){
    saveProduct(p,assessment);setStatus('');return;
   }catch(e){lastError=e}
  }
- // Retail catalog fallback. Only a configured server-side proxy receives requests; never expose Yahoo credentials here.
- try{
-  const raw=localStorage.getItem('jhc_yahoo_proxy')||((location.hostname.endsWith('vercel.app'))?location.origin:'');
-  const base=new URL(raw||'https://invalid.invalid');
-  const isLocal=base.hostname==='localhost'||base.hostname==='127.0.0.1';
-  if((base.protocol==='https:'||isLocal)&&!base.username&&!base.password&&raw){
-   const u=new URL(url),m=u.pathname.match(/\/product\/(\d{8,14})\.json/);
+ // Keyless Open Food Facts server fallback, then Yahoo Shopping retail metadata.
+ try {
+  const raw=localStorage.getItem('jhc_yahoo_proxy')||'https://halal-japan-backend.vercel.app';
+  const base=new URL(raw);
+  if(base.protocol==='https:'&&!base.username&&!base.password){
+   const u=new URL(url),m=u.pathname.match(/\\/product\\/(\\d{8,14})\\.json/);
    const c=m?m[1]:'',q=!c?(u.searchParams.get('search_terms')||''):'';
    if(c||q){
-    const endpoint=new URL('/api/yahoo-product',base);
-    endpoint.searchParams.set(c?'jan_code':'query',c||q);
-    const yr=await fetch(endpoint,{signal:typeof AbortSignal.timeout==='function'?AbortSignal.timeout(9000):undefined});
-    if(yr.ok){
-     const data=await yr.json();const p=data.products?.[0];
+    for(const path of ['/api/free-product','/api/yahoo-product']){
+     const endpoint=new URL(path,base);endpoint.searchParams.set(c?'jan_code':'query',c||q);
+     let data;try{const r=await fetch(endpoint,{signal:typeof AbortSignal.timeout==='function'?AbortSignal.timeout(10000):undefined});if(!r.ok)continue;data=await r.json()}catch(_){continue}
      if(sequence!==lookupSequence)return;
-     if(p){
-      const display={code:p.code||'',product_name:p.product_name||'',brands:p.brands||'',image_url:p.image_url||'',ingredients_text:''};
-      const safeUrl=String(p._sourceUrl||'');
-      const link=/^https:\/\//.test(safeUrl)?safeUrl:'https://shopping.yahoo.co.jp/';
-      showResult('<div class="badge">NEEDS VERIFICATION · Yahoo retail listing</div><div class="product">'+(display.image_url?'<img src="'+escapeHtml(display.image_url)+'" alt="" loading="lazy">':'')+'<div><h3>'+escapeHtml(display.product_name)+'</h3><div class="small">'+tr('brand')+': '+escapeHtml(display.brands||'—')+'</div><div class="small">JAN: '+escapeHtml(display.code||'—')+'</div></div></div><h4>'+tr('ingredientsLabel')+'</h4><p>Manufacturer ingredient list not available from Yahoo Shopping. Check the package or manufacturer; no Halal/Haram verdict was made.</p><p><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener">Yahoo listing ↗</a></p>');
-      saveProduct(display,{status:'verify',reasons:['Retail listing only; ingredient verification required']});setStatus('');return;
-     }
+     const p=data.products?.[0];if(!p)continue;
+     const ing=String(p.ingredients_text||''),fromYahoo=path.includes('yahoo-product');
+     const display={code:p.code||'',product_name:p.product_name||'',brands:p.brands||'',image_url:p.image_url||'',ingredients_text:ing};
+     const safeUrl=String(p._sourceUrl||'');const link=/^https:\\/\\//.test(safeUrl)?safeUrl:'https://world.openfoodfacts.org/';
+     // Community and retail listings never count as official halal certification.
+     const assessment=ing?halalAssessment(ing):{status:'verify',reasons:['Ingredients are unavailable']};
+     const verdict=ing?halalBadge(assessment):'<div class="badge">NEEDS VERIFICATION · Ingredients unavailable</div>';
+     showResult(verdict+'<div class="product">'+(display.image_url?'<img src="'+escapeHtml(display.image_url)+'" alt="" loading="lazy">':'')+'<div><h3>'+escapeHtml(display.product_name)+'</h3><div class="small">'+tr('brand')+': '+escapeHtml(display.brands||'—')+'</div><div class="small">JAN: '+escapeHtml(display.code||'—')+'</div></div></div><h4>'+tr('ingredientsLabel')+'</h4><p>'+escapeHtml(ing||'No complete ingredient list available from this source.')+'</p><p><a href="'+escapeHtml(link)+'" target="_blank" rel="noopener">Source: '+(fromYahoo?'Yahoo Shopping':'Open Food Facts')+' ↗</a></p><div class="notice">Retail/community ingredients are not manufacturer-verified halal certification. Check the product label and source.</div>');
+     saveProduct(display,assessment);setStatus('');return;
     }
    }
   }
