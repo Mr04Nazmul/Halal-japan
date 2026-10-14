@@ -1,0 +1,46 @@
+name: Audit 100k Ingredient Sources
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/audit_off_ingredient_sources.py"
+      - ".github/workflows/audit-ingredient-sources.yml"
+permissions:
+  contents: write
+concurrency:
+  group: audit-ingredient-sources
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compare all 100k barcodes with source ingredient text and label photos
+        run: python scripts/audit_off_ingredient_sources.py
+      - name: Confirm scoped counts and publish source audit
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('data/ingredient-source-audit.json').read_text())
+          assert r['totals']['records']==100000
+          assert r['source_rows_matched']>0
+          assert r['photo_leads_saved']<=7500
+          print('AUDIT VERIFIED:',r['source_rows_matched'],'barcodes found in official source')
+          PY
+      - name: Commit evidence only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ingredient-source-audit.json data/ingredient-photo-leads.json data/ingredient-text-recovery-leads.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: audit ingredient text and label photos for 100k OFF barcodes"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
