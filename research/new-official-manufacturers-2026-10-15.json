@@ -1,7 +1,7 @@
 {
   "researched_at": "2026-10-15",
   "purpose": "New manufacturer ingredient evidence beyond initial 30+26 sources; do not count as halal certification",
-  "new_distinct_manufacturers": 9,
+  "new_distinct_manufacturers": 10,
   "manufacturer_sources": [
     {
       "manufacturer": "UHA Mikakuto",
@@ -72,6 +72,14 @@
       "domain": "naganotomato.jp",
       "category": "sauce and vegetables",
       "official_product_url": "https://www.naganotomato.jp/products/001808.html",
+      "ingredient_text_at_source": true,
+      "jan_on_example_page": false
+    },
+    {
+      "manufacturer": "Fujicco",
+      "domain": "fujicco.co.jp",
+      "category": "prepared beans and seaweed",
+      "official_product_url": "https://www.fujicco.co.jp/products/detail/84.html",
       "ingredient_text_at_source": true,
       "jan_on_example_page": false
     }
@@ -286,6 +294,30 @@
         "寒天"
       ],
       "review_reason": "full ingredient text on official page; JAN absent"
+    },
+    {
+      "manufacturer": "Fujicco",
+      "name": "おまめさん 北海道黒豆 115g",
+      "jan": null,
+      "official_url": "https://www.fujicco.co.jp/products/detail/84.html",
+      "ingredient_highlights": [
+        "黒大豆",
+        "黒砂糖",
+        "しょうゆ"
+      ],
+      "review_reason": "ingredient list published but exact JAN/certificate not shown; check label"
+    },
+    {
+      "manufacturer": "Fujicco",
+      "name": "このまま使えるだいず水煮 150g",
+      "jan": null,
+      "official_url": "https://www.fujicco.co.jp/products/detail/117.html",
+      "ingredient_highlights": [
+        "大豆",
+        "デキストリン",
+        "塩化カルシウム"
+      ],
+      "review_reason": "ingredient list published but exact JAN/certificate not shown; check label"
     }
   ],
   "integrity_rules": [
