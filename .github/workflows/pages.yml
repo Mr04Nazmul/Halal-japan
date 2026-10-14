@@ -31,6 +31,13 @@ jobs:
           cp seven-eleven-catalog.html _site/seven-eleven-catalog.html
           cp halal-restaurants.html _site/halal-restaurants.html
           cp restaurant-data.js _site/restaurant-data.js
+          cp places-prayer.html _site/places-prayer.html
+          cp places-prayer.js _site/places-prayer.js
+          mkdir -p _site/data
+          cp data/off-japan-research.json _site/data/off-japan-research.json
+          test -s _site/places-prayer.html
+          test -s _site/places-prayer.js
+          test -s _site/data/off-japan-research.json
           test -s _site/halal-restaurants.html
           test -s _site/restaurant-data.js
           test -s _site/index.html
