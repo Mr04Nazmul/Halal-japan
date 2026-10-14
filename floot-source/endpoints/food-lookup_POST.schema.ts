@@ -35,16 +35,31 @@ let japanResearchPending:Promise<JapanResearchRow[]>|null=null;
 async function readJapanResearch():Promise<JapanResearchRow[]>{
  if(japanResearchRows)return japanResearchRows;
  if(!japanResearchPending)japanResearchPending=(async()=>{
-  try{
-   const r=await fetch('./data/off-japan-research.json',{signal:AbortSignal.timeout(8000)});
-   if(!r.ok)return [];
-   const j=await r.json();
-   if(j.license!=='ODbL-1.0'||!Array.isArray(j.records))return [];
-   japanResearchRows=j.records.filter((p:JapanResearchRow)=>/^\d{8,14}$/.test(String(p.code))&&!!p.product_name);
-   return japanResearchRows||[];
-  }catch{return [];}
-  finally{japanResearchPending=null;}
- })();
+  // Import both the incremental 10k dataset and older source-attributed snapshot.
+  // These are research leads, not manufacturer-verified halal products.
+  const files:[string,string][]=[
+   ['./data/openfoodfacts-japan.json','products'],
+   ['./data/off-japan-research.json','records']
+  ];
+  const sets=await Promise.all(files.map(async([url,key])=>{
+   try{
+    const r=await fetch(url,{signal:AbortSignal.timeout(20000)});
+    if(!r.ok)return [];
+    const j=await r.json();
+    if(j.license!=='ODbL-1.0'||!Array.isArray(j[key]))return [];
+    return j[key] as JapanResearchRow[];
+   }catch{return [];}
+  }));
+  const byCode=new Map<string,JapanResearchRow>();
+  for(const rows of sets)for(const p of rows){
+   const code=String(p.code||'');
+   if(!/^\d{8,14}$/.test(code)||!p.product_name)continue;
+   const prev=byCode.get(code);
+   if(!prev||(!prev.ingredients_text&&p.ingredients_text))byCode.set(code,p);
+  }
+  japanResearchRows=Array.from(byCode.values());
+  return japanResearchRows;
+ })().finally(()=>{japanResearchPending=null});
  return japanResearchPending;
 }
 async function lookupJapanResearch(query:string,isBarcode:boolean):Promise<LookupResult|null>{
