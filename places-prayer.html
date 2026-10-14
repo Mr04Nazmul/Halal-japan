@@ -44,7 +44,7 @@ footer{padding:20px 0;text-align:center;font-size:12px;color:var(--muted)}
 </style>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <script src="https://unpkg.com/adhan@4.4.4/lib/bundles/adhan.umd.min.js" defer></script>
-<script src="./places-prayer.js?v=20261014b" defer></script>
+<script src="./places-prayer.js?v=20261014c" defer></script>
 </head>
 <body>
 <header><div class="inner"><a href="./index.html">← Japan Halal Checker</a><select id="lang" aria-label="Language"><option value="en">English</option><option value="bn">বাংলা</option><option value="ja">日本語</option></select></div></header>
@@ -54,7 +54,7 @@ footer{padding:20px 0;text-align:center;font-size:12px;color:var(--muted)}
 <label><span data-i="city">City</span><select id="city"><option value="Kobe">Kobe · 神戸</option><option value="Osaka">Osaka · 大阪</option><option value="Kyoto">Kyoto · 京都</option><option value="Tokyo">Tokyo · 東京</option><option value="Nagoya">Nagoya · 名古屋</option><option value="Fukuoka">Fukuoka · 福岡</option><option value="Sapporo">Sapporo · 札幌</option><option value="Nara">Nara · 奈良</option></select></label>
 <label><span data-i="radius">Search radius</span><select id="radius"><option value="3000">3 km</option><option value="7000" selected>7 km</option><option value="12000">12 km</option></select></label>
 </div><div class="row"><button id="gps" type="button" data-i="useGPS">Use my current location</button><button type="button" class="secondary" id="load" data-i="refresh">Refresh map</button></div><p class="muted" id="locationInfo" aria-live="polite"></p></section>
-<section class="card"><h2 data-i="mapTitle">Live OpenStreetMap listings</h2><div id="map" aria-label="Map showing mosques and community halal food listings"></div><p id="mapStatus" class="loading" role="status" aria-live="polite"></p><div class="form">
+<section class="card"><h2 data-i="mapTitle">Live OpenStreetMap listings</h2><div id="map" aria-label="Map showing mosques and community halal food listings"></div><p id="mapStatus" class="loading" role="status" aria-live="polite"></p><div class="row"><a id="liveMosques" class="button secondary" href="https://www.google.com/maps/search/?api=1&query=mosque%20Kobe" target="_blank" rel="noopener">Open mosque search ↗</a><a id="liveFood" class="button secondary" href="https://www.google.com/maps/search/?api=1&query=halal%20restaurants%20Kobe" target="_blank" rel="noopener">Open halal restaurant search ↗</a></div><div class="form">
 <label><span data-i="type">Place type</span><select id="type"><option value="all" data-i="all">All places</option><option value="mosque" data-i="mosques">Mosques</option><option value="restaurant" data-i="food">Halal food listings</option></select></label>
 <label><span data-i="placeSearch">Filter results</span><input id="query" data-placeholder="search" placeholder="Search by name"></label>
 </div><div id="places"></div><p class="notice" data-i="osmDisclaimer">Locations and halal tags are community-contributed OpenStreetMap data, not checked halal certification. Ask each restaurant about ingredients and current practices.</p><p><a href="./halal-restaurants.html" data-i="directory">See our researched restaurant directory ↗</a></p></section>
