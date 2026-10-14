@@ -75,6 +75,71 @@ async function lookupJapanResearch(query:string,isBarcode:boolean):Promise<Looku
   ...ingredientDecision(ingredients),coverageNote:'Japan-tagged Open Food Facts community snapshot, not verified manufacturer ingredients or halal certification. Check the actual label.'};
 }
 
+// Supplemental Open Food Facts barcode shards. Loaded on demand; never display
+// worldwide-only records as evidence a product is stocked or certified in Japan.
+type WorldProduct={code:string;product_name:string;brands?:string;ingredients_text?:string;scope:string;};
+const worldBarcodeCache=new Map<string,WorldProduct[]>();
+let worldNameIndex: Array<[string,string,string,string]>|null=null;
+let worldNamePending:Promise<Array<[string,string,string,string]>>|null=null;
+async function readWorldBarcode(code:string):Promise<WorldProduct|null>{
+ if(!/^\d{8,14}$/.test(code))return null;
+ const key=code.slice(0,3);
+ let records=worldBarcodeCache.get(key);
+ if(!records){
+  try{
+   const res=await fetch('./data/world-food-shards/'+key+'.json',{signal:AbortSignal.timeout(12000)});
+   if(!res.ok)return null;
+   const body=await res.json();
+   if(body.license!=='ODbL-1.0'||!Array.isArray(body.records))return null;
+   records=body.records as WorldProduct[];
+   if(worldBarcodeCache.size>=12)worldBarcodeCache.delete(worldBarcodeCache.keys().next().value as string);
+   worldBarcodeCache.set(key,records);
+  }catch{return null;}
+ }
+ return records.find(row=>row.code===code)||null;
+}
+async function readWorldNameIndex():Promise<Array<[string,string,string,string]>>{
+ if(worldNameIndex)return worldNameIndex;
+ if(!worldNamePending)worldNamePending=(async()=>{
+  try{
+   const res=await fetch('./data/world-food-name-index.json',{signal:AbortSignal.timeout(20000)});
+   if(!res.ok)return [];
+   const data=await res.json();
+   if(data.license!=='ODbL-1.0'||!Array.isArray(data.records))return [];
+   worldNameIndex=data.records as Array<[string,string,string,string]>;
+   return worldNameIndex;
+  }catch{return []}
+ })().finally(()=>{worldNamePending=null});
+ return worldNamePending;
+}
+async function lookupSupplementaryFood(query:string,isBarcode:boolean):Promise<LookupResult|null>{
+ let row:WorldProduct|null=null;
+ if(isBarcode){row=await readWorldBarcode(query)}
+ else if(query.length>=3){
+  const idx=await readWorldNameIndex();
+  const lower=query.toLocaleLowerCase();
+  // Prefer Japan-related indicators, but they do not prove Japanese availability.
+  const match=idx.find(([code,name,brand,scope])=>scope!=='worldwide_only'&&
+      (name+' '+brand+' '+code).toLocaleLowerCase().includes(lower))||
+   idx.find(([code,name,brand])=>(name+' '+brand+' '+code).toLocaleLowerCase().includes(lower));
+  if(match)row=await readWorldBarcode(match[0]);
+ }
+ if(!row)return null;
+ const scopeNote:Record<string,string>={
+  japan_country_tag:'Country tagged Japan by a community contributor; not manufacturer verified.',
+  japanese_barcode_prefix_only:'Barcode prefix may be registered through GS1 Japan; it DOES NOT confirm Japanese store availability.',
+  japanese_name_only:'Japanese-looking name only; Japanese store availability is NOT confirmed.',
+  worldwide_only:'GLOBAL product only; NOT confirmed to be sold in Japan.'
+ };
+ return {found:true,name:row.product_name,barcode:row.code,brand:row.brands||null,
+  ingredients:row.ingredients_text||null,image:null,
+  source:'Open Food Facts worldwide supplemental food index (community data, ODbL)',
+  productUrl:'https://world.openfoodfacts.org/product/'+encodeURIComponent(row.code),
+  ...ingredientDecision(row.ingredients_text||null),
+  coverageNote:(scopeNote[row.scope]||'Market availability unverified')+
+  ' Ingredient text and halal certification have NOT been independently verified. Check the current physical label.'};
+}
+
 export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
  // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
@@ -119,6 +184,8 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  }
  const offlineJapan=await lookupJapanResearch(query,isBarcode);
  if(offlineJapan)return offlineJapan;
+ const indexedWorld=await lookupSupplementaryFood(query,isBarcode);
+ if(indexedWorld)return indexedWorld;
  // Open Food Facts is community-maintained (ODbL); query on demand instead of copying its entire database.
  const api=isBarcode
   ?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json?fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url'
