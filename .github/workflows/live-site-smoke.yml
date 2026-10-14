@@ -1,0 +1,40 @@
+name: Live published website smoke
+on:
+  workflow_run:
+    workflows: ["Deploy Japan Halal Checker to GitHub Pages"]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  published:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check live home page includes Places route
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5; do
+            if curl -fLsS --max-time 15 -o /tmp/index-live.html 'https://mr04nazmul.github.io/Halal-japan/' && grep -q 'places-prayer.html' /tmp/index-live.html; then
+              echo 'Homepage includes Places link'; break
+            fi
+            if [ "$i" = 5 ]; then echo 'Live homepage not updated'; exit 1; fi
+            sleep 10
+          done
+      - name: Check live multilingual map and prayer page
+        run: |
+          set -euo pipefail
+          curl -fLsS --max-time 20 'https://mr04nazmul.github.io/Halal-japan/places-prayer.html' -o /tmp/places.html
+          grep -q 'places-prayer.js' /tmp/places.html
+          grep -q 'adhan@4.4.4' /tmp/places.html
+          curl -fLsS --max-time 20 'https://mr04nazmul.github.io/Halal-japan/places-prayer.js' -o /tmp/places.js
+          grep -q 'overpass.private.coffee' /tmp/places.js
+          grep -q 'externalMosques' /tmp/places.js
+          echo 'Published places/prayer page and script reachable'
+      - name: Check attributed Japanese research is published
+        run: |
+          set -euo pipefail
+          curl -fLsS --max-time 20 'https://mr04nazmul.github.io/Halal-japan/data/off-japan-research.json' -o /tmp/research.json
+          jq -e '.license == "ODbL-1.0" and (.record_count >= 280) and ((.records | length) >= 280)' /tmp/research.json
+          echo 'Published product research feed reachable'
