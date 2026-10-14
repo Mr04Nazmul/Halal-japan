@@ -160,7 +160,8 @@
  $('method').addEventListener('change',drawPrayers);
  $('asr').addEventListener('change',drawPrayers);
  $('lang').addEventListener('change',translate);
- $('lang').value=(navigator.language||'en').startsWith('ja')?'ja':(navigator.language||'').startsWith('bn')?'bn':'en';
+ const parentLanguage=new URLSearchParams(window.location.search).get('lang');
+ $('lang').value=['en','bn','ja'].includes(parentLanguage)?parentLanguage:((navigator.language||'en').startsWith('ja')?'ja':(navigator.language||'').startsWith('bn')?'bn':'en');
  translate();initializeMap();loadPlaces();
  // Expose pure helpers for automated regression tests without leaking user's location.
  window.JHCLocationMath={qiblaBearing,distance};
