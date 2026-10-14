@@ -25,7 +25,7 @@ jobs:
           python-version: '3.12'
       - name: Collect and deduplicate public Japanese product leads
         env:
-          OFF_PAGES: '2'
+          OFF_PAGES: '3'
         run: python scripts/collect_off_japan.py
       - name: Commit new research batch, if changed
         run: |
