@@ -183,7 +183,7 @@ async function fetchProduct(url){
    if(r.status===404){lastError=404;continue}
    if(!r.ok){lastError=r.status;continue}
    const j=await r.json();if(sequence!==lookupSequence)return;const p=j.product||j.products?.[0];
-   if(!p||(!p.product_name&&!p.product_name_en&&!p.ingredients_text&&!p.code)){lastError=404;continue}
+   if(!p||(!p.product_name&&!p.product_name_en&&!p.product_name_ja&&!p.ingredients_text&&!p.ingredients_text_en&&!p.ingredients_text_ja)){lastError=404;continue}
    const name=p.product_name||p.product_name_en||p.product_name_ja||'Product';
    const ing=p.ingredients_text||p.ingredients_text_en||p.ingredients_text_ja||'';
    const img=p.image_front_small_url||p.image_url||'';
