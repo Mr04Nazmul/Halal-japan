@@ -251,8 +251,39 @@ function showPlainBanana(userReportedCode=''){
  showResult('<div class="notice" style="border-color:#54aa71;background:#e1f5e7;color:#15482c"><strong>HALAL · Whole fresh fruit (ingredient check)</strong></div><div class="product"><div><h3>Fresh banana · কলা · バナナ</h3><p>Ingredient: banana only. No additives in a whole, unprocessed banana.</p></div></div><div class="notice">This result is for ordinary fresh bananas only. Barcode 02870472 was reported by a user as a fresh banana, not independently verified. Confirm the item is a whole fresh banana. Packaged banana desserts or drinks require their own ingredient checks.</div>');
  saveProduct(p,assessment);setStatus('');
 }
-function isPlainBananaQuery(q){return /^(?:banana|bananas|fresh banana|バナナ|কল|কলা)$/i.test(q.trim())}
-$('searchBtn').onclick=()=>{let q=$('productQuery').value.trim();if(!q){setStatus(tr('empty'));return}if(isPlainBananaQuery(q)){showPlainBanana();return}fetchProduct('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=1&fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url,labels_tags')}
+const WHOLE_PRODUCE=[
+ {en:'Apple',ja:'りんご',bn:'আপেল',aliases:['apple','apples','りんご','リンゴ','林檎','আপেল']},
+ {en:'Banana',ja:'バナナ',bn:'কলা',aliases:['banana','bananas','バナナ','কলা']},
+ {en:'Orange',ja:'オレンジ',bn:'কমলা',aliases:['orange','oranges','オレンジ','みかん','ミカン','কমলা']},
+ {en:'Grape',ja:'ぶどう',bn:'আঙুর',aliases:['grape','grapes','ぶどう','ブドウ','আঙুর','আঙ্গুর']},
+ {en:'Strawberry',ja:'いちご',bn:'স্ট্রবেরি',aliases:['strawberry','strawberries','いちご','イチゴ','স্ট্রবেরি']},
+ {en:'Mango',ja:'マンゴー',bn:'আম',aliases:['mango','mangoes','マンゴー','আম']},
+ {en:'Watermelon',ja:'スイカ',bn:'তরমুজ',aliases:['watermelon','スイカ','すいか','তরমুজ']},
+ {en:'Pineapple',ja:'パイナップル',bn:'আনারস',aliases:['pineapple','パイナップル','আনারস']},
+ {en:'Pear',ja:'梨',bn:'নাশপাতি',aliases:['pear','pears','梨','なし','ナシ','নাশপাতি']},
+ {en:'Peach',ja:'桃',bn:'পীচ',aliases:['peach','peaches','桃','もも','モモ','পীচ']},
+ {en:'Carrot',ja:'にんじん',bn:'গাজর',aliases:['carrot','carrots','にんじん','人参','গাজর']},
+ {en:'Potato',ja:'じゃがいも',bn:'আলু',aliases:['potato','potatoes','じゃがいも','ジャガイモ','আলু']},
+ {en:'Tomato',ja:'トマト',bn:'টমেটো',aliases:['tomato','tomatoes','トマト','টমেটো']},
+ {en:'Cucumber',ja:'きゅうり',bn:'শসা',aliases:['cucumber','cucumbers','きゅうり','キュウリ','শসা']},
+ {en:'Onion',ja:'玉ねぎ',bn:'পেঁয়াজ',aliases:['onion','onions','玉ねぎ','たまねぎ','পেঁয়াজ']},
+ {en:'Cabbage',ja:'キャベツ',bn:'বাঁধাকপি',aliases:['cabbage','キャベツ','বাঁধাকপি']},
+ {en:'Broccoli',ja:'ブロッコリー',bn:'ব্রকলি',aliases:['broccoli','ブロッコリー','ব্রকলি']},
+ {en:'Spinach',ja:'ほうれん草',bn:'পালং শাক',aliases:['spinach','ほうれん草','ホウレンソウ','পালং শাক']},
+ {en:'Rice',ja:'米',bn:'চাল',aliases:['uncooked rice','plain rice grain','米','生米','চাল']}
+];
+function findWholeProduce(q){
+ const normalized=q.trim().toLocaleLowerCase().replace(/\\s+/g,' ');
+ return WHOLE_PRODUCE.find(p=>p.aliases.some(a=>a.toLocaleLowerCase()===normalized))||null;
+}
+function showWholeProduce(p,reportedCode=''){
+ const product={code:reportedCode,product_name:p.en+' / '+p.bn+' / '+p.ja,brands:'Whole fresh produce',ingredients_text:p.en+' only'};
+ const assessment={status:'verify',reasons:['Whole, unprocessed produce is permissible by ingredient; no certification claim.']};
+ const codeNote=reportedCode?'<p>Barcode '+escapeHtml(reportedCode)+' was reported as this food, but is not independently verified.</p>':'';
+ showResult('<div class="notice" style="border-color:#54aa71;background:#e1f5e7;color:#15482c"><strong>HALAL · Whole unprocessed food (ingredient check)</strong></div><div class="product"><div><h3>'+escapeHtml(p.en+' · '+p.bn+' · '+p.ja)+'</h3><p>Ingredient: '+escapeHtml(p.en)+' only, when whole and unprocessed.</p></div></div><div class="notice">'+codeNote+'This is a general ingredient assessment, not a barcode match or halal certification. Packaged, flavored, prepared or processed products require their full ingredient list.</div>');
+ saveProduct(product,assessment);setStatus('');
+}
+$('searchBtn').onclick=()=>{let q=$('productQuery').value.trim();if(!q){setStatus(tr('empty'));return}const produce=findWholeProduce(q);if(produce){showWholeProduce(produce);return}fetchProduct('https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(q)+'&search_simple=1&action=process&json=1&page_size=1&fields=code,product_name,product_name_en,product_name_ja,brands,ingredients_text,ingredients_text_en,ingredients_text_ja,image_front_small_url,image_url,labels_tags')}
 $('analyzeBtn').onclick=()=>{let v=$('ingredients').value.trim();if(!v){setStatus(tr('empty'));return}reviewIngredients(v,'Ingredient review')}
 $('barcode').addEventListener('keydown',e=>{if(e.key==='Enter')$('lookupBtn').click()});$('productQuery').addEventListener('keydown',e=>{if(e.key==='Enter')$('searchBtn').click()});
 let scanHandled=false;
