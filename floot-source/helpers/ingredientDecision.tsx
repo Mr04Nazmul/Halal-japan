@@ -9,6 +9,8 @@ export type IngredientDecision={verdict:'haram_ingredient'|'needs_review'|'certi
 export function ingredientDecision(input:string|null|undefined, certificateValid=false, completeManufacturerIngredients=false):IngredientDecision{
  const original=(input||'').normalize('NFKC').toLowerCase().trim();
  if(!original)return {verdict:'unknown',reasons:['Ingredient information is unavailable. Scan the 原材料名 section or obtain an official product label.'],confidence:'low',findings:[]};
+ // Labels such as "halal", "organic" or "no additives" are not an ingredient list.
+ if(/^(?:halal|ハラール|認証済み|certified|無添加|organic|オーガニック)(?:\s|、|,|。)*(?:豚肉不使用|ゼラチン不使用|アルコール不使用)?(?:\s|、|,|。)*$/.test(original))return {verdict:'unknown',reasons:['Marketing or absence claims alone are not a complete ingredient declaration.'],confidence:'low',findings:[]};
 
  // Do not treat precautionary allergen/factory statements as actual ingredients.
  // These warnings are important for allergies, but not evidence that the food contains pork.
