@@ -58,7 +58,7 @@ export default function Home(){
  <div className={styles.detailRow}><strong>Name</strong><span>{result.name}</span></div>
  <div className={styles.detailRow}><strong>Japanese Name / 商品名</strong><span>{result.name}</span></div>
  <div className={styles.detailRow}><strong>Company / Brand</strong><span>{result.brands||'Not provided'}</span></div>
- <div className={styles.detailRow}><strong>Barcodes</strong><span>{result.code}</span></div>
+ <div className={styles.detailRow}><strong>Barcode / JAN</strong><span>{/^\d{8,14}$/.test(result.code)?result.code:"Not yet verified — compare the code on the package"}</span></div>
  <div className={styles.detailRow}><strong>Ingredients / 原材料</strong><span>{result.ingredients_text||'Full ingredients unavailable'}</span></div>
  <div className={styles.detailRow}><strong>Verification details</strong><span>{result.reasons?.join(' ')||'More information needed'}</span></div>
  <div className={styles.detailRow}><strong>Information source</strong><span>{result.source||'Not available'}</span>{result.productUrl?<a href={result.productUrl} target="_blank" rel="noopener noreferrer" style={{color:'#efd699',fontSize:13}}>Open manufacturer / product source ↗</a>:null}</div>
