@@ -12,6 +12,7 @@ import ResearchSourcesSettings from '../components/ResearchSourcesSettings';
 import IslamicTools from '../components/IslamicTools';
 import FoodCatalog from '../components/FoodCatalog';
 import SevenElevenOfficialCatalog from '../components/SevenElevenOfficialCatalog';
+import SevenPremiumIngredientLinks from '../components/SevenPremiumIngredientLinks';
 import SevenElevenIngredientResearch from '../components/SevenElevenIngredientResearch';
 import {postFoodLookup, type LookupResult} from '../endpoints/food-lookup_POST.schema';
 import {isCertificateDisplayCurrent} from '../helpers/verifiedHalalCertificates';
@@ -86,6 +87,7 @@ export default function Home(){
  <p style={{fontSize:13,lineHeight:1.65}}>Our focus is a current, evidence-based 7-Eleven food verdict. A named product is not a verified ingredient label. For most items, check the current package's 原材料名. Third-party ingredient excerpts are research leads, not certified halal or a confirmed haram verdict.</p>
  <p style={{fontSize:13}}>Current private catalogue review: <strong>93 Seven-Eleven-related records</strong> (81 without ingredient text, 12 with unconfirmed third-party excerpts). No blanket Halal claim is made.</p>
  <SevenElevenIngredientResearch onChoose={lookup}/>
+ <SevenPremiumIngredientLinks/>
  <SevenElevenOfficialCatalog onChoose={lookup}/>
  </section>
  <div id="ingredient-photo-fallback"><IngredientOcr onDetected={setOcrText}/></div><IngredientVerification initialText={ocrText}/><ReviewedEcodeGuide/><FoodCatalog onChoose={lookup}/>
