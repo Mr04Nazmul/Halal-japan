@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
+import {sevenOfficialItems} from '../helpers/sevenOfficialCatalog';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
 import {extraManufacturerDrinks} from '../helpers/extraManufacturerDrinks';
 import {verifiedFoodRecords} from '../helpers/verifiedFoodRecords';
@@ -179,6 +180,15 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
    return {found:true,name:'Ajīwau Cafe Au Lait 500ml / あじわうカフェオレ 500ml',barcode:query,brand:'Sangaria / サンガリア',ingredients,image:null,source:'Sangaria official manufacturer ingredients',productUrl:'https://sangaria.co.jp/products/ajiwau/',...ingredientDecision(ingredients,false,true),manufacturerEvidence:[{type:'official ingredient list',url:'https://sangaria.co.jp/products/ajiwau/',issuer:'Sangaria',reviewedAt:null}],coverageNote:'Official JAN-matched ingredient list. Flavoring and emulsifier sources are not certified in this record; HALAL LV3 shown in another app is not independent manufacturer certification.'};
  }
  const isBarcode=/^\d{8,14}$/.test(query);
+ // An official name/URL proves identity only, never JAN, 原材料名 or halal suitability.
+ if(!isBarcode){
+  const normalize=(value:string)=>value.replace(/\\s+/g,'').toLocaleLowerCase();
+  const exact=sevenOfficialItems.find(item=>normalize(item.name)===normalize(query));
+  if(exact)return {found:true,name:exact.name,barcode:null,brand:'7-Eleven Japan',ingredients:null,
+    image:null,source:'7-Eleven Japan official product listing (identity only)',productUrl:exact.url,
+    ...ingredientDecision(null),manufacturerEvidence:[],
+    coverageNote:'Official product name identified. JAN, current full ingredient label, additives and halal status are NOT verified. Check package 原材料名; availability and formulations vary by region and date.'};
+ }
  // Manufacturer-confirmed Meiji Tokachi drinking yogurt (400g).
  // Two official JANs correspond to different product revisions; never conflate certification with ingredients.
  const meijiTokachiPage:Record<string,string>={
