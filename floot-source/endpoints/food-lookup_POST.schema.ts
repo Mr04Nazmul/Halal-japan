@@ -3,8 +3,9 @@ import {ingredientDecision} from '../helpers/ingredientDecision';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
 import {extraManufacturerDrinks} from '../helpers/extraManufacturerDrinks';
 import {verifiedFoodRecords} from '../helpers/verifiedFoodRecords';
+import {findVerifiedHalalCertificate,type DisplayHalalCertificate} from '../helpers/verifiedHalalCertificates';
 export const schema=z.object({query:z.string().trim().min(2).max(140)});
-export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'ingredient_clear'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
+export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'ingredient_clear'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string; certificate?:DisplayHalalCertificate|null;};
 const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
 const PUBLIC_KEY='sb_publishable_SL6n4Q0t_AxHywHM6iMkpg_bm-lx_Oh';
 
@@ -167,7 +168,7 @@ async function lookupSupplementaryFood(query:string,isBarcode:boolean):Promise<L
   ' Ingredient text and halal certification have NOT been independently verified. Check the current physical label.'};
 }
 
-export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
+async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
  // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
  if(query==='2044706200126'){
@@ -256,4 +257,20 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  const ingredients=item.ingredients_text_ja||item.ingredients_text||null;
  if(!ingredients && noIngredientFallback)return noIngredientFallback;
  return {found:true,name:item.product_name_ja||item.product_name||'Unnamed product',barcode:item.code||null,brand:item.brands||null,ingredients,image:item.image_front_small_url||item.image_front_url||null,source:'Open Food Facts (community supplied; ODbL attribution)',productUrl:item.url||null,...ingredientDecision(ingredients),manufacturerEvidence:[],coverageNote:'Open Food Facts data is user-contributed under ODbL. Japanese records and labels may be incomplete; no halal certification is implied. Check the exact package.'};
+}
+
+/**
+ * Only promote exact product/brand/JAN matches in the locally reviewed
+ * issuer certificate registry. Public product databases and photos NEVER
+ * confer halal certification. Underlying suspicious/prohibited ingredients
+ * must not be silently overridden.
+ */
+export async function postFoodLookup(body:z.infer<typeof schema>):Promise<LookupResult>{
+ const result=await lookupProductWithoutCertificate(body);
+ if(!result.found)return {...result,certificate:null};
+ const cert=findVerifiedHalalCertificate(result.barcode,result.name,result.brand);
+ if(!cert || result.verdict==='haram_ingredient')return {...result,certificate:null};
+ return {...result,certificate:cert,verdict:'certified',confidence:'high',
+  reasons:['An issuer-verified, in-date halal certificate has been matched to this exact product, brand and barcode. Check the source and current packaging.'],
+  coverageNote:(result.coverageNote||'')+' Product-specific halal certificate checked against issuer evidence on '+cert.verifiedAt+'.'};
 }
