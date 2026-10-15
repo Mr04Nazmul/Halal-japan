@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
+import {guardSevenElevenVerdict} from '../helpers/sevenElevenEvidence';
 import {sevenOfficialItems} from '../helpers/sevenOfficialCatalog';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
 import {extraManufacturerDrinks} from '../helpers/extraManufacturerDrinks';
@@ -287,8 +288,8 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  const result=await lookupProductWithoutCertificate(body);
  if(!result.found)return {...result,certificate:null};
  const cert=findVerifiedHalalCertificate(result.barcode,result.name,result.brand);
- if(!cert || result.verdict==='haram_ingredient')return {...result,certificate:null};
- return {...result,certificate:cert,verdict:'certified',confidence:'high',
+ if(!cert || result.verdict==='haram_ingredient')return guardSevenElevenVerdict({...result,certificate:null});
+ return guardSevenElevenVerdict({...result,certificate:cert,verdict:'certified',confidence:'high',
   reasons:['An issuer-verified, in-date halal certificate has been matched to this exact product, brand and barcode. Check the source and current packaging.'],
-  coverageNote:(result.coverageNote||'')+' Product-specific halal certificate checked against issuer evidence on '+cert.verifiedAt+'.'};
+  coverageNote:(result.coverageNote||'')+' Product-specific halal certificate checked against issuer evidence on '+cert.verifiedAt+'.'});
 }
