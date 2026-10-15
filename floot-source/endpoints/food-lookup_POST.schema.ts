@@ -216,7 +216,15 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
  let noIngredientFallback:LookupResult|null=null;
  if(saved && (!isBarcode || barcodeEquivalent(String(saved.barcode||''),query))){
   const fromSevenPremiumPackageNotes=String(saved.evidence_source||'').includes('selected excerpts');
-  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+  const fromYamayoManufacturer=String(saved.evidence_source||'').startsWith('Manufacturer Yamayo ');
+  const yamayoGummy=fromYamayoManufacturer&&String(saved.category||'').includes('Gummy');
+  const yamayoGift=fromYamayoManufacturer&&String(saved.category||'').includes('gift set');
+  const yamayoCoverage=yamayoGummy
+   ?'Yamayo manufacturer confirmation (October 2026): gelatin IS used in this gummy; full ingredient label was not supplied. No halal certification. Confirm current package for other ingredients.'
+   :yamayoGift
+   ?'Yamayo manufacturer JAN catalog plus current individual juice labels (October 2026): ingredient text is COMPILED FROM THE INCLUDED JUICE COMPONENTS, not a separate gift box ingredient label. No halal certification.'
+   :'Yamayo manufacturer original juice label supplied with written permission in October 2026. This is an ingredient label, NOT a halal certificate. Always check current packaging; formulation may change.';
+  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:fromYamayoManufacturer?yamayoCoverage:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
   if(String(saved.ingredients||'').trim())return savedResult;
   noIngredientFallback=savedResult;
  }
