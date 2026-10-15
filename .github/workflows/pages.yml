@@ -66,6 +66,27 @@ jobs:
           test -s _site/index.html
           test -d _site/assets
           echo "Floot React prepared as site root. Scanner source is unchanged."
+      - name: Block private files in published Pages artifact
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root = Path("_site")
+          denied = ("**/.env", "**/.env.*", "**/*.pem", "**/*.key", "**/*.p12",
+                    "**/*.sqlite", "**/*.sqlite3", "**/private-data/**",
+                    "**/research/**", "**/manufacturer-yamayo*.json",
+                    "**/ingredient-review.json", "**/ingredient-photo-leads.json",
+                    "**/ingredient-source-audit.json", "**/manufacturer-research*.json")
+          leaks = sorted({str(p) for pattern in denied for p in root.glob(pattern) if p.is_file()})
+          if leaks:
+              raise SystemExit("Blocked private data in Pages artifact: " + ", ".join(leaks[:12]))
+          permitted = {"off-japan-research.json", "openfoodfacts-japan.json",
+                       "food-catalog-manifest.json", "world-food-name-index.json"}
+          unexpected = sorted(p.name for p in (root/"data").glob("*")
+                              if p.is_file() and p.name not in permitted)
+          if unexpected:
+              raise SystemExit("Unexpected public dataset: " + ", ".join(unexpected))
+          print("PASS: Pages artifact contains no blocked private research or secrets.")
+          PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
