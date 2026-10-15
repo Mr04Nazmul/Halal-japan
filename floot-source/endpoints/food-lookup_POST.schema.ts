@@ -30,10 +30,13 @@ async function lookupSaved(query:string,isBarcode:boolean){
  u.searchParams.set('select','source_id,barcode,name,name_ja,brand,ingredients,image_url,evidence_source,evidence_url,category');
  if(isBarcode)u.searchParams.set('or','('+barcodeVariants(query).map(v=>'barcode.eq.'+v).join(',')+')');
  else u.searchParams.set('or','(name.ilike.*'+query.replace(/[,*()]/g,'')+'*,name_ja.ilike.*'+query.replace(/[,*()]/g,'')+'*,brand.ilike.*'+query.replace(/[,*()]/g,'')+'*)');
- u.searchParams.set('limit','1');
+ // Multiple records may match; prefer those with usable ingredient text.
+ u.searchParams.set('limit','12');
  const r=await fetch(u,{headers:{apikey:PUBLIC_KEY},signal:AbortSignal.timeout(5500)});
  if(!r.ok)throw Error('Catalogue backend HTTP '+r.status);
- const rows=await r.json();return rows[0]||null;
+ const rows=await r.json();
+ rows.sort((a:any,b:any)=>Number(!!String(b.ingredients||'').trim())-Number(!!String(a.ingredients||'').trim()));
+ return rows[0]||null;
 }
 
 const wholeFoods:Record<string,string>={
@@ -207,36 +210,50 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
  const japanTask=lookupJapanResearch(query,isBarcode).catch(()=>null);
  const worldTask=lookupSupplementaryFood(query,isBarcode).catch(()=>null);
  const saved=await savedTask;
+ // A name/barcode-only record is a useful identification, not an ingredient answer.
+ // Prefer ingredient-bearing local records and continue searching otherwise.
+ let noIngredientFallback:LookupResult|null=null;
  if(saved && (!isBarcode || barcodeEquivalent(String(saved.barcode||''),query))){
-   return {found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+  if(String(saved.ingredients||'').trim())return savedResult;
+  noIngredientFallback=savedResult;
  }
  if(isBarcode){
-  // Supplementary 90k records are disjoint from the original Japan snapshot.
-  // Avoid holding up an exact shard hit while the larger Japan index downloads.
   const indexedWorld=await worldTask;
-  if(indexedWorld)return indexedWorld;
+  if(indexedWorld?.ingredients?.trim())return indexedWorld;
+  if(indexedWorld&&!noIngredientFallback)noIngredientFallback=indexedWorld;
   const offlineJapan=await japanTask;
-  if(offlineJapan)return offlineJapan;
+  if(offlineJapan?.ingredients?.trim())return offlineJapan;
+  if(offlineJapan&&!noIngredientFallback)noIngredientFallback=offlineJapan;
  }else{
   const offlineJapan=await japanTask;
-  if(offlineJapan)return offlineJapan;
+  if(offlineJapan?.ingredients?.trim())return offlineJapan;
+  if(offlineJapan&&!noIngredientFallback)noIngredientFallback=offlineJapan;
   const indexedWorld=await worldTask;
-  if(indexedWorld)return indexedWorld;
+  if(indexedWorld?.ingredients?.trim())return indexedWorld;
+  if(indexedWorld&&!noIngredientFallback)noIngredientFallback=indexedWorld;
  }
  // Open Food Facts is community-maintained (ODbL); query on demand instead of copying its entire database.
  const api=isBarcode
   ?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json?fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url'
   :'https://world.openfoodfacts.org/cgi/search.pl?search_terms='+encodeURIComponent(query)+'&search_simple=1&action=process&json=1&page_size=20&fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url,countries_tags';
- const response=await fetch(api,{headers:{Accept:'application/json'}});
- if(!response.ok)throw Error('Open Food Facts lookup unavailable (HTTP '+response.status+'). Please try again.');
- const payload=await response.json();
+ let payload:any;
+ try{
+  const response=await fetch(api,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(8500)});
+  if(!response.ok)throw Error('Open Food Facts HTTP '+response.status);
+  payload=await response.json();
+ }catch{
+  if(noIngredientFallback)return {...noIngredientFallback,coverageNote:(noIngredientFallback.coverageNote||'')+' Live ingredient lookup unavailable; check the current package label.'};
+  throw Error('Open Food Facts lookup unavailable. Please try again.');
+ }
  const item=isBarcode?(payload.status===1?payload.product:null):
  (payload.products||[]).filter((p:any)=>p.product_name||p.product_name_ja).sort((a:any,b:any)=>{
    const score=(p:any)=>Number((p.countries_tags||[]).includes('en:japan'))*5+Number(!!(p.ingredients_text_ja||p.ingredients_text))*3+Number(!!p.image_front_small_url);
    return score(b)-score(a);
  })[0];
- if(!item)return {found:false,verdict:'unknown',reasons:['No matching public product record; do not assume halal.'],coverageNote:'This standalone GitHub Pages edition queries Open Food Facts; its coverage is incomplete.'};
- if(isBarcode && String(item.code||'')!==query)return {found:false,verdict:'unknown',reasons:['Barcode did not exactly match returned product.']};
+ if(!item)return noIngredientFallback||{found:false,verdict:'unknown',reasons:['No matching public product record; do not assume halal.'],coverageNote:'This standalone GitHub Pages edition queries Open Food Facts; its coverage is incomplete.'};
+ if(isBarcode && !barcodeEquivalent(String(item.code||''),query))return noIngredientFallback||{found:false,verdict:'unknown',reasons:['Barcode did not exactly match returned product.']};
  const ingredients=item.ingredients_text_ja||item.ingredients_text||null;
+ if(!ingredients && noIngredientFallback)return noIngredientFallback;
  return {found:true,name:item.product_name_ja||item.product_name||'Unnamed product',barcode:item.code||null,brand:item.brands||null,ingredients,image:item.image_front_small_url||item.image_front_url||null,source:'Open Food Facts (community supplied; ODbL attribution)',productUrl:item.url||null,...ingredientDecision(ingredients),manufacturerEvidence:[],coverageNote:'Open Food Facts data is user-contributed under ODbL. Japanese records and labels may be incomplete; no halal certification is implied. Check the exact package.'};
 }
