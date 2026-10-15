@@ -24,9 +24,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Stream official bulk export to collect 10000 Japan-tagged products
+      - name: Stream official bulk export to collect up to 30000 Japan-tagged products
         env:
-          TARGET_PRODUCTS: "10000"
+          TARGET_PRODUCTS: "30000"
         run: python scripts/import_off_japan_dump.py
       - name: Screen available ingredient text when dataset exists
         run: |
