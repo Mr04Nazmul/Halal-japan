@@ -7,6 +7,7 @@ import {Input} from '../components/Input';
 import styles from './_index.module.css';
 import IngredientOcr from '../components/IngredientOcr';
 import IngredientVerification from '../components/IngredientVerification';
+import ReviewedEcodeGuide from '../components/ReviewedEcodeGuide';
 import ResearchSourcesSettings from '../components/ResearchSourcesSettings';
 import IslamicTools from '../components/IslamicTools';
 import FoodCatalog from '../components/FoodCatalog';
@@ -80,7 +81,7 @@ export default function Home(){
   </div>
  </details>
  </article>}
- <div id="ingredient-photo-fallback"><IngredientOcr onDetected={setOcrText}/></div><IngredientVerification initialText={ocrText}/><FoodCatalog onChoose={lookup}/>
+ <div id="ingredient-photo-fallback"><IngredientOcr onDetected={setOcrText}/></div><IngredientVerification initialText={ocrText}/><ReviewedEcodeGuide/><FoodCatalog onChoose={lookup}/>
  <details style={{margin:'16px 0',border:'1px solid #a8a27566',borderRadius:14,padding:'10px 12px',background:'#143126',color:'#eff0df'}}>
   <summary style={{cursor:'pointer',fontSize:13,fontWeight:700}}>🏪 7-Eleven · Official food sources & product references</summary>
   <p style={{fontSize:12,lineHeight:1.6}}>Official sources only; allergen declarations are not full ingredient lists. Seven-Eleven keeps an internal raw-material and recipe database, but it is not publicly downloadable. No halal status is inferred from these sources alone.</p>
