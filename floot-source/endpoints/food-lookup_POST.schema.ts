@@ -7,13 +7,31 @@ export const schema=z.object({query:z.string().trim().min(2).max(140)});
 export type LookupResult={found:boolean; name?:string; barcode?:string|null; brand?:string|null; ingredients?:string|null; image?:string|null; source?:string; productUrl?:string|null; verdict:'haram_ingredient'|'needs_review'|'certified'|'naturally_halal'|'ingredient_clear'|'unknown'; reasons:string[]; confidence?:'high'|'medium'|'low'; findings?:{ingredient:string;severity:'prohibited'|'uncertain';reason:string}[]; manufacturerEvidence?:{type:string;url:string|null;issuer:string|null;reviewedAt:string|null}[]; coverageNote?:string;};
 const SUPA='https://vjygltfnrmyghlwyjtwu.supabase.co';
 const PUBLIC_KEY='sb_publishable_SL6n4Q0t_AxHywHM6iMkpg_bm-lx_Oh';
+
+// EAN-13, UPC-A and GTIN-14 can identify the same retail item with leading zeroes.
+// Keep 8-digit EAN codes intact; never strip non-zero prefixes.
+function barcodeVariants(code:string):string[]{
+ if(!/^\d{8,14}$/.test(code))return [];
+ const normalized=code.padStart(14,'0');
+ const variants=new Set<string>([code]);
+ for(const len of [12,13,14]){
+  const prefix=normalized.slice(0,14-len);
+  if(/^0*$/.test(prefix))variants.add(normalized.slice(14-len));
+ }
+ return Array.from(variants).filter(v=>/^\d{8,14}$/.test(v));
+}
+function barcodeEquivalent(left:string,right:string):boolean{
+ return /^\d{8,14}$/.test(String(left))&&/^\d{8,14}$/.test(String(right))
+  &&String(left).padStart(14,'0')===String(right).padStart(14,'0');
+}
+
 async function lookupSaved(query:string,isBarcode:boolean){
  const u=new URL(SUPA+'/rest/v1/jhc_floot_products');
  u.searchParams.set('select','source_id,barcode,name,name_ja,brand,ingredients,image_url,evidence_source,evidence_url,category');
- if(isBarcode)u.searchParams.set('barcode','eq.'+query);
+ if(isBarcode)u.searchParams.set('or','('+barcodeVariants(query).map(v=>'barcode.eq.'+v).join(',')+')');
  else u.searchParams.set('or','(name.ilike.*'+query.replace(/[,*()]/g,'')+'*,name_ja.ilike.*'+query.replace(/[,*()]/g,'')+'*,brand.ilike.*'+query.replace(/[,*()]/g,'')+'*)');
  u.searchParams.set('limit','1');
- const r=await fetch(u,{headers:{apikey:PUBLIC_KEY}});
+ const r=await fetch(u,{headers:{apikey:PUBLIC_KEY},signal:AbortSignal.timeout(5500)});
  if(!r.ok)throw Error('Catalogue backend HTTP '+r.status);
  const rows=await r.json();return rows[0]||null;
 }
@@ -65,7 +83,7 @@ async function readJapanResearch():Promise<JapanResearchRow[]>{
 async function lookupJapanResearch(query:string,isBarcode:boolean):Promise<LookupResult|null>{
  const rows=await readJapanResearch();
  const lower=query.toLocaleLowerCase();
- const matches=rows.filter(p=>isBarcode?p.code===query:(p.product_name+' '+(p.brands||'')).toLocaleLowerCase().includes(lower));
+ const matches=rows.filter(p=>isBarcode?barcodeEquivalent(p.code,query):(p.product_name+' '+(p.brands||'')).toLocaleLowerCase().includes(lower));
  if(!matches.length)return null;
  matches.sort((a,b)=>Number(!!b.ingredients_text?.trim())-Number(!!a.ingredients_text?.trim()));
  const p=matches[0],ingredients=p.ingredients_text||null;
@@ -82,21 +100,27 @@ const worldBarcodeCache=new Map<string,WorldProduct[]>();
 let worldNameIndex: Array<[string,string,string,string]>|null=null;
 let worldNamePending:Promise<Array<[string,string,string,string]>>|null=null;
 async function readWorldBarcode(code:string):Promise<WorldProduct|null>{
- if(!/^\d{8,14}$/.test(code))return null;
- const key=code.slice(0,3);
- let records=worldBarcodeCache.get(key);
- if(!records){
-  try{
-   const res=await fetch('./data/world-food-shards/'+key+'.json',{signal:AbortSignal.timeout(12000)});
-   if(!res.ok)return null;
-   const body=await res.json();
-   if(body.license!=='ODbL-1.0'||!Array.isArray(body.records))return null;
-   records=body.records as WorldProduct[];
-   if(worldBarcodeCache.size>=12)worldBarcodeCache.delete(worldBarcodeCache.keys().next().value as string);
-   worldBarcodeCache.set(key,records);
-  }catch{return null;}
+ for(const candidate of barcodeVariants(code)){
+  const key=candidate.slice(0,3);
+  let records=worldBarcodeCache.get(key);
+  if(!records){
+   try{
+    const res=await fetch('./data/world-food-shards/'+key+'.json',{signal:AbortSignal.timeout(6500)});
+    if(!res.ok){
+     if(res.status===404)worldBarcodeCache.set(key,[]);
+     continue;
+    }
+    const body=await res.json();
+    if(body.license!=='ODbL-1.0'||!Array.isArray(body.records))continue;
+    records=body.records as WorldProduct[];
+    if(worldBarcodeCache.size>=12)worldBarcodeCache.delete(worldBarcodeCache.keys().next().value as string);
+    worldBarcodeCache.set(key,records);
+   }catch{continue;}
+  }
+  const match=records.find(row=>barcodeEquivalent(row.code,code));
+  if(match)return match;
  }
- return records.find(row=>row.code===code)||null;
+ return null;
 }
 async function readWorldNameIndex():Promise<Array<[string,string,string,string]>>{
  if(worldNameIndex)return worldNameIndex;
@@ -177,15 +201,28 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
    return {found:true,name:verified.name,barcode:verified.barcode,brand:verified.manufacturer,ingredients:verified.ingredients,image:null,source:verified.manufacturer+' official manufacturer product catalogue',productUrl:verified.url,...decision,manufacturerEvidence:[{type:'manufacturer product and ingredients',url:verified.url,issuer:verified.manufacturer,reviewedAt:null}],coverageNote:'JAN and ingredient information sourced from manufacturer. This is NOT halal certification; verify package and ingredient origins.'};
  }
 
- let saved:any=null;
- try{saved=await lookupSaved(query,isBarcode)}catch(e){console.warn('Saved product catalogue unavailable',e)}
- if(saved && (!isBarcode || saved.barcode===query)){
+ // Start independent lookups together, rather than waiting for a slow external
+ // database before even checking the already-published local barcode shards.
+ const savedTask=lookupSaved(query,isBarcode).catch(e=>{console.warn('Saved product catalogue unavailable',e);return null;});
+ const japanTask=lookupJapanResearch(query,isBarcode).catch(()=>null);
+ const worldTask=lookupSupplementaryFood(query,isBarcode).catch(()=>null);
+ const saved=await savedTask;
+ if(saved && (!isBarcode || barcodeEquivalent(String(saved.barcode||''),query))){
    return {found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
  }
- const offlineJapan=await lookupJapanResearch(query,isBarcode);
- if(offlineJapan)return offlineJapan;
- const indexedWorld=await lookupSupplementaryFood(query,isBarcode);
- if(indexedWorld)return indexedWorld;
+ if(isBarcode){
+  // Supplementary 90k records are disjoint from the original Japan snapshot.
+  // Avoid holding up an exact shard hit while the larger Japan index downloads.
+  const indexedWorld=await worldTask;
+  if(indexedWorld)return indexedWorld;
+  const offlineJapan=await japanTask;
+  if(offlineJapan)return offlineJapan;
+ }else{
+  const offlineJapan=await japanTask;
+  if(offlineJapan)return offlineJapan;
+  const indexedWorld=await worldTask;
+  if(indexedWorld)return indexedWorld;
+ }
  // Open Food Facts is community-maintained (ODbL); query on demand instead of copying its entire database.
  const api=isBarcode
   ?'https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(query)+'.json?fields=code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,image_front_small_url,image_front_url,url'
