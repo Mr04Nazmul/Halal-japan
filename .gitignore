@@ -21,3 +21,12 @@ data/manufacturer-yamayo-*.json
 research/private-*
 *.secret.json
 *.credentials.json
+
+# Keep proprietary and derived research workbooks out of the public repository.
+research/
+data/ingredient-review.json
+data/ingredient-photo-leads.json
+data/ingredient-source-audit.json
+data/ingredient-text-recovery-leads.json
+data/manufacturer-products.json
+data/manufacturer-research-*.json
