@@ -27,6 +27,7 @@ jobs:
           npm install --no-audit --no-fund
           node --test tests/ingredientDecision.test.cjs
           node --test tests/halalCertificates.test.cjs
+          node --test tests/sevenElevenEvidence.test.cjs
           npm run build
           test -s dist/index.html
       - name: Assemble Floot React website as the site root
