@@ -1,0 +1,47 @@
+name: Verify private food lookup
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'floot-source/endpoints/food-lookup_POST.schema.ts'
+      - 'floot-source/helpers/sevenOfficialCatalog.ts'
+      - '.github/workflows/private-catalog-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  lookup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm one-product Edge response and private table isolation
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const cfg=fs.readFileSync('app-config.js','utf8');
+          const jwt=cfg.match(/HALAL_API_PUBLIC_KEY\s*=\s*'([^']+)'/)?.[1];
+          const publishable=fs.readFileSync('floot-source/endpoints/food-lookup_POST.schema.ts','utf8')
+             .match(/const PUBLIC_KEY='([^']+)'/)?.[1];
+          if(!jwt || !publishable)throw Error('Missing public gateway key');
+          const host='https://vjygltfnrmyghlwyjtwu.supabase.co';
+          const request=await fetch(host+'/functions/v1/jhc-catalog-lookup?jan_code=4901990380843',{
+            headers:{apikey:publishable,Authorization:'Bearer '+jwt,Origin:'https://mr04nazmul.github.io'}
+          });
+          if(request.status!==200)throw Error('Edge lookup failed HTTP '+request.status);
+          const body=await request.json();
+          if(body.bulk_export!==false || body.record?.barcode!=='4901990380843')
+            throw Error('Exact product lookup mismatch');
+          if(Array.isArray(body.record))throw Error('Bulk records exposed');
+          const direct=await fetch(host+'/rest/v1/jhc_floot_products?select=barcode&barcode=eq.4901990380843',{
+            headers:{apikey:publishable,Authorization:'Bearer '+jwt}
+          });
+          if(direct.ok){
+            const rows=await direct.json();
+            if(Array.isArray(rows)&&rows.length)throw Error('Direct DB access not locked');
+          }
+          console.log('PASS: exact JAN resolved through Edge and no direct public DB access');
+          NODE
