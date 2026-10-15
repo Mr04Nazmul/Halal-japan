@@ -23,7 +23,9 @@ jobs:
             r"\.(pem|p12|pfx|key|sqlite|sqlite3)$",
             r"(^|/)data/private-",
             r"(^|/)data/manufacturer-yamayo-.*\.json$",
-            r"(^|/)research/private-",
+            r"(^|/)research/",
+            r"(^|/)data/ingredient-(review|photo-leads|source-audit|text-recovery-leads)\\.json$",
+            r"(^|/)data/manufacturer-(products|research-.*)\\.json$",
             r"(^|/).*\.credentials\.json$",
             r"(^|/).*\.secret\.json$",
           ]
