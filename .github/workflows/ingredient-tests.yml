@@ -14,3 +14,9 @@ jobs:
           node-version: '22'
       - name: Run ingredient regression cases
         run: node tests/ingredient-regression.cjs
+      - name: Install live scanner dependencies
+        working-directory: floot-source
+        run: npm install --no-audit --no-fund
+      - name: Test actual React ingredient decision engine
+        working-directory: floot-source
+        run: node --test tests/ingredientDecision.test.cjs
