@@ -129,6 +129,21 @@ const pages=[
     "name": "糖質0gのサラダチキン（プレーン） 110g",
     "url": "https://7premium.jp/product/search/detail?id=1082",
     "note": "公式原材料欄あり。鶏肉の供給・屠畜方法と添加物由来の確認が必要"
+  },
+  {
+    "name": "醤油ヌードル 81g",
+    "url": "https://7premium.jp/product/search/detail?id=382",
+    "note": "公式の原材料欄にポーク・ゼラチン関連の記載あり。現行JAN・規格は要確認"
+  },
+  {
+    "name": "スモークサーモン 50g",
+    "url": "https://7premium.jp/product/search/detail?id=7246",
+    "note": "公式の原材料欄あり。現物の規格・認証・加工由来確認が必要"
+  },
+  {
+    "name": "トマトケチャップ 500g",
+    "url": "https://7premium.jp/product/search/detail?id=190",
+    "note": "公式の原材料欄あり。最新パッケージ・JANの一致を要確認"
   }
 ] as const;
 export default function SevenPremiumIngredientLinks(){
@@ -136,7 +151,7 @@ export default function SevenPremiumIngredientLinks(){
  const visible=pages.filter(p=>(p.name+' '+p.note).toLocaleLowerCase().includes(filter.toLocaleLowerCase().trim()));
  return <section style={{margin:'12px 0',padding:'13px',border:'1px solid #466e58',borderRadius:14,background:'#173629',color:'#f1f3e5'}}>
  <h3 style={{fontSize:16,margin:'0 0 8px'}}>7 Premium — Official 原材料 sources</h3>
- <p style={{fontSize:12,lineHeight:1.6}}>25 source-linked ingredient disclosures on the official Seven Premium website. Links are references only, not copied ingredient lists or confirmed barcode matches. No Halal certification is implied. Packages and recipes may change.</p>
+ <p style={{fontSize:12,lineHeight:1.6}}>28 source-linked ingredient disclosures on the official Seven Premium website. Links are references only, not copied ingredient lists or confirmed barcode matches. No Halal certification is implied. Packages and recipes may change.</p>
  <input aria-label="Filter Seven Premium official ingredient sources" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Product name / 7 Premium…" style={{width:'100%',boxSizing:'border-box',padding:10,borderRadius:9,background:'#244836',border:'1px solid #567b62',color:'#fff'}}/>
  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,240px),1fr))',gap:8,marginTop:10}}>
   {visible.map(p=><article key={p.url} style={{padding:12,border:'1px solid #4d705b',borderRadius:11}}>
