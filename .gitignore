@@ -1,0 +1,23 @@
+# Local secrets and sensitive research must never be committed to this public repository.
+# Already-tracked files remain tracked until removed explicitly.
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+private-data/
+**/private-data/
+data/private-*
+data/manufacturer-yamayo-*.json
+research/private-*
+*.secret.json
+*.credentials.json
