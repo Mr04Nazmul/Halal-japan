@@ -58,6 +58,7 @@ export default function Home(){
  <div className={styles.detailRow}><strong>Ingredients / 原材料</strong><span>{result.ingredients_text||'Full ingredients unavailable'}</span></div>
  <div className={styles.detailRow}><strong>Verification details</strong><span>{result.reasons?.join(' ')||'More information needed'}</span></div>
  <div className={styles.detailRow}><strong>Information source</strong><span>{result.source||'Not available'}</span>{result.productUrl?<a href={result.productUrl} target="_blank" rel="noopener noreferrer" style={{color:'#efd699',fontSize:13}}>Open manufacturer / product source ↗</a>:null}</div>
+ {result.coverageNote&&<div className={styles.detailRow}><strong>Coverage & verification</strong><span>{result.coverageNote}</span></div>}
  <div className={styles.detailRow}><strong>Available shops</strong><span>Store availability has not been confirmed for this product.</span></div>
  <p className={styles.note}>Ingredient screening is not a halal certificate. Gelatin and other source-dependent additives need verification.</p>
  </article>}
