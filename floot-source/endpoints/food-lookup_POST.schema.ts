@@ -26,18 +26,17 @@ function barcodeEquivalent(left:string,right:string):boolean{
   &&String(left).padStart(14,'0')===String(right).padStart(14,'0');
 }
 
+// The public browser uses a single-item Edge Function. No direct table REST reads.
+// This is a legacy PUBLIC anon JWT, never a service_role/secret key.
+const CATALOG_ANON_JWT='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqeWdsdGZucm15Z2hsd3lqdHd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyNDI1NDEsImV4cCI6MjEwNjgxODU0MX0.nwq8t1ybnwBFIYNmc1h8tbIbCGUE9FZMQErPLD3ECdQ';
 async function lookupSaved(query:string,isBarcode:boolean){
- const u=new URL(SUPA+'/rest/v1/jhc_floot_products');
- u.searchParams.set('select','source_id,barcode,name,name_ja,brand,ingredients,image_url,evidence_source,evidence_url,category');
- if(isBarcode)u.searchParams.set('or','('+barcodeVariants(query).map(v=>'barcode.eq.'+v).join(',')+')');
- else u.searchParams.set('or','(name.ilike.*'+query.replace(/[,*()]/g,'')+'*,name_ja.ilike.*'+query.replace(/[,*()]/g,'')+'*,brand.ilike.*'+query.replace(/[,*()]/g,'')+'*)');
- // Multiple records may match; prefer those with usable ingredient text.
- u.searchParams.set('limit','12');
- const r=await fetch(u,{headers:{apikey:PUBLIC_KEY},signal:AbortSignal.timeout(5500)});
- if(!r.ok)throw Error('Catalogue backend HTTP '+r.status);
- const rows=await r.json();
- rows.sort((a:any,b:any)=>Number(!!String(b.ingredients||'').trim())-Number(!!String(a.ingredients||'').trim()));
- return rows[0]||null;
+ const u=new URL(SUPA+'/functions/v1/jhc-catalog-lookup');
+ if(isBarcode)u.searchParams.set('jan_code',query);
+ else u.searchParams.set('query',query);
+ const r=await fetch(u,{headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+CATALOG_ANON_JWT},signal:AbortSignal.timeout(8000)});
+ if(!r.ok)throw Error('Protected catalogue lookup unavailable HTTP '+r.status);
+ const body=await r.json();
+ return body.record||null;
 }
 
 const wholeFoods:Record<string,string>={
