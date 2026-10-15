@@ -20,3 +20,4 @@ jobs:
       - name: Test actual React ingredient decision engine
         working-directory: floot-source
         run: node --test tests/ingredientDecision.test.cjs
+        node --test tests/halalCertificates.test.cjs
