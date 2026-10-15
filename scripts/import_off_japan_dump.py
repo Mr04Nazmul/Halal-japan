@@ -58,6 +58,11 @@ def collect():
                     headers = next(reader)
                     required = ["code", "product_name", "brands", "countries_tags",
                                 "ingredients_text", "last_modified_t"]
+                    optional = {name: headers.index(name) if name in headers else None
+                                for name in ("product_name_ja", "ingredients_text_ja")}
+                    def opt(row, field):
+                        i = optional[field]
+                        return row[i].strip() if i is not None and len(row) > i else ""
                     index = {name: headers.index(name) for name in required}
                     for row in reader:
                         examined += 1
@@ -70,12 +75,16 @@ def collect():
                             continue
                         matches += 1
                         code = row[index["code"]].strip()
-                        name = row[index["product_name"]].strip()
+                        name = opt(row, "product_name_ja") or row[index["product_name"]].strip()
                         if not valid_barcode(code) or not name:
                             continue
-                        ingredient = row[index["ingredients_text"]].strip()
+                        ingredient = opt(row, "ingredients_text_ja") or row[index["ingredients_text"]].strip()
                         prev = products.get(code)
                         if prev and (prev.get("_ingredientsVerified") or prev.get("_halalVerified")):
+                            continue
+                        # A new community export may omit ingredient text previously present.
+                        # Preserve the better nonempty ingredient declaration in that case.
+                        if prev and prev.get("ingredients_text") and not ingredient:
                             continue
                         products[code] = {
                             "code": code,
