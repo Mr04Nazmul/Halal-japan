@@ -8,7 +8,14 @@ const path=require('node:path');
 const ts=require('typescript');
 const source=fs.readFileSync(path.join(__dirname,'../helpers/ingredientDecision.tsx'),'utf8');
 const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
-const sandbox={exports:{}};
+const reviewedSource=fs.readFileSync(path.join(__dirname,'../helpers/reviewedEcodeGuide.ts'),'utf8');
+const reviewedJs=ts.transpileModule(reviewedSource,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
+const reviewedSandbox={exports:{}};
+vm.runInNewContext(reviewedJs,reviewedSandbox);
+const sandbox={exports:{},require:(name)=>{
+ if(name==='./reviewedEcodeGuide')return reviewedSandbox.exports;
+ throw Error('Unexpected module '+name);
+}};
 vm.runInNewContext(js,sandbox);
 const decide=sandbox.exports.ingredientDecision;
 assert.equal(typeof decide,'function');
@@ -67,4 +74,41 @@ test('unknown flavoring in manufacturer declaration requires verification',()=>{
 test('origin uncertainty does not become a religious certificate',()=>{
  const r=decide('砂糖、乳化剤',false,false);
  assert.equal(r.findings[0].severity,'uncertain');
+});
+
+test('E441 standalone gelatin E-code triggers strict precautionary HARAM',()=>{
+ const r=decide('砂糖、E441');
+ assert.equal(r.verdict,'haram_ingredient');
+ assert.ok(r.findings.some(f=>f.ingredient.includes('E441')));
+});
+test('E120 carmine is uncertain rather than universal haram classification',()=>{
+ const r=decide('砂糖、E120');
+ assert.equal(r.verdict,'needs_review');
+ assert.ok(r.findings.some(f=>f.ingredient.includes('E120')));
+});
+test('E422 glycerol is held for source verification',()=>{
+ assert.equal(decide('砂糖、E422',false,true).verdict,'needs_review');
+});
+test('E322 lecithin triggers origin check',()=>{
+ assert.equal(decide('砂糖、E322',false,true).verdict,'needs_review');
+});
+test('E471 does not create duplicate flags from reviewed reference',()=>{
+ const r=decide('小麦、E471');
+ assert.equal(r.verdict,'needs_review');
+ assert.equal(r.findings.filter(f=>f.ingredient.includes('E471')||f.ingredient==='Emulsifier origin').length,1);
+});
+test('E406 agar does not imply product-wide halal certification',()=>{
+ assert.equal(decide('E406').verdict,'needs_review');
+ assert.equal(decide('E406',false,true).verdict,'ingredient_clear');
+});
+test('E300 vitamin C identity does not create a halal certificate',()=>{
+ assert.equal(decide('E300').verdict,'needs_review');
+ assert.notEqual(decide('E300',false,true).verdict,'certified');
+});
+test('similar E-code E4412 must not be misidentified as E441',()=>{
+ const r=decide('sugar, E4412',false,true);
+ assert.equal(r.verdict,'ingredient_clear');
+});
+test('E441-free absence statement is not proof ingredient contains gelatin',()=>{
+ assert.notEqual(decide('rice, E441-free').verdict,'haram_ingredient');
 });
