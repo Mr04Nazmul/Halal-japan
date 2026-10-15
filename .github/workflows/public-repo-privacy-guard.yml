@@ -1,0 +1,34 @@
+name: Public repository privacy guard
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check-sensitive-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Reject committed private research and key files
+        run: |
+          python - <<'PY'
+          import re
+          import subprocess
+          paths = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+          forbidden = [
+            r"(^|/)\.env($|\.)", r"(^|/)private-data/",
+            r"\.(pem|p12|pfx|key|sqlite|sqlite3)$",
+            r"(^|/)data/private-",
+            r"(^|/)data/manufacturer-yamayo-.*\.json$",
+            r"(^|/)research/private-",
+            r"(^|/).*\.credentials\.json$",
+            r"(^|/).*\.secret\.json$",
+          ]
+          blocked = [p for p in paths if p and any(re.search(rule, p, re.I) for rule in forbidden) and not p.endswith(".env.example")]
+          if blocked:
+            raise SystemExit("Public repo contains blocked private paths: " + ", ".join(blocked[:15]))
+          print("PASS: no prohibited private filenames tracked.")
+          PY
