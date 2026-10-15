@@ -1,3 +1,4 @@
+import {findEcodeMentions} from './reviewedEcodeGuide';
 export type IngredientFinding={ingredient:string;severity:'prohibited'|'uncertain';reason:string};
 export type IngredientDecision={verdict:'haram_ingredient'|'needs_review'|'certified'|'ingredient_clear'|'unknown';reasons:string[];confidence:'high'|'medium'|'low';findings:IngredientFinding[];};
 
@@ -47,6 +48,14 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  ];
  const findings:IngredientFinding[]=[];
  for(const term of terms){if(term.pattern.test(s))findings.push({ingredient:term.label,severity:term.severity,reason:term.reason});}
+ // Only the independently checked E-code subset may influence ingredient
+ // warnings. Identity-only E-codes do not establish a halal product verdict.
+ for(const code of findEcodeMentions(s)){
+  if(!code.engineSeverity)continue;
+  if(code.code==='E471'&&findings.some(f=>f.ingredient==='Emulsifier origin'))continue;
+  findings.push({ingredient:code.code+' '+code.name,severity:code.engineSeverity,
+   reason:code.note+' Reference: '+code.sourceUrl});
+ }
  const prohibited=findings.filter(f=>f.severity==='prohibited');
  if(prohibited.length)return {verdict:'haram_ingredient',reasons:prohibited.map(f=>f.reason),confidence:'high',findings};
  // The caller must separately establish an authentic, in-date, exact-product
