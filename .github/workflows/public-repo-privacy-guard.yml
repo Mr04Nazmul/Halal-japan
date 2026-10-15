@@ -24,8 +24,8 @@ jobs:
             r"(^|/)data/private-",
             r"(^|/)data/manufacturer-yamayo-.*\.json$",
             r"(^|/)research/",
-            r"(^|/)data/ingredient-(review|photo-leads|source-audit|text-recovery-leads)\\.json$",
-            r"(^|/)data/manufacturer-(products|research-.*)\\.json$",
+            r"(^|/)data/ingredient-(review|photo-leads|source-audit|text-recovery-leads)\.json$",
+            r"(^|/)data/manufacturer-(products|research-.*)\.json$",
             r"(^|/).*\.credentials\.json$",
             r"(^|/).*\.secret\.json$",
           ]
