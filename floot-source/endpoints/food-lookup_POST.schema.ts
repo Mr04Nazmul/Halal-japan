@@ -215,7 +215,8 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
  // Prefer ingredient-bearing local records and continue searching otherwise.
  let noIngredientFallback:LookupResult|null=null;
  if(saved && (!isBarcode || barcodeEquivalent(String(saved.barcode||''),query))){
-  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+  const fromSevenPremiumPackageNotes=String(saved.evidence_source||'').includes('selected excerpts');
+  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
   if(String(saved.ingredients||'').trim())return savedResult;
   noIngredientFallback=savedResult;
  }
