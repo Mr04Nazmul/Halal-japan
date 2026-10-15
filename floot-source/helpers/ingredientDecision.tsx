@@ -30,9 +30,9 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  // Product-specific provenance: plant-sourced additives named as such are not
  // treated the same as additives whose source is omitted.
  s=s
-  .replace(/(?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)\s*(?:の)?\s*乳化剤/g,' confirmed_plant_emulsifier ')
-  .replace(/乳化剤\s*[(（]\s*(?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)\s*[)）]/g,' confirmed_plant_emulsifier ')
-  .replace(/(?:plant[- ]based|vegetable[- ]derived|soy[- ]derived)\s+emulsifiers?\b/g,' confirmed_plant_emulsifier ');
+  .replace(/(?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)\s*(?:の)?\s*乳化剤/g,' plant_source_verified ')
+  .replace(/乳化剤\s*[(（]\s*(?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)\s*[)）]/g,' plant_source_verified ')
+  .replace(/(?:plant[- ]based|vegetable[- ]derived|soy[- ]derived)\s+emulsifiers?\b/g,' plant_source_verified ');
 
  const terms:{label:string;pattern:RegExp;severity:'prohibited'|'uncertain';reason:string}[]=[
   {label:'Pork or pork-derived ingredient',pattern:/(?:豚肉|豚脂|豚骨|豚エキス|豚由来|ポーク|ラード|(?:^|[^a-z])(?:pork|porcine|lard)(?:$|[^a-z]))/,severity:'prohibited',reason:'Pork-derived ingredient identified in the declaration.'},
