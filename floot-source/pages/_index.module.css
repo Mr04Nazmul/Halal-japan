@@ -228,3 +228,18 @@
  .graphic span{letter-spacing:1.2px}
  .nav{width:100%!important;max-width:100%!important}
 }
+
+/* Product certificate details: closed by default, small button at card bottom. */
+.certificateDisclosure{margin-top:12px;display:flex;flex-direction:column;align-items:flex-end;max-width:100%}
+.certificateToggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;max-width:100%;width:max-content;min-height:38px;padding:8px 12px;border:1px solid #c7b37b8c;border-radius:12px;background:#1a392f;color:#f5dfaa;font-size:12px;font-weight:700;line-height:1.25;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}
+.certificateToggle::-webkit-details-marker{display:none}
+.certificateToggle::marker{content:''}
+.certificateToggle:hover{background:#285041}
+.certificateToggle:focus-visible{outline:2px solid #f2d99e;outline-offset:3px}
+.certificateArrow{font-size:16px;line-height:1;transition:transform .15s}
+.certificateDisclosure[open] .certificateArrow{transform:rotate(180deg)}
+.certificateDisclosure[open]{align-items:stretch}
+.certificateContent{margin-top:9px;padding:13px;border:1px solid #c7b37b54;background:#142d24;border-radius:13px;color:#e6ecdf;overflow-wrap:anywhere;font-size:12px;line-height:1.5}
+.certificateContent p{margin:6px 0}
+.certificateContent a{display:block;max-width:100%;color:#f1d390;margin:9px 0 0;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:420px){.certificateToggle{font-size:11px;padding:8px 10px}}
