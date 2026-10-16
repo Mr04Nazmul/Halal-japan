@@ -64,8 +64,19 @@ def run(root=ROOT, export_gzip=None):
                 if not usable(p.get("ingredients_text")) and code not in duplicates:
                     missing[code]=(filename,p)
             if usable(p.get("ingredients_text")):before+=1
-    if entries!=manifest["total_unique_records"] or len(jp["products"])!=manifest["japan_original_records"]:
-        raise ValueError("Catalogue inventory and manifest disagree; no changes made")
+    # Older workflows can add new Japan-tagged products without rebuilding the
+    # supplemental index immediately. Reconcile actual inventory, never shrink.
+    observed_japan=len(jp["products"])
+    observed_supplemental=sum(len(g[2]) for g in groups[1:])
+    if entries<manifest["total_unique_records"] or observed_japan<manifest["japan_original_records"]:
+        raise ValueError("Catalogue unexpectedly shrank; refusing changes")
+    print("CATALOGUE INVENTORY",json.dumps({
+        "actual_entries":entries,"actual_unique_barcodes":len(seen),
+        "actual_japan":observed_japan,"actual_supplemental":observed_supplemental,
+        "old_manifest_total":manifest["total_unique_records"],
+        "old_manifest_japan":manifest["japan_original_records"],
+        "duplicates_quarantined":len(duplicates)
+    }),flush=True)
     if duplicates:
         print("WARNING: quarantined duplicated catalogue barcodes:",len(duplicates),
               "example:",next(iter(sorted(duplicates))),flush=True)
@@ -109,6 +120,11 @@ def run(root=ROOT, export_gzip=None):
     jp["ingredient_text_count"]=totals["japan"]
     if jpfile in updated:save(jpfile,jp)
     manifest.update({
+        "total_unique_records":len(seen),
+        "catalogue_total_entries":entries,
+        "japan_original_records":observed_japan,
+        "additional_records":observed_supplemental,
+        "barcode_shards":len(groups)-1,
         "additional_with_ingredient_text":totals["supplemental"],
         "japan_with_ingredient_text":totals["japan"],
         "all_with_ingredient_text":after,
@@ -122,6 +138,8 @@ def run(root=ROOT, export_gzip=None):
     report={
         "date":date.today().isoformat(),"source":SOURCE,"license":"ODbL-1.0",
         "rows_scanned":scanned,"catalogue_total":entries,
+        "catalogue_japan_records":observed_japan,
+        "catalogue_supplemental_records":observed_supplemental,
         "catalogue_distinct_barcodes":len(seen),
         "duplicate_barcode_groups_quarantined":len(duplicates),
         "duplicate_entries":entries-len(seen),
