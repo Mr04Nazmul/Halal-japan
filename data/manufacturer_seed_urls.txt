@@ -1,0 +1,2 @@
+# Public manufacturer product pages; add source URLs only where crawling is permitted.
+https://www.meiji.co.jp/products/yogurt/4902705133099.html
