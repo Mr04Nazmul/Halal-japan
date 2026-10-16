@@ -10,6 +10,9 @@ class Extraction(unittest.TestCase):
   r,e=extract(HTML,URL)
   self.assertIsNone(e);self.assertEqual(r['ingredients_ja'],'米、食塩');self.assertEqual(r['jan'],'4973728910141')
   self.assertEqual(r['rule_result'],'HALAL');self.assertFalse(r['halal_certified'])
+  bourbon=HTML.replace('原材料','原材料名／添加物名').replace('米、食塩','小麦粉／乳化剤（大豆由来）、香料')
+  r,e=extract(bourbon,'https://www.bourbon.co.jp/product/detail/35359-03.html')
+  self.assertIsNone(e);self.assertEqual(r['rule_result'],'HARAM')
  def test_missing_and_ambiguous_never_count(self):
   self.assertIsNone(extract('<h1>米菓</h1><p>アレルゲン：小麦</p>',URL)[0])
   self.assertIsNone(extract(HTML+'<dl><dt>原材料</dt><dd>豚肉</dd></dl>',URL)[0])
@@ -17,6 +20,20 @@ class Extraction(unittest.TestCase):
   self.assertIsNone(r['jan'])
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
+ def test_wrapped_heading_and_trailing_slash_label(self):
+  html='''<title>公式たれ | メーカー</title><h1>公式たれ</h1>
+  <section><div><h3>原材料名／</h3></div><p>果実、食塩</p></section>'''
+  r,e=extract(html,'https://www.ebarafoods.com/products/detail/TEST.html')
+  self.assertIsNone(e);self.assertEqual(r['ingredients_ja'],'果実、食塩')
+  combined='''<title>公式たれ | メーカー</title><h1>公式たれ</h1>
+  <p>原材料名／<br>果実、食塩</p>'''
+  r,e=extract(combined,'https://www.ebarafoods.com/products/detail/TEST2.html')
+  self.assertIsNone(e);self.assertEqual(r['ingredients_ja'],'果実、食塩')
+ def test_generic_h1_uses_unambiguous_official_title(self):
+  html='''<title>牛めし | 米飯 | メーカー</title><h1>商品情報</h1>
+  <dl><dt>原材料名</dt><dd>米、牛肉</dd></dl>'''
+  r,e=extract(html,'https://www.tablemark.co.jp/products/frozen/rice/detail/1.html')
+  self.assertIsNone(e);self.assertEqual(r['name_ja'],'牛めし')
  def test_resume_and_conflict_withholding(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
@@ -30,5 +47,15 @@ class Extraction(unittest.TestCase):
    c.run(['https://muso.co.jp/item/10762.html'],1,1)
    self.assertEqual(c.count(),0)
    self.assertEqual(json.loads((Path(folder)/'summary.json').read_text())['formula_conflicts_withheld'],1)
+ def test_extractor_upgrade_requeues_only_field_rejections_once(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",(URL,'done',1,'missing_or_ambiguous_ingredients'))
+   c.db.execute("DELETE FROM metadata WHERE key='extractor_version'");c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
+   c.db.execute("UPDATE queue SET status='done',attempts=1,error='missing_or_ambiguous_ingredients'");c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue').fetchone()[0],'done')
 
 if __name__=='__main__':unittest.main()

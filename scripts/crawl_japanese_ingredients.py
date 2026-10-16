@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
+EXTRACTOR_VERSION='official-fields-2026-10-17-v2'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'muso.co.jp':r'/item/\d+\.html',
@@ -39,7 +40,8 @@ SOURCES={
  'tablemark.co.jp':r'/products/.*/detail/',
  'yamamori.co.jp':r'/business/[^/]+',
 }
-LABELS={'原材料','原材料名','原材料(一括表示ラベル)'}
+LABELS={'原材料','原材料名','原材料名/添加物名','原材料(一括表示ラベル)'}
+GENERIC_NAMES={'商品情報','商品紹介','製品情報','商品一覧','商品ラインナップ','基本情報'}
 def normalized(s):return ''.join(unicodedata.normalize('NFKC',s).split())
 def canonical(u):
  p=urlsplit(u)
@@ -54,7 +56,7 @@ def allowed_link(u):
  return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|item(?:/category)?|products?(?:/|$)|jp/product|goods/|sweets/|business/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0
-def clean_label(s):return unicodedata.normalize('NFKC',s).strip().strip('【】〖〗:： ')
+def clean_label(s):return unicodedata.normalize('NFKC',s).strip().strip('【】〖〗:：/／ ')
 def extract(html,url):
  soup=BeautifulSoup(html,'html.parser');fields={}
  for el in soup.select('script,style,nav,header,footer'):el.decompose()
@@ -65,10 +67,20 @@ def extract(html,url):
   cells=tr.find_all(['th','td'],recursive=False)
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
  for el in soup.find_all(['h2','h3','h4','strong','b','p']):
-  label=clean_label(el.get_text(' ',strip=True))
+  raw=unicodedata.normalize('NFKC',el.get_text(' ',strip=True))
+  combined=re.match(r'^(原材料名/添加物名|原材料名|原材料|原材料\(一括表示ラベル\))\s*[/／:：]\s*(.+)$',raw,re.S)
+  if combined:
+   fields.setdefault(combined.group(1),[]).append(combined.group(2).strip())
+   continue
+  label=clean_label(raw)
   if label not in LABELS|{'添加物','JAN','JANコード','JANCODE','POSコード'}:continue
   nxt=el.find_next_sibling()
   while nxt is not None and not nxt.get_text(' ',strip=True):nxt=nxt.find_next_sibling()
+  # Official sites often wrap the heading one or two divs deeper than its
+  # displayed value.  Fall back to the next semantic value element in document
+  # order, without flattening the whole page or guessing from free text.
+  if nxt is None:
+   nxt=el.find_next(lambda tag: tag.name in {'p','dd','td','li'} and clean_label(tag.get_text(' ',strip=True)) not in LABELS)
   if nxt is not None:fields.setdefault(label,[]).append(nxt.get_text(' ',strip=True))
  values=[v for k,vs in fields.items() if k in LABELS for v in vs]
  values={normalized(v):v for v in values if 1<len(v)<12000 and re.search(r'[ぁ-んァ-ヶ一-龯]',v)}
@@ -77,12 +89,16 @@ def extract(html,url):
  if re.search(r'原材料名が入ります|原材料名欄では|アレルゲン情報|栄養成分表示|https?://|\ufffd',ingredients):return None,'non_ingredient_text'
  title=soup.find('h1')
  name=next(iter(fields.get('商品名',[])),title.get_text(' ',strip=True) if title else '')
+ if clean_label(name) in GENERIC_NAMES and soup.title:
+  # Some official product pages use a generic H1 such as 商品情報 while the
+  # product identity is the first, unambiguous segment of the HTML title.
+  name=re.split(r'[|｜]',soup.title.get_text(' ',strip=True),maxsplit=1)[0].strip()
  if 'ohsawa-japan.co.jp' in url:
   original_title=soup.title.get_text(' ',strip=True) if soup.title else ''
   parts=[x.strip() for x in original_title.split('|')]
   if len(parts)>2:name=parts[2]
  name=re.sub(r'\s*の詳細情報$','',name).strip()
- if not name or '\ufffd' in name or re.fullmatch(r'商品情報|商品紹介|製品情報|商品一覧|商品ラインナップ',name):return None,'missing_product_identity'
+ if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if re.search(r'ペット|ドッグ|キャット|犬用|猫用|洗剤|シャンプー|化粧',name):return None,'non_human_food'
  codes=[]
  for k,vs in fields.items():
@@ -110,7 +126,15 @@ class Collector:
   self.db.executescript('''CREATE TABLE IF NOT EXISTS queue(url TEXT PRIMARY KEY,status TEXT DEFAULT 'pending',attempts INTEGER DEFAULT 0,next_try REAL DEFAULT 0,error TEXT);
   CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,formula TEXT,payload TEXT,conflict INTEGER DEFAULT 0);
   CREATE TABLE IF NOT EXISTS host_state(host TEXT PRIMARY KEY,next_try REAL DEFAULT 0,reason TEXT);
-  CREATE TABLE IF NOT EXISTS observations(url TEXT,reason TEXT,at TEXT);''')
+  CREATE TABLE IF NOT EXISTS observations(url TEXT,reason TEXT,at TEXT);
+  CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT);''')
+  previous=self.db.execute("SELECT value FROM metadata WHERE key='extractor_version'").fetchone()
+  if not previous or previous[0]!=EXTRACTOR_VERSION:
+   # Revisit only pages rejected by older field extraction.  Network failures,
+   # robots decisions and accepted records are not reset.
+   self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity')")
+   self.db.execute("INSERT OR REPLACE INTO metadata VALUES('extractor_version',?)",(EXTRACTOR_VERSION,))
+   self.db.commit()
   self.robots={};self.last={}
  def enqueue(self,urls):
   self.db.executemany('INSERT OR IGNORE INTO queue(url) VALUES(?)',[(canonical(u),) for u in urls if allowed_link(u)])
@@ -147,6 +171,7 @@ class Collector:
     'queue':dict(self.db.execute('SELECT status,count(*) FROM queue GROUP BY status')),
     'formula_conflicts_withheld':self.db.execute('SELECT count(*) FROM products WHERE conflict=1').fetchone()[0],
     'checkpoint_at':datetime.now(timezone.utc).isoformat(),'halal_certification_performed':False,
+    'extractor_version':EXTRACTOR_VERSION,
     'count_scope':'Distinct identities with full displayed Japanese ingredients from official Japanese product pages; not global/name-only indexes',
     'prior_chat_checkpoint_not_automatically_added':721}
   for name,value in [('products.json',rows),('summary.json',summary)]:
