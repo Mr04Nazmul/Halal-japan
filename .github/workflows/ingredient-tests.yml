@@ -26,3 +26,4 @@ jobs:
           node --test tests/halalCertificates.test.cjs
           node --test tests/sevenElevenEvidence.test.cjs
           node --test tests/yamayoProducts.test.cjs
+          node --test tests/topvaluProducts.test.cjs
