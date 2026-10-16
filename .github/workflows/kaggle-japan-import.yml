@@ -1,0 +1,41 @@
+name: Kaggle Japan food ingredient extraction
+on:
+  workflow_dispatch:
+    inputs:
+      dataset_slug:
+        description: 'Licensed Kaggle dataset slug (owner/dataset)'
+        required: false
+        default: 'openfoodfacts/world-food-facts'
+permissions:
+  contents: read
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Kaggle CLI
+        run: pip install kaggle==1.7.4.5
+      - name: Download Kaggle dataset
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          DATASET: ${{ inputs.dataset_slug }}
+        run: |
+          test -n "$KAGGLE_USERNAME" && test -n "$KAGGLE_KEY" || { echo 'Missing KAGGLE_USERNAME or KAGGLE_KEY repository secrets'; exit 1; }
+          mkdir -p /tmp/kaggle-food
+          kaggle datasets download -d "$DATASET" -p /tmp/kaggle-food --unzip
+      - name: Select food CSV and extract Japan-only ingredients
+        run: |
+          f=$(find /tmp/kaggle-food -type f \( -iname '*.csv' -o -iname '*.csv.gz' \) -print -quit)
+          test -n "$f" || { echo 'No CSV dataset file found'; exit 1; }
+          python scripts/import_kaggle_japan_food.py "$f"
+      - name: Upload extracted data for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: japan-kaggle-ingredient-candidates
+          path: data/kaggle_japan_ingredient_candidates.csv
+          retention-days: 7
