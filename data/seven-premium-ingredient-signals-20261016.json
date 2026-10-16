@@ -1,12 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "dataset": "Seven Premium official ingredient source observations",
   "created_on": "2026-10-16",
-  "coverage": "14 distinct store-only packaged product listings; a small research subset, NOT all 7-Eleven products",
+  "coverage": "14 exact Seven Premium online product pages with complete official 原材料 sections. These refer to online formulations, NOT photo-confirmed or JAN-verified packages.",
   "records_count": 14,
   "barcode_coverage": "0/14 — 7premium detail ID is NOT a JAN code",
   "rights_notice": "Seven Premium terms reserve reuse rights for their website's content. This file contains short independently organized factual ingredient indicators and direct links, not a copy of each complete label. Seek written permission before importing or republishing complete original ingredient declarations.",
-  "verdict_notice": "These are not halal certificates or full recipe validations. Explicit pork ingredient means avoid. Other products remain needs-review until origin/processing evidence is checked.",
+  "verdict_notice": "5 listings require AVOID due to four explicit pork ingredients plus one officially declared pork allergen. The other 9 have NOT been demonstrated halal. The site links to full current official ingredients and stores only short factual indicators under terms of use.",
   "source_terms_url": "https://7premium.jp/term",
   "records": [
     {
@@ -26,11 +26,20 @@
         "こんぶエキスパウダー",
         "調味料（アミノ酸等）"
       ],
-      "questions_to_verify_ja": [],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "questions_to_verify_ja": [
+        "調味料（アミノ酸等）の原料や製造工程について必要に応じ確認"
+      ],
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -49,11 +58,20 @@
         "こんぶエキスパウダー",
         "調味料（アミノ酸等）"
       ],
-      "questions_to_verify_ja": [],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "questions_to_verify_ja": [
+        "調味料（アミノ酸等）の原料や製造工程について必要に応じ確認"
+      ],
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -73,11 +91,20 @@
         "あおさ",
         "調味料（アミノ酸等）"
       ],
-      "questions_to_verify_ja": [],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "questions_to_verify_ja": [
+        "調味料（アミノ酸等）の原料や製造工程について必要に応じ確認"
+      ],
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -99,10 +126,17 @@
       "questions_to_verify_ja": [
         "発酵調味液の詳細は要確認"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -126,10 +160,17 @@
         "香料",
         "乳化剤"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -152,10 +193,17 @@
         "トリュフシーズニング",
         "香料"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -178,10 +226,17 @@
         "乳化剤",
         "香料"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -203,10 +258,17 @@
         "豚肉",
         "豚脂肪"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
       "screening_status": "explicit_pork_ingredient",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "named_pork_ingredient",
+      "screening_reason_bn": "অফিসিয়াল ingredient list-এ নির্দিষ্ট শূকরজাত উপাদান লেখা আছে; এড়িয়ে চলুন।"
     },
     {
       "store": "7-Eleven Japan",
@@ -229,10 +291,17 @@
         "鶏・豚味付肉そぼろ",
         "酒精"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
       "screening_status": "explicit_pork_ingredient",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "named_pork_ingredient",
+      "screening_reason_bn": "অফিসিয়াল ingredient list-এ নির্দিষ্ট শূকরজাত উপাদান লেখা আছে; এড়িয়ে চলুন।"
     },
     {
       "store": "7-Eleven Japan",
@@ -254,10 +323,17 @@
       "questions_to_verify_ja": [
         "香料"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -273,16 +349,25 @@
         "スパゲッティ",
         "トマトペースト",
         "ウインナーソーセージ",
-        "チキンペースト調味料"
+        "チキンペースト調味料",
+        "豚肉（アレルゲン表示）"
       ],
       "questions_to_verify_ja": [
-        "ウインナーソーセージの動物由来",
-        "豚肉アレルゲン表示"
+        "ウインナーソーセージに由来する動物性原材料",
+        "公式アレルゲン表示に豚肉を含む"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "declared_pork_allergen",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "official_allergen_declaration",
+      "pork_evidence_text": "一部に豚肉を含む",
+      "screening_reason_bn": "অফিসিয়াল 原材料 পেজে 豚肉 (pork) অ্যালার্জেন হিসেবে উল্লেখ আছে; এড়িয়ে চলুন।"
     },
     {
       "store": "7-Eleven Japan",
@@ -302,10 +387,17 @@
       "questions_to_verify_ja": [
         "豚もも肉"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
       "screening_status": "explicit_pork_ingredient",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "named_pork_ingredient",
+      "screening_reason_bn": "অফিসিয়াল ingredient list-এ নির্দিষ্ট শূকরজাত উপাদান লেখা আছে; এড়িয়ে চলুন।"
     },
     {
       "store": "7-Eleven Japan",
@@ -332,10 +424,17 @@
         "香料",
         "酵素"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
-      "screening_status": "needs_full_label_and_origin_review",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
+      "screening_status": "needs_origin_or_processing_evidence",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "none_explicit_in_observed_label",
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -360,10 +459,25 @@
         "みりん",
         "乳化剤"
       ],
-      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
       "screening_status": "explicit_pork_ingredient",
       "halal_certification": "not_verified",
-      "official_source_checked_on": "2026-10-16"
+      "official_source_checked_on": "2026-10-16",
+      "official_full_ingredient_list_on_source_page": true,
+      "full_list_in_this_database": false,
+      "current_package_compared": false,
+      "jan_barcode_evidence": "unavailable",
+      "verification_scope": "source_online_declaration_only",
+      "pork_evidence_kind": "named_pork_ingredient",
+      "screening_reason_bn": "অফিসিয়াল ingredient list-এ নির্দিষ্ট শূকরজাত উপাদান লেখা আছে; এড়িয়ে চলুন।"
     }
-  ]
+  ],
+  "rechecked_on": "2026-10-16",
+  "published_online_full_ingredient_lists": 14,
+  "complete_labels_reproduced_in_our_database": 0,
+  "package_and_JAN_confirmed_count": 0,
+  "explicit_pork_ingredient_count": 4,
+  "pork_allergen_declaration_count": 1,
+  "no_certification_count": 14,
+  "ingredient_data_limitations": "Complete 原材料 is visible on the official Seven Premium page for all fourteen. Manufacturer term policy prevents copying the complete wording into this public repository without permission. Processing aids, origins, cross-contact, exact physical packaging and certificates remain unconfirmed."
 }
