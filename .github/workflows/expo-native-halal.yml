@@ -1,0 +1,44 @@
+name: Expo Native Android APK
+on:
+  push:
+    branches: ['feature/expo-native-halal-20261016']
+    paths:
+      - 'expo-native/**'
+      - '.github/workflows/expo-native-halal.yml'
+  workflow_dispatch:
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: expo-native
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate Expo package versions
+        run: npx expo install --fix
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --non-interactive --clean --no-install
+      - name: Build signed DEBUG installable APK (not for Play Store)
+        run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Check APK
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep "com.nazmul.japanhalalchecker.expo"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: japan-halal-checker-expo-debug-apk
+          path: expo-native/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7

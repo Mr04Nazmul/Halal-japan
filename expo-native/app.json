@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "Japan Halal Checker",
+    "slug": "japan-halal-checker-expo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "android": {
+      "package": "com.nazmul.japanhalalchecker.expo",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "INTERNET"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Japan Halal Checker to scan food barcodes.",
+          "recordAudioAndroid": false
+        }
+      ]
+    ]
+  }
+}
