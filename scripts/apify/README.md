@@ -7,3 +7,4 @@ This workflow is **manual-run and research-only**. It does not modify the live s
 5. Download the `apify-official-food-candidates` artifact, if successful.
 6. Before importing any record: check manufacturer's original page, exact JAN, checksum, full Japanese ingredients, duplicate JAN, packaging/date, and origin/certification evidence. Only then import separately.
 No automatic halal/haram approvals. A found URL is not a complete product record.
+

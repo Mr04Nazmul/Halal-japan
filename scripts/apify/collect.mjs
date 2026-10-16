@@ -44,3 +44,4 @@ const unique=[...new Map(candidates.map(x=>[x.url,x])).values()];
 await mkdir('research/apify/output',{recursive:true});
 await writeFile('research/apify/output/candidates.json',JSON.stringify({collectedAt:new Date().toISOString(),actorId,runId:run.data.id,totalSearchResults:items.length,officialCandidateUrls:unique.length,records:unique},null,2));
 console.log('Collected '+unique.length+' unique official-page leads from '+items.length+' Actor results. No database import or halal certification claimed.');
+
