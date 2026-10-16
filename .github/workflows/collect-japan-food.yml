@@ -29,6 +29,18 @@ jobs:
         env:
           MAX_PAGES: ${{ inputs.pages || '20' }}
         run: python scripts/collect_japan_ingredients.py
+      - name: Import extracted ingredient candidates to Supabase
+        if: ${{ hashFiles('data/japan_ingredients.csv') != '' }}
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.JHC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo 'Supabase credentials not configured; artifact only, no import.'
+          else
+            python scripts/import_collected_ingredients.py
+          fi
       - name: Upload results and counts
         if: always()
         uses: actions/upload-artifact@v4
