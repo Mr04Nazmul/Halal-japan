@@ -1,0 +1,369 @@
+{
+  "schema_version": 1,
+  "dataset": "Seven Premium official ingredient source observations",
+  "created_on": "2026-10-16",
+  "coverage": "14 distinct store-only packaged product listings; a small research subset, NOT all 7-Eleven products",
+  "records_count": 14,
+  "barcode_coverage": "0/14 — 7premium detail ID is NOT a JAN code",
+  "rights_notice": "Seven Premium terms reserve reuse rights for their website's content. This file contains short independently organized factual ingredient indicators and direct links, not a copy of each complete label. Seek written permission before importing or republishing complete original ingredient declarations.",
+  "verdict_notice": "These are not halal certificates or full recipe validations. Explicit pork ingredient means avoid. Other products remain needs-review until origin/processing evidence is checked.",
+  "source_terms_url": "https://7premium.jp/term",
+  "records": [
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "11641",
+      "name_ja": "ポテトチップス うすしお味 50g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=11641",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "じゃがいも",
+        "植物油",
+        "食塩",
+        "こんぶエキスパウダー",
+        "調味料（アミノ酸等）"
+      ],
+      "questions_to_verify_ja": [],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "3096",
+      "name_ja": "ポテトチップス うすしお味 70g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=3096",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "じゃがいも",
+        "植物油",
+        "食塩",
+        "こんぶエキスパウダー",
+        "調味料（アミノ酸等）"
+      ],
+      "questions_to_verify_ja": [],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "5052",
+      "name_ja": "えび満月 56g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=5052",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "じゃがいもでん粉",
+        "えび",
+        "植物油脂",
+        "あみ",
+        "あおさ",
+        "調味料（アミノ酸等）"
+      ],
+      "questions_to_verify_ja": [],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "8960",
+      "name_ja": "ぬれせんべい 4枚入",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=8960",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "うるち米",
+        "発酵調味液",
+        "しょうゆ",
+        "麦芽糖",
+        "トレハロース"
+      ],
+      "questions_to_verify_ja": [
+        "発酵調味液の詳細は要確認"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "3331",
+      "name_ja": "メープルキャラメリゼナッツ 36g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=3331",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "アーモンド",
+        "カシューナッツ",
+        "ピスタチオ",
+        "メープルシロップ",
+        "香料",
+        "乳化剤"
+      ],
+      "questions_to_verify_ja": [
+        "香料",
+        "乳化剤"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "8670",
+      "name_ja": "トリュフナッツ 34g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=8670",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "クルミ",
+        "アーモンド",
+        "カシューナッツ",
+        "トリュフシーズニング",
+        "香料"
+      ],
+      "questions_to_verify_ja": [
+        "トリュフシーズニング",
+        "香料"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "11313",
+      "name_ja": "メープルカステラ 94g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=11313",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "小麦粉",
+        "鶏卵",
+        "メープルシロップ",
+        "乳化剤",
+        "香料"
+      ],
+      "questions_to_verify_ja": [
+        "乳化剤",
+        "香料"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "6054",
+      "name_ja": "旨辛チョリソー 90g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=6054",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "豚肉",
+        "豚脂肪",
+        "食塩",
+        "香辛料"
+      ],
+      "questions_to_verify_ja": [
+        "豚肉",
+        "豚脂肪"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "explicit_pork_ingredient",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "4757",
+      "name_ja": "担々麺 90g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=4757",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "ポーク調味料",
+        "鶏・豚味付肉そぼろ",
+        "ごま",
+        "酒精"
+      ],
+      "questions_to_verify_ja": [
+        "ポーク調味料",
+        "鶏・豚味付肉そぼろ",
+        "酒精"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "explicit_pork_ingredient",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "986",
+      "name_ja": "いちごヨーグルト 4個入",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=986",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "乳製品",
+        "いちご果肉",
+        "砂糖",
+        "香料",
+        "甘味料（ステビア）"
+      ],
+      "questions_to_verify_ja": [
+        "香料"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "7220",
+      "name_ja": "ナポリタン 1食入",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=7220",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "スパゲッティ",
+        "トマトペースト",
+        "ウインナーソーセージ",
+        "チキンペースト調味料"
+      ],
+      "questions_to_verify_ja": [
+        "ウインナーソーセージの動物由来",
+        "豚肉アレルゲン表示"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "1088",
+      "name_ja": "しっとり焼豚切落し 110g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=1088",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "豚もも肉",
+        "しょうゆ",
+        "砂糖"
+      ],
+      "questions_to_verify_ja": [
+        "豚もも肉"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "explicit_pork_ingredient",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "8009",
+      "name_ja": "糖質50％オフ ワッフル 1個",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=8009",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "マーガリン",
+        "鶏卵",
+        "牛乳",
+        "ショートニング",
+        "乳化剤",
+        "香料",
+        "酵素"
+      ],
+      "questions_to_verify_ja": [
+        "ショートニング",
+        "乳化剤",
+        "香料",
+        "酵素"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "needs_full_label_and_origin_review",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    },
+    {
+      "store": "7-Eleven Japan",
+      "brand": "Seven Premium",
+      "product_page_id": "5053",
+      "name_ja": "いかせんべい 52g",
+      "jan": null,
+      "source_url": "https://7premium.jp/product/search/detail?id=5053",
+      "source_kind": "official_brand_product_page",
+      "selling_channel_claim": "7-Eleven only (except some stores)",
+      "ingredients_page_available": true,
+      "ingredient_signals_ja": [
+        "じゃがいもでん粉",
+        "しょうゆ",
+        "はちみつ",
+        "みりん",
+        "ポークエキス",
+        "乳化剤"
+      ],
+      "questions_to_verify_ja": [
+        "ポークエキス",
+        "みりん",
+        "乳化剤"
+      ],
+      "ingredient_data_status": "reviewed_public_page_key_facts_not_full_label",
+      "screening_status": "explicit_pork_ingredient",
+      "halal_certification": "not_verified",
+      "official_source_checked_on": "2026-10-16"
+    }
+  ]
+}
