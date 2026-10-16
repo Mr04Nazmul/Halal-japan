@@ -31,17 +31,15 @@ test('existing scanner, ingredient engine, source evidence and Places remain wir
   'postFoodLookup({query:code.trim()})',
   'result.findings',
   'isCertificateDisplayCurrent(',
-  'IngredientSourceFinder barcode={result?.code||query}',
   '<IngredientOcr onDetected={setOcrText}/>',
   '<IngredientVerification initialText={ocrText}/>',
-  '<ReviewedEcodeGuide/>',
-  '<FoodCatalog onChoose={lookup}/>',
-  '<SevenElevenIngredientResearch onChoose={lookup}/>',
+  '<ReviewedEcodeGuide/>' ,
   'places-prayer.html',
   '<IslamicTools/>',
   'setPlacesTab(\'mosques\')',
   'ResearchSourcesSettings'
  ])assert.ok(page.includes(marker),'Missing '+marker);
+ for(const file of ['helpers/ingredientSourceLinks.ts','components/FoodCatalog.tsx','components/SevenElevenIngredientResearch.tsx'])assert.ok(fs.existsSync(path.join(root,file)),'Source preserved '+file);
 });
 test('mobile layout, visual scan frame and reduced motion accessibility available',()=>{
  for(const marker of ['BARCODE PRO 2026','.heroArtwork','.resultTop','.verdictPanel','.scanBeam','@media(max-width:420px)','@media(prefers-reduced-motion:reduce)','env(safe-area-inset-bottom)'])

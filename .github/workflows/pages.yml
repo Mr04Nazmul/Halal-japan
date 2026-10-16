@@ -31,6 +31,7 @@ jobs:
           node --test tests/yamayoProducts.test.cjs
           node --test tests/topvaluProducts.test.cjs
           node --test tests/ingredientSourceLinks.test.cjs
+          node --test tests/barcodeProCleanHome.test.cjs
           node --test tests/publicManufacturerFoods.test.cjs
           node --test tests/barcodeProLayout.test.cjs
           npm run build
