@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
+import {yamayoProducts} from '../helpers/yamayoProducts';
 import {guardSevenElevenVerdict} from '../helpers/sevenElevenEvidence';
 import {sevenOfficialItems} from '../helpers/sevenOfficialCatalog';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
@@ -171,6 +172,22 @@ async function lookupSupplementaryFood(query:string,isBarcode:boolean):Promise<L
 
 async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
+ // Manufacturer-supplied JAN and full package ingredients with express reuse permission.
+ // Never substitute the JAN of a mixed gift set for an individual juice bottle.
+ const yamayo=yamayoProducts.find(p=>
+  /^\d{8,14}$/.test(query)?barcodeEquivalent(p.code,query):
+  p.name.normalize('NFKC').toLocaleLowerCase()===query.normalize('NFKC').toLocaleLowerCase()
+ );
+ if(yamayo){
+  const decision=ingredientDecision(yamayo.ingredients,false,yamayo.ingredientListComplete);
+  return {found:true,name:yamayo.name,barcode:yamayo.code,brand:yamayo.brand,
+   ingredients:yamayo.ingredients,image:null,
+   source:'Yamayo manufacturer-supplied JAN and full package 原材料名 (reuse authorized)',
+   productUrl:yamayo.sourceUrl,...decision,
+   manufacturerEvidence:[{type:yamayo.evidence,issuer:'株式会社ヤマヨ',
+    url:yamayo.sourceUrl,reviewedAt:yamayo.checkedAt}],
+   coverageNote:'Yamayo supplied original product labels and JAN spreadsheets in October 2026 and explicitly permitted secondary use of product information. The listed ingredients are product-specific; gift sets are excluded. HALAL · Ingredient Check is not religious certification. Formulations can change.'};
+ }
  // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
  if(query==='2044706200126'){
    return {found:true,name:'CAFE BOX チキンケバブライス / Chicken Kebab Rice',barcode:query,brand:'7-Eleven Japan',ingredients:null,image:null,source:'User-provided package photograph (barcode) + Seven-Eleven public product listing (name)',productUrl:'https://www.sej.co.jp/products/a/bento/',...ingredientDecision(null),manufacturerEvidence:[{type:'Product identity and in-store code from packaging; ingredient declaration not yet supplied',url:'https://www.sej.co.jp/products/a/bento/',issuer:'Seven-Eleven Japan',reviewedAt:null}],coverageNote:'Package-front matched to CAFE BOX チキンケバブライス; the 20-prefix may be an in-store code. This particular package ingredient list, additive sources and halal certification are NOT verified. Price/region/version may vary.'};
