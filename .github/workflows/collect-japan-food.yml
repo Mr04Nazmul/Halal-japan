@@ -39,3 +39,5 @@ jobs:
             data/japan_ingredients_state.json
           if-no-files-found: warn
           retention-days: 7
+
+# Trigger fresh ingredient collection run
