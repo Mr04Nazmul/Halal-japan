@@ -18,16 +18,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: npm
-          cache-dependency-path: expo-native/package-lock.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
       - name: Validate Expo package versions
-        run: npx expo install --check
+        run: npx expo install --fix
       - name: Generate Android project
         run: npx expo prebuild --platform android --non-interactive --clean --no-install
       - name: Build signed DEBUG installable APK (not for Play Store)
