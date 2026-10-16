@@ -9,6 +9,7 @@ import IngredientOcr from '../components/IngredientOcr';
 import IngredientVerification from '../components/IngredientVerification';
 import ReviewedEcodeGuide from '../components/ReviewedEcodeGuide';
 import ResearchSourcesSettings from '../components/ResearchSourcesSettings';
+import IngredientSourceFinder from '../components/IngredientSourceFinder';
 import IslamicTools from '../components/IslamicTools';
 import FoodCatalog from '../components/FoodCatalog';
 import SevenElevenOfficialCatalog from '../components/SevenElevenOfficialCatalog';
@@ -51,6 +52,7 @@ export default function Home(){
  <button className={styles.discoverBanner} onClick={()=>{setPlacesTab('restaurants');setView('places')}}><span><strong>Discover halal places</strong><small>Restaurants across Japan · Explore the directory</small></span><span aria-hidden="true">↗</span></button>
  <div className={styles.sectionLabel}><span>✦ 7-ELEVEN FOOD VERIFICATION</span><small>Exact product · 原材料名 · Evidence-based review</small></div>
  <section className={styles.section}><h2><Search size={20}/> {w.search}</h2><form className={styles.search} onSubmit={e=>{e.preventDefault();if(query.trim())lookup(query)}}><Input value={query} onChange={e=>setQuery(e.target.value)} placeholder={w.placeholder}/><Button type="submit" disabled={busy}>{busy?'…':'Search'}</Button></form>
+ <a href="#japan-ingredient-sources" style={{display:'inline-block',color:'#ead29a',fontSize:13,margin:'8px 0 12px',fontWeight:700}}>🔎 Manufacturer 原材料名 · All ingredient sources ↓</a>
  {busy&&<p className={styles.note}>{w.checking}</p>}{error&&<div className={styles.alert}><AlertTriangle size={17}/><span>{error} <button type="button" onClick={()=>document.querySelector('#ingredient-photo-fallback')?.scrollIntoView({behavior:'smooth'})} style={{display:'block',marginTop:10,padding:'9px 12px',borderRadius:9,background:'#e5c78e',color:'#172b20',fontWeight:700}}>原材料名-এর ছবি দিন ↓</button></span></div>}
  {result&&<article className={styles.detailCard}>
  <div className={styles.detailPhoto}>{result.image_front_small_url?<img src={result.image_front_small_url} alt={result.name}/>:<PackageSearch size={60}/>}</div>
@@ -82,6 +84,7 @@ export default function Home(){
   </div>
  </details>
  </article>}
+ <IngredientSourceFinder barcode={result?.code||query} onLookup={lookup}/>
  <section style={{margin:'20px 0',padding:16,border:'1px solid #4e785f',borderRadius:16,background:'#10291f',color:'#f7f4e7'}}>
  <h2 style={{fontSize:20,margin:'0 0 8px'}}>🏪 7-Eleven Japan · Halal / Haram Check</h2>
  <p style={{fontSize:13,lineHeight:1.65}}>Our focus is a current, evidence-based 7-Eleven food verdict. A named product is not a verified ingredient label. For most items, check the current package's 原材料名. Third-party ingredient excerpts are research leads, not certified halal or a confirmed haram verdict.</p>

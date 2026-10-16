@@ -27,3 +27,4 @@ jobs:
           node --test tests/sevenElevenEvidence.test.cjs
           node --test tests/yamayoProducts.test.cjs
           node --test tests/topvaluProducts.test.cjs
+          node --test tests/ingredientSourceLinks.test.cjs
