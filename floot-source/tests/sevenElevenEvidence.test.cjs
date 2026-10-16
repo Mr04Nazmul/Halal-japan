@@ -43,3 +43,30 @@ test('a different brand is unaffected',()=>{
  const r=guard(item({brand:'Meiji',source:'Meiji official',verdict:'ingredient_clear'}));
  assert.equal(r.verdict,'ingredient_clear');
 });
+
+test('Seven full exact-product label may show HALAL ingredient check without certificate',()=>{
+ const today=new Date().toISOString().slice(0,10);
+ const r=guard(item({name:'塩むすび',ingredients:'米、食塩',verdict:'ingredient_clear',
+  reasons:['No flagged ingredients in complete label'],certificate:null,
+  manufacturerEvidence:[{type:'reviewed_current_complete_package_label',
+    issuer:'Seven Premium',url:'https://7premium.jp/product/search/detail?id=1234',reviewedAt:today}]}));
+ assert.equal(r.verdict,'ingredient_clear');
+ assert.match(r.reasons.join(' '),/NOT a halal certificate/);
+});
+test('No JAN or old evidence cannot be promoted to HALAL',()=>{
+ const today=new Date();
+ const old=new Date(today.getTime()-130*86400000).toISOString().slice(0,10);
+ const label={type:'reviewed_current_complete_package_label',issuer:'Seven Premium',
+  url:'https://7premium.jp/product/search/detail?id=1234',reviewedAt:old};
+ const r=guard(item({verdict:'ingredient_clear',ingredients:'米、塩',manufacturerEvidence:[label]}));
+ assert.equal(r.verdict,'needs_review');
+ assert.equal(guard(item({verdict:'ingredient_clear',barcode:null,manufacturerEvidence:[{...label,reviewedAt:today.toISOString().slice(0,10)}]})).verdict,'needs_review');
+});
+test('Unknown additives remain CHECK even with full reviewed package evidence',()=>{
+ const today=new Date().toISOString().slice(0,10);
+ const r=guard(item({verdict:'needs_review',ingredients:'砂糖、乳化剤',manufacturerEvidence:[{
+  type:'reviewed_current_complete_package_label',issuer:'Seven Premium',
+  url:'https://7premium.jp/product/search/detail?id=3331',reviewedAt:today
+ }]}));
+ assert.equal(r.verdict,'needs_review');
+});
