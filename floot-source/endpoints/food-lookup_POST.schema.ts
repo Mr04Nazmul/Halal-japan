@@ -2,6 +2,7 @@ import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
 import {yamayoProducts} from '../helpers/yamayoProducts';
 import {topvaluProducts} from '../helpers/topvaluProducts';
+import {publicManufacturerFoods} from '../helpers/publicManufacturerFoods';
 import {guardSevenElevenVerdict} from '../helpers/sevenElevenEvidence';
 import {sevenOfficialItems} from '../helpers/sevenOfficialCatalog';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
@@ -204,6 +205,24 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
    manufacturerEvidence:[{type:'official online product ingredient and additive declaration (NOT an independent halal certificate)',
     issuer:'AEON TOPVALU',url:topvalu.sourceUrl,reviewedAt:topvalu.checkedAt}],
    coverageNote:'Exact JAN matched to TOPVALU official online ingredient and additive listing, checked '+topvalu.checkedAt+'. This is an ingredient-screening result, NOT halal certification, nor independent confirmation of ingredient manufacturing origin. TOPVALU says formulas can change and actual package information prevails. No right to bulk republish the entire TOPVALU product catalogue is assumed.'};
+ }
+ // Additional four independent Japanese manufacturers: exact on-page JAN and
+ // full published ingredient declarations. Do not upgrade website claims to
+ // certification or represent store availability as independently confirmed.
+ const sourceMatched=publicManufacturerFoods.find(p=>
+  /^\d{8,14}$/.test(query)?barcodeEquivalent(p.code,query):
+  p.name.normalize('NFKC').toLocaleLowerCase()===query.normalize('NFKC').toLocaleLowerCase()
+ );
+ if(sourceMatched){
+  const decision=ingredientDecision(sourceMatched.ingredients,false,
+    sourceMatched.ingredientDeclarationOnOfficialPage);
+  return {found:true,name:sourceMatched.name,barcode:sourceMatched.code,
+   brand:sourceMatched.brand,ingredients:sourceMatched.ingredients,image:null,
+   source:sourceMatched.brand+' official public product declaration (JAN + 原材料名)',
+   productUrl:sourceMatched.sourceUrl,...decision,
+   manufacturerEvidence:[{type:'Official product-page ingredients, NOT manufacturer-authorized bulk data or halal certification',
+     url:sourceMatched.sourceUrl,issuer:sourceMatched.brand,reviewedAt:sourceMatched.checkedAt}],
+   coverageNote:'Exact JAN, food name and public online ingredient declaration were inspected on '+sourceMatched.checkedAt+'. This is an ingredient-only screening result; ingredients can change and actual current package takes priority. The current printed package, ingredient origins and halal certification have NOT been independently verified. This small manually compiled record is not a manufacturer-approved bulk data feed.'};
  }
  // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
  if(query==='2044706200126'){
