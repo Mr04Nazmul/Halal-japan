@@ -36,9 +36,12 @@ test('links only for valid 13 digit JAN barcode and never imply source verified'
  assert.equal(janSourceLinks('4549414087209').length,0);
  assert.equal(janSourceLinks('https://evil.example/a').length,0);
 });
-test('scanner page includes source finder without changing the original barcode scanning and OCR components',()=>{
+test('source helper remains available while directory no longer clutters Home',()=>{
  const p=fs.readFileSync(path.join(__dirname,'../pages/_index.tsx'),'utf8');
- assert.match(p,/IngredientSourceFinder barcode=\{result\?\.code\|\|query\}/);
+ const helper=fs.readFileSync(path.join(__dirname,'../helpers/ingredientSourceLinks.ts'),'utf8');
+ assert.doesNotMatch(p,/<IngredientSourceFinder/);
+ assert.doesNotMatch(p,/All manufacturer sources/);
+ assert.match(helper,/export const ingredientSources/);
  assert.match(p,/BrowserMultiFormatReader/);
  assert.match(p,/IngredientOcr/);
  assert.match(p,/IngredientVerification/);
