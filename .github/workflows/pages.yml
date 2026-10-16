@@ -29,6 +29,7 @@ jobs:
           node --test tests/halalCertificates.test.cjs
           node --test tests/sevenElevenEvidence.test.cjs
           node --test tests/yamayoProducts.test.cjs
+          node --test tests/topvaluProducts.test.cjs
           npm run build
           test -s dist/index.html
       - name: Assemble Floot React website as the site root

@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
 import {yamayoProducts} from '../helpers/yamayoProducts';
+import {topvaluProducts} from '../helpers/topvaluProducts';
 import {guardSevenElevenVerdict} from '../helpers/sevenElevenEvidence';
 import {sevenOfficialItems} from '../helpers/sevenOfficialCatalog';
 import {manufacturerDrinks} from '../helpers/manufacturerDrinks';
@@ -187,6 +188,22 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
    manufacturerEvidence:[{type:yamayo.evidence,issuer:'株式会社ヤマヨ',
     url:yamayo.sourceUrl,reviewedAt:yamayo.checkedAt}],
    coverageNote:'Yamayo supplied original product labels and JAN spreadsheets in October 2026 and explicitly permitted secondary use of product information. The listed ingredients are product-specific; gift sets are excluded. HALAL · Ingredient Check is not religious certification. Formulations can change.'};
+ }
+ // JAN-exact product ingredient information from AEON's public TOPVALU catalogue.
+ // Explicitly separate current-package confirmation from an online declaration.
+ const topvalu=topvaluProducts.find(p=>
+  /^\d{8,14}$/.test(query)?barcodeEquivalent(p.code,query):
+  p.name.normalize('NFKC').toLocaleLowerCase()===query.normalize('NFKC').toLocaleLowerCase()
+ );
+ if(topvalu){
+  const statement=topvalu.ingredients+(topvalu.additives?'／'+topvalu.additives:'');
+  const decision=ingredientDecision(statement,false,topvalu.officialOnlineIngredientDeclaration);
+  return {found:true,name:topvalu.name,barcode:topvalu.code,brand:topvalu.brand,
+   ingredients:statement,image:null,source:'AEON TOPVALU public official product page (JAN, 原材料名 and 添加物)',
+   productUrl:topvalu.sourceUrl,...decision,
+   manufacturerEvidence:[{type:'official online product ingredient and additive declaration (NOT an independent halal certificate)',
+    issuer:'AEON TOPVALU',url:topvalu.sourceUrl,reviewedAt:topvalu.checkedAt}],
+   coverageNote:'Exact JAN matched to TOPVALU official online ingredient and additive listing, checked '+topvalu.checkedAt+'. This is an ingredient-screening result, NOT halal certification, nor independent confirmation of ingredient manufacturing origin. TOPVALU says formulas can change and actual package information prevails. No right to bulk republish the entire TOPVALU product catalogue is assumed.'};
  }
  // Seven-Eleven fresh-food in-store EAN code: observed on user's photographed package. Not a globally registered manufacturer JAN.
  if(query==='2044706200126'){
