@@ -45,7 +45,12 @@ class EnrichIngredientTests(unittest.TestCase):
    obj=json.loads(path.read_text())
    obj["records"][0]["code"]="4900000000001"
    path.write_text(json.dumps(obj))
-   with self.assertRaisesRegex(ValueError,"Duplicate/invalid"):
-    mod.run(root,src)
+   report=mod.run(root,src)
+   self.assertEqual(report["duplicate_barcode_groups_quarantined"],1)
+   self.assertEqual(report["duplicate_entries"],1)
+   self.assertEqual(report["new_ingredient_texts"],0)
+   saved=json.loads(path.read_text())["records"]
+   self.assertEqual(saved[0]["ingredients_text"],"")
+   self.assertEqual(saved[1]["ingredients_text"],"米")
 if __name__=="__main__":
  unittest.main()
