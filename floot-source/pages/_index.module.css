@@ -547,3 +547,26 @@
  .scanBeam{animation:none}
  .heroActions button,.quickLinks button{transition:none!important}
 }
+
+
+/* Barcode Pro: hide noisy research directories from Home while preserving
+   every source record in the lookup engine and source attribution on results. */
+.ocrWorkflow{margin-top:27px;scroll-margin-top:20px}
+.ocrWorkflow > .sectionHeading{margin-bottom:12px}
+.ocrWorkflow > section{background:#fff!important;border:1px solid #dce9df!important;
+ border-radius:20px!important;padding:clamp(16px,4vw,23px)!important;margin-top:13px!important;
+ box-shadow:0 8px 24px rgba(22,88,58,.05);color:#204532}
+.ocrWorkflow > section h3{font-size:18px;letter-spacing:-.3px;color:#194532;margin:0 0 9px}
+.ocrWorkflow > section p{color:#597568;font-size:13px;line-height:1.75}
+.ocrWorkflow > section label{color:#2d5941;font-size:13px;font-weight:650}
+.ocrWorkflow > section textarea,
+.ocrWorkflow > section input:not([type="checkbox"]){background:#f7fbf8!important;color:#173b2b!important;
+ border:1px solid #d0e4d6!important;border-radius:11px!important;
+ padding:12px!important;box-sizing:border-box!important;font-size:14px!important;line-height:1.65}
+.ocrWorkflow > section input[type="checkbox"]{accent-color:#0b9568;flex-shrink:0}
+.ocrWorkflow > section a{color:#078a60!important;overflow-wrap:anywhere}
+.ocrWorkflow > section > div[role="status"]{border-radius:13px!important}
+.advancedResearch{margin-top:16px;background:#fff;border:1px solid #dceadf;
+ border-radius:15px;padding:13px 15px;color:#244f38}
+.advancedResearch > summary{cursor:pointer;font-weight:700;font-size:13px;color:#137e57}
+@media(max-width:420px){.ocrWorkflow > section{padding:15px!important}.ocrWorkflow > section h3{font-size:16px}}
