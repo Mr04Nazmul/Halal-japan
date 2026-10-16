@@ -6,8 +6,11 @@ export type IngredientDecision={verdict:'haram_ingredient'|'needs_review'|'certi
  * Ingredient-only screening. No database source is treated as a halal certificate
  * without separate, product-specific certification evidence.
  * This function never infers the source of an ambiguous additive.
+ * A complete declaration may be established by a trusted manufacturer source,
+ * or manually checked from the current complete package label. It does not
+ * imply a halal certificate or verified manufacturing process.
  */
-export function ingredientDecision(input:string|null|undefined, certificateValid=false, completeManufacturerIngredients=false):IngredientDecision{
+export function ingredientDecision(input:string|null|undefined, certificateValid=false, completeIngredientDeclarationReviewed=false):IngredientDecision{
  const original=(input||'').normalize('NFKC').toLowerCase().trim();
  if(!original)return {verdict:'unknown',reasons:['Ingredient information is unavailable. Scan the 原材料名 section or obtain an official product label.'],confidence:'low',findings:[]};
  // Labels such as "halal", "organic" or "no additives" are not an ingredient list.
@@ -63,6 +66,6 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  if(certificateValid)return {verdict:'certified',reasons:['Product-specific halal certificate indicated by a separately verified record; confirm certificate scope and expiry.'],confidence:'high',findings};
  if(!s.replace(/[\s,:、/／・()（）\-]/g,'').trim())return {verdict:'unknown',reasons:['Only absence claims or factory notices were supplied. Full product ingredient list is still needed.'],confidence:'low',findings:[]};
  if(findings.length)return {verdict:'needs_review',reasons:findings.map(f=>f.reason),confidence:'medium',findings};
- if(completeManufacturerIngredients)return {verdict:'ingredient_clear',reasons:['HALAL · Ingredient Check only: no flagged ingredient in the complete manufacturer declaration. Not certified; processing and cross-contact are not verified.'],confidence:'medium',findings};
+ if(completeIngredientDeclarationReviewed)return {verdict:'ingredient_clear',reasons:['HALAL · Ingredient Check: no flagged ingredient in the complete reviewed declaration. Not certified; processing and cross-contact are not verified.'],confidence:'medium',findings};
  return {verdict:'needs_review',reasons:['No clearly prohibited ingredients detected in the available text, but its completeness, ingredient origins and halal certification have NOT been verified.'],confidence:'low',findings};
 }
