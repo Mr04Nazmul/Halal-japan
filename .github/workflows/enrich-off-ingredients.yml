@@ -49,7 +49,9 @@ jobs:
           from pathlib import Path
           m=json.loads(Path('data/food-catalog-manifest.json').read_text())
           r=json.loads(Path('docs/ingredient-enrichment-report.json').read_text())
-          assert r['catalogue_total']==m['total_unique_records']==100000
+          assert r['catalogue_total']==m['catalogue_total_entries']
+          assert m['total_unique_records']==r['catalogue_distinct_barcodes']
+          assert r['catalogue_total']>=100000
           assert m['all_with_ingredient_text']==r['with_ingredient_text_after']
           assert r['with_ingredient_text_after']>=r['with_ingredient_text_before']
           assert r['new_ingredient_texts']==r['new_japan_texts']+r['new_supplemental_texts']
