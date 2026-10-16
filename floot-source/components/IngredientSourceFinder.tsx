@@ -27,9 +27,9 @@ export default function IngredientSourceFinder({barcode='',onLookup}:{barcode?:s
    <label htmlFor="ingredient-source-jan" style={{width:'100%',fontSize:13,fontWeight:700}}>Barcode / JAN (13 digits) অথবা Product name</label>
    <div style={{flex:'1 1 185px',minWidth:0}}><input id="ingredient-source-jan" value={current} onChange={e=>setCurrent(e.target.value)}
     placeholder="例: 4549414087208" autoComplete="off" style={fieldStyle}/></div>
-   {onLookup?<button type="submit" disabled={code.length<2} style={{...buttonStyle,opacity:code.length<2?.5:1}}>Search in our app</button>:null}
+   {onLookup?<button type="submit" disabled={code.length<2} style={{...buttonStyle,opacity:code.length<2?0.5:1}}>Search in our app</button>:null}
   </form>
-  {code&&/^\\d+$/.test(code)&&!valid?<p style={{fontSize:12,color:'#f6d4a7'}}>13-digit JAN-এর checksum মিলছে না, অথবা এটি অন্য ধরনের in-store code। তাই manufacturer link দিয়ে exact match দাবি করছি না।</p>:null}
+  {code&&/^\d+$/.test(code)&&!valid?<p style={{fontSize:12,color:'#f6d4a7'}}>13-digit JAN-এর checksum মিলছে না, অথবা এটি অন্য ধরনের in-store code। তাই manufacturer link দিয়ে exact match দাবি করছি না।</p>:null}
   {valid?<div style={{padding:12,background:'#0b1c16',borderRadius:12,margin:'12px 0'}}>
     <b style={{fontSize:13}}>Exact JAN: {code}</b>
     <p style={{fontSize:12,lineHeight:1.6,margin:'6px 0 10px'}}>Manufacturer result পাওয়ার নিশ্চয়তা নেই। Official page খুলে একই JAN ও complete package label মিলিয়ে দেখুন।</p>
@@ -37,7 +37,7 @@ export default function IngredientSourceFinder({barcode='',onLookup}:{barcode?:s
      {sourceLinks.map(source=><a key={source.href} href={source.href} target="_blank" rel="noopener noreferrer" style={linkStyle}>{source.name} ↗</a>)}
     </div>
    </div>:null}
-  {code&&!valid&&!/^\\d+$/.test(code)?<p style={{fontSize:13,margin:'8px 0'}}>
+  {code&&!valid&&!/^\d+$/.test(code)?<p style={{fontSize:13,margin:'8px 0'}}>
    <a href={'https://www.google.com/search?q='+encodeURIComponent(code+' 原材料名')} target="_blank" rel="noopener noreferrer" style={linkStyle}>Search Japanese manufacturer ingredient pages for “{code.slice(0,50)}” ↗</a>
   </p>:null}
   <button type="button" onClick={()=>setShowAll(x=>!x)} aria-expanded={showAll} style={{...buttonStyle,background:'transparent',border:'1px solid #809c88',color:'#f3e4c4',width:'100%',textAlign:'left',marginTop:6}}>
