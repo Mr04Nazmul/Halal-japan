@@ -1,5 +1,8 @@
 name: Crawl4AI Japanese ingredient evidence
 on:
+  push:
+    paths:
+      - '.github/workflows/crawl4ai-ingredients.yml'
   workflow_dispatch:
     inputs:
       max_urls:
