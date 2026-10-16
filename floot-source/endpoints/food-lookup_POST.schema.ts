@@ -192,7 +192,7 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
  // JAN-exact product ingredient information from AEON's public TOPVALU catalogue.
  // Explicitly separate current-package confirmation from an online declaration.
  const topvalu=topvaluProducts.find(p=>
-  /^\\d{8,14}$/.test(query)?barcodeEquivalent(p.code,query):
+  /^\d{8,14}$/.test(query)?barcodeEquivalent(p.code,query):
   p.name.normalize('NFKC').toLocaleLowerCase()===query.normalize('NFKC').toLocaleLowerCase()
  );
  if(topvalu){
