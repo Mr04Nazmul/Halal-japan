@@ -41,6 +41,7 @@ jobs:
           cp places-prayer.js _site/places-prayer.js
           mkdir -p _site/data
           cp data/off-japan-research.json _site/data/off-japan-research.json
+          cp data/seven-premium-ingredient-signals-20261016.json _site/data/seven-premium-ingredient-signals-20261016.json
           if [ -s data/openfoodfacts-japan.json ]; then cp data/openfoodfacts-japan.json _site/data/openfoodfacts-japan.json; fi
           # Optional 100k supplemental food index. Barcode shards stay separate
           # so one camera scan never downloads the entire database.
@@ -62,6 +63,7 @@ jobs:
           test -s _site/places-prayer.html
           test -s _site/places-prayer.js
           test -s _site/data/off-japan-research.json
+          test -s _site/data/seven-premium-ingredient-signals-20261016.json
           test -s _site/halal-restaurants.html
           test -s _site/restaurant-data.js
           test -s _site/index.html
@@ -81,7 +83,8 @@ jobs:
           if leaks:
               raise SystemExit("Blocked private data in Pages artifact: " + ", ".join(leaks[:12]))
           permitted = {"off-japan-research.json", "openfoodfacts-japan.json",
-                       "food-catalog-manifest.json", "world-food-name-index.json"}
+                       "food-catalog-manifest.json", "world-food-name-index.json",
+                       "seven-premium-ingredient-signals-20261016.json"}
           unexpected = sorted(p.name for p in (root/"data").glob("*")
                               if p.is_file() and p.name not in permitted)
           if unexpected:
