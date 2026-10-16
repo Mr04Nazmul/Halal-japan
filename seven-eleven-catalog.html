@@ -3,7 +3,7 @@
 .evItem{border:1px solid #d9e5db;border-radius:13px;padding:13px;margin:11px 0;background:#fff}
 .evItemTitle{font-size:17px;font-weight:800;line-height:1.4}
 .evPill{display:inline-block;border-radius:20px;background:#fdf0d1;color:#735214;font-size:12px;padding:5px 9px;margin:8px 0;font-weight:750}
-.evPill.pork{background:#ffe1db;color:#922b1b}
+.evPill.pork{background:#ffe1db;color:#922b1b}.evPill.compatible{background:#e1f4e7;color:#166439}
 .evList{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}
 .evList span{background:#eef6f0;border:1px solid #d9eadc;color:#155437;padding:5px 8px;border-radius:8px;font-size:12px}
 .evConcern{font-size:12px;color:#74532d;line-height:1.6}
@@ -22,7 +22,7 @@
 <input class="search" type="search" id="evidenceSearch" placeholder="例: ポーク, ポテト, 香料, えび" autocomplete="off" style="margin:8px 0">
 <div class="chips"><button type="button" id="evAll" class="evButton selected">সব</button><button type="button" id="evPork" class="evButton">Pork found / declared</button><button type="button" id="evReview" class="evButton">Halal not confirmed</button></div>
 <div id="evidenceResults" aria-live="polite"><p class="muted">লোড হচ্ছে…</p></div>
-<p class="notice"><b>দুই ধাপে যাচাই:</b> (১) ১৪টির সবগুলোর পূর্ণ online 原材料 অফিসিয়াল পেজে আছে। (২) নির্দিষ্ট JAN, প্যাকেটের বর্তমান version এবং ingredient origin/certification এখনো অনিশ্চিত। চারটিতে সরাসরি pork ingredient, একটিতে pork allergen declaration আছে (এড়িয়ে চলুন); বাকি ৯টিকে Halal বলা যাচ্ছে না।</p>
+<p class="notice"><b>দুই ধাপে যাচাই:</b> (১) ১৪টির সবগুলোর পূর্ণ online 原材料 অফিসিয়াল পেজে আছে। (২) নির্দিষ্ট JAN, প্যাকেটের বর্তমান version এবং কিছু ingredient origin/certification এখনো অনিশ্চিত। চারটিতে সরাসরি pork ingredient, একটিতে pork allergen declaration আছে (এড়িয়ে চলুন)। কিছু পণ্যের ingredient list হালাল-সঙ্গত দেখালেও নিশ্চিত উৎস/সার্টিফিকেশন আলাদা বিষয়।</p>
 </section></main><script>const data=[["お好みおかず弁当","Bento","537.84","関東・近畿・中国・九州","https://www.sej.co.jp/products/a/item/044895/"],["海苔弁当","Bento","594","北海道・関東・九州","https://www.sej.co.jp/products/a/itemresult/?key=%E6%B5%B7%E8%8B%94%E5%BC%81%E5%BD%93"],["照り焼きチキン弁当","Bento","699.84","茨城県","https://www.sej.co.jp/products/a/itemresult/?key=%E7%85%A7%E3%82%8A%E7%84%BC%E3%81%8D%E3%83%81%E3%82%AD%E3%83%B3%E5%BC%81%E5%BD%93"],["ロースとんかつ弁当","Bento","753.84","関東（一部）","https://www.sej.co.jp/products/a/itemresult/?key=%E3%83%AD%E3%83%BC%E3%82%B9%E3%81%A8%E3%82%93%E3%81%8B%E3%81%A4%E5%BC%81%E5%BD%93"],["お肉の旨味　ポークカレー","Bento","591.84","関東（一部）","https://www.sej.co.jp/products/a/itemresult/?key=%E3%83%9D%E3%83%BC%E3%82%AF%E3%82%AB%E3%83%AC%E3%83%BC"],["５種おかずのミニ明太海苔弁当（もち麦）","Bento","464.40","複数地域","https://www.sej.co.jp/products/a/itemresult/?key=%E6%98%8E%E5%A4%AA%E6%B5%B7%E8%8B%94%E5%BC%81%E5%BD%93"]];const cats=[["Bento","お弁当","https://www.sej.co.jp/products/a/bento/"],["Onigiri","おにぎり","https://www.sej.co.jp/products/"],["Sandwich","サンドイッチ","https://www.sej.co.jp/products/"],["Bread","パン","https://www.sej.co.jp/products/"],["Noodles","麺類","https://www.sej.co.jp/products/"],["Salad","サラダ","https://www.sej.co.jp/products/"],["Sweets","スイーツ","https://www.sej.co.jp/products/"]];document.getElementById('categories').innerHTML=cats.map(c=>'<a class="category" target="_blank" rel="noopener" href="'+c[2]+'">'+c[1]+' ↗</a>').join('');function render(){const q=document.getElementById('q').value.trim().toLocaleLowerCase();const found=data.filter(x=>x.join(' ').toLocaleLowerCase().includes(q));document.getElementById('count').textContent='('+found.length+'/'+data.length+')';document.getElementById('results').innerHTML=found.length?found.map(x=>'<article class="card"><div class="title">'+x[0]+'</div><small>'+x[1]+' · 販売地域 '+x[3]+'</small><div><b>¥'+x[2]+'</b> (税込; প্রকাশিত ক্যাটালগ মূল্য)</div><p class="muted">Ingredients: not verified · Halal status: Needs ingredient verification</p><a class="btn" target="_blank" rel="noopener" href="'+x[4]+'">Official source ↗</a></article>').join(''):'<div class="empty">এই snapshot-এ মেলেনি। <a target="_blank" rel="noopener" href="https://www.sej.co.jp/products/">7-Eleven-এর পুরো অফিসিয়াল ক্যাটালগে খুঁজুন →</a></div>';}document.getElementById('q').addEventListener('input',render);render();</script><script>
 (function(){
 'use strict';
@@ -42,12 +42,17 @@ function render(){
   const box=el('article','evItem');
   box.append(el('div','evItemTitle',row.name_ja));
   const pork=hasPork(row);
-  box.append(el('span','evPill'+(pork?' pork':''),pork?'⚠️ Pork declared — Avoid':'🔎 Full official list linked — Halal NOT confirmed'));
+  const compatible=row.screening_status==='no_explicit_prohibited_ingredient_on_label';
+  box.append(el('span','evPill'+(pork?' pork':compatible?' compatible':''),pork?'⚠️ Pork declared — Avoid':compatible?'✅ Listed ingredients appear Halal-compatible · Not certified':'🔎 Full official list linked — Halal NOT confirmed'));
   box.append(el('div','evSmall','✅ সম্পূর্ণ 原材料名 অফিসিয়াল পেজে আছে — নিচের লিংক থেকে দেখো। এখানে সংক্ষেপে মূল ingredient indicators:'));
   const list=el('div','evList');
   for(const word of row.ingredient_signals_ja)list.append(el('span','',word));
   box.append(list);
   if(row.questions_to_verify_ja.length)box.append(el('p','evConcern','বিশেষ নজর: '+row.questions_to_verify_ja.join(' • ')));
+  if(row.ingredient_screening_summary_bn)box.append(el('p','evConcern',row.ingredient_screening_summary_bn));
+  if(row.research_context_bn)box.append(el('p','evConcern',row.research_context_bn));
+  if(row.origin_check_questions_ja?.length){const q=el('details');q.append(el('summary','','কোন তথ্য প্রস্তুতকারকের কাছে যাচাই করতে হবে?'));const questions=el('ul','');for(const line of row.origin_check_questions_ja)questions.append(el('li','',line));q.append(questions);box.append(q)}
+  if(row.related_brand_research){const lead=el('div','evSmall','অনুরূপ পণ্য পাওয়া গেছে, কিন্তু এটি একই প্রস্তুতকারক বা একই recipe প্রমাণ নয়।');const a=el('a','','Related manufacturer research ↗');a.href=row.related_brand_research.url;a.target='_blank';a.rel='noopener noreferrer';lead.append(a);box.append(lead)}
   box.append(el('p','evConcern',row.screening_reason_bn||'Ingredient source and halal certificate unverified.'));
   box.append(el('div','evSmall','JAN barcode: যাচাই হয়নি · Physical pack: যাচাই হয়নি · Halal certification: নেই/যাচাই হয়নি · Online source checked 16 Oct 2026'));
   const link=el('a','btn','7 Premium-এ সম্পূর্ণ 原材料名 দেখো ↗');
