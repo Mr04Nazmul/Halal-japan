@@ -1,0 +1,36 @@
+name: Crawl4AI Japanese ingredient evidence
+on:
+  workflow_dispatch:
+    inputs:
+      max_urls:
+        description: 'Maximum URLs per run (1–250)'
+        required: false
+        default: '25'
+  schedule:
+    - cron: '20 3 * * 3'
+permissions:
+  contents: read
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install crawler and Chromium
+        run: |
+          pip install 'crawl4ai==0.7.8'
+          crawl4ai-setup
+      - name: Crawl permitted public pages
+        env:
+          CRAWL_MAX_URLS: ${{ inputs.max_urls || '25' }}
+        run: python scripts/crawl4ai_ingredients.py
+      - name: Save crawl results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl4ai-ingredient-evidence
+          path: data/crawl4ai_ingredient_evidence.jsonl
+          if-no-files-found: warn
