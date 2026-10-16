@@ -13,7 +13,9 @@ jobs:
         with:
           node-version: '22'
       - name: Run ingredient regression cases
-        run: node tests/ingredient-regression.cjs
+        run: |
+          node tests/ingredient-regression.cjs
+          node --test tests/seven-premium-evidence.test.cjs
       - name: Install live scanner dependencies
         working-directory: floot-source
         run: npm install --no-audit --no-fund
