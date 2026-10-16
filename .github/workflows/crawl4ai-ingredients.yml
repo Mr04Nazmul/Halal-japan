@@ -39,6 +39,9 @@ jobs:
         env:
           CRAWL_MAX_URLS: ${{ inputs.max_urls || '25' }}
         run: python scripts/http_ingredient_fallback.py
+      - name: Extract JAN ingredient candidates
+        if: always()
+        run: python scripts/extract_crawl_ingredient_candidates.py
       - name: Save crawl results
         if: always()
         uses: actions/upload-artifact@v4
@@ -47,4 +50,5 @@ jobs:
           path: |
             data/crawl4ai_ingredient_evidence.jsonl
             data/http_ingredient_evidence.jsonl
+            data/manufacturer_ingredient_candidates.csv
           if-no-files-found: warn
