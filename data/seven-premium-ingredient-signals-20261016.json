@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "dataset": "Seven Premium official ingredient source observations",
   "created_on": "2026-10-16",
   "coverage": "14 exact Seven Premium online product pages with complete official 原材料 sections. These refer to online formulations, NOT photo-confirmed or JAN-verified packages.",
@@ -30,7 +30,7 @@
         "調味料（アミノ酸等）の原料や製造工程について必要に応じ確認"
       ],
       "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
-      "screening_status": "needs_origin_or_processing_evidence",
+      "screening_status": "no_explicit_prohibited_ingredient_on_label",
       "halal_certification": "not_verified",
       "official_source_checked_on": "2026-10-16",
       "official_full_ingredient_list_on_source_page": true,
@@ -39,7 +39,15 @@
       "jan_barcode_evidence": "unavailable",
       "verification_scope": "source_online_declaration_only",
       "pork_evidence_kind": "none_explicit_in_observed_label",
-      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।",
+      "ingredient_screening_summary_bn": "প্রকাশিত উপাদানে স্পষ্টভাবে নিষিদ্ধ কিছু নেই; উপাদানভিত্তিকভাবে হালাল-সঙ্গত মনে হচ্ছে (certified নয়)।",
+      "origin_research_status": "declared_ingredients_compatible;complete_flavour_base_not_specified",
+      "origin_check_questions_ja": [
+        "調味料（アミノ酸等）の具体的な原材料・発酵原料は植物性／微生物由来のみでしょうか",
+        "動物由来の原材料や加工助剤が含まれますか"
+      ],
+      "comparison_evidence_url": "https://www.fsc.go.jp/e-mailmagazine/mailmagazine_h2802_r1.html",
+      "research_context_bn": "জাপানের খাদ্য নিরাপত্তা কমিটি অনুযায়ী MSG সাধারণত microbial fermentation-এ উৎপন্ন হয়, তবে এই নির্দিষ্ট পণ্যের additive supplier নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -62,7 +70,7 @@
         "調味料（アミノ酸等）の原料や製造工程について必要に応じ確認"
       ],
       "ingredient_data_status": "official_full_label_on_linked_page;only_key_facts_stored",
-      "screening_status": "needs_origin_or_processing_evidence",
+      "screening_status": "no_explicit_prohibited_ingredient_on_label",
       "halal_certification": "not_verified",
       "official_source_checked_on": "2026-10-16",
       "official_full_ingredient_list_on_source_page": true,
@@ -71,7 +79,15 @@
       "jan_barcode_evidence": "unavailable",
       "verification_scope": "source_online_declaration_only",
       "pork_evidence_kind": "none_explicit_in_observed_label",
-      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।",
+      "ingredient_screening_summary_bn": "প্রকাশিত উপাদানে স্পষ্টভাবে নিষিদ্ধ কিছু নেই; উপাদানভিত্তিকভাবে হালাল-সঙ্গত মনে হচ্ছে (certified নয়)।",
+      "origin_research_status": "declared_ingredients_compatible;complete_flavour_base_not_specified",
+      "origin_check_questions_ja": [
+        "調味料（アミノ酸等）の具体的な原材料・発酵原料は植物性／微生物由来のみでしょうか",
+        "動物由来の原材料や加工助剤が含まれますか"
+      ],
+      "comparison_evidence_url": "https://www.fsc.go.jp/e-mailmagazine/mailmagazine_h2802_r1.html",
+      "research_context_bn": "জাপানের খাদ্য নিরাপত্তা কমিটি অনুযায়ী MSG সাধারণত microbial fermentation-এ উৎপন্ন হয়, তবে এই নির্দিষ্ট পণ্যের additive supplier নিশ্চিত নয়।"
     },
     {
       "store": "7-Eleven Japan",
@@ -170,7 +186,22 @@
       "jan_barcode_evidence": "unavailable",
       "verification_scope": "source_online_declaration_only",
       "pork_evidence_kind": "none_explicit_in_observed_label",
-      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।",
+      "ingredient_screening_summary_bn": "বাদাম ও maple syrup-এ নিষিদ্ধ কিছু স্পষ্ট নয়; 香料 ও 乳化剤-এর নির্দিষ্ট উৎস নিশ্চিত হয়নি।",
+      "origin_research_status": "flavour_and_emulsifier_exact_sources_not_public",
+      "related_brand_research": {
+        "url": "https://www.mitsuya-web.co.jp/product/product_00273.html",
+        "manufacturer": "Mitsuya",
+        "product": "Mitsuya Maple Caramelized Nuts 75g",
+        "relationship": "Similar ingredient list, not established manufacturer or identical formulation for Seven Premium 36g; 75g version lacks pistachio."
+      },
+      "origin_check_questions_ja": [
+        "香料の香味成分・溶剤（エタノール等）に動物由来原料を使っていますか",
+        "乳化剤は大豆レシチンなど植物由来だけですか、動物由来の脂肪酸を使っていますか",
+        "乳化剤と香料の加工助剤にも動物由来原料はありませんか"
+      ],
+      "official_pack_image_numeric_candidate": "4902483041371",
+      "official_pack_image_numeric_candidate_note": "Numeric filename on official Seven Premium front-pack image; NOT independently validated as retail JAN."
     },
     {
       "store": "7-Eleven Japan",
@@ -333,7 +364,16 @@
       "jan_barcode_evidence": "unavailable",
       "verification_scope": "source_online_declaration_only",
       "pork_evidence_kind": "none_explicit_in_observed_label",
-      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।"
+      "screening_reason_bn": "পুরো ingredient list অফিসিয়াল সাইটে দেখা যায়, কিন্তু halal certification এবং প্রয়োজনীয় ingredient origin/processing evidence নিশ্চিত নয়।",
+      "ingredient_screening_summary_bn": "দুধ, স্ট্রবেরি, উদ্ভিজ্জ তেলসহ লেবেলে নিষিদ্ধ কিছু স্পষ্ট নয়; 香料-এর সুনির্দিষ্ট উপাদান ও carrier নিশ্চিত নয়।",
+      "origin_research_status": "flavour_exact_source_not_public",
+      "origin_check_questions_ja": [
+        "香料の原料・溶剤・加工助剤に動物性原料が含まれますか",
+        "香料の製造時にエタノールを使用しますか、最終製品に残留しますか",
+        "ゼラチン、動物由来安定剤又は動物由来酵素を使用していますか"
+      ],
+      "official_pack_image_numeric_candidate": "4902705097940",
+      "official_pack_image_numeric_candidate_note": "Numeric filename on official Seven Premium front-pack image; NOT independently validated as retail JAN."
     },
     {
       "store": "7-Eleven Japan",
@@ -479,5 +519,18 @@
   "explicit_pork_ingredient_count": 4,
   "pork_allergen_declaration_count": 1,
   "no_certification_count": 14,
-  "ingredient_data_limitations": "Complete 原材料 is visible on the official Seven Premium page for all fourteen. Manufacturer term policy prevents copying the complete wording into this public repository without permission. Processing aids, origins, cross-contact, exact physical packaging and certificates remain unconfirmed."
+  "ingredient_data_limitations": "Complete 原材料 is visible on the official Seven Premium page for all fourteen. Manufacturer term policy prevents copying the complete wording into this public repository without permission. Processing aids, origins, cross-contact, exact physical packaging and certificates remain unconfirmed.",
+  "origin_research_updated_on": "2026-10-16",
+  "origin_research_note": "Declared additives and actual source origins are different facts: 乳化剤 may be made from diverse materials; 香料 alone does not identify carrier, animal components or process. Halal certification is not a prerequisite for all Halal food. Some listed products look compatible by declared ingredients but remain without manufacturer-complete evidence.",
+  "public_contact_evidence": {
+    "seven_support": "https://faq.sej.co.jp/contact/",
+    "seven_official_faq": "https://faq.sej.co.jp/article/?knowledge_id=cihug2u49ras9ngq94kg",
+    "manufacturer_mitsuya": "https://www.mitsuya-web.co.jp/contact/",
+    "note": "Seven-Eleven directs detailed source questions missing from the package to the manufacturer printed on the specific package. Company contact responses may not be republished without permission."
+  },
+  "origin_status_counts": {
+    "looks_compatible_label_only": 2,
+    "unresolved_flavour_or_emulsifier": 2,
+    "others": 10
+  }
 }
