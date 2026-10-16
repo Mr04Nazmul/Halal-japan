@@ -44,18 +44,31 @@ def run(root=ROOT, export_gzip=None):
         if payload.get("license")!="ODbL-1.0":raise ValueError("Incorrect shard license")
         groups.append((file,payload,payload["records"]))
     seen=set()
+    duplicates=set()
     missing={}
     before=0
+    entries=0
     for filename,_,products in groups:
         for p in products:
             code=str(p.get("code",""))
-            if not re.fullmatch(r"(?:\d{8}|\d{12,14})",code) or code in seen:
-                raise ValueError("Duplicate/invalid barcode: "+code)
-            seen.add(code)
+            if not re.fullmatch(r"(?:\d{8}|\d{12,14})",code):
+                raise ValueError("Invalid barcode: "+code)
+            entries+=1
+            if code in seen:
+                # Older catalogue can have duplicate records for a barcode.
+                # Do NOT enrich either duplicate: product version is ambiguous.
+                duplicates.add(code)
+                missing.pop(code,None)
+            else:
+                seen.add(code)
+                if not usable(p.get("ingredients_text")) and code not in duplicates:
+                    missing[code]=(filename,p)
             if usable(p.get("ingredients_text")):before+=1
-            else:missing[code]=(filename,p)
-    if len(seen)!=manifest["total_unique_records"] or len(jp["products"])!=manifest["japan_original_records"]:
+    if entries!=manifest["total_unique_records"] or len(jp["products"])!=manifest["japan_original_records"]:
         raise ValueError("Catalogue inventory and manifest disagree; no changes made")
+    if duplicates:
+        print("WARNING: quarantined duplicated catalogue barcodes:",len(duplicates),
+              "example:",next(iter(sorted(duplicates))),flush=True)
     updated=set()
     added=Counter()
     scanned=0
@@ -100,13 +113,18 @@ def run(root=ROOT, export_gzip=None):
         "japan_with_ingredient_text":totals["japan"],
         "all_with_ingredient_text":after,
         "ingredient_enrichment_last_run":date.today().isoformat(),
+        "ingredient_enrichment_distinct_barcodes":len(seen),
+        "ingredient_enrichment_duplicate_entries_quarantined":entries-len(seen),
         "ingredient_enrichment_source":SOURCE,
         "ingredient_enrichment_scope":"OFF community text only; neither halal nor manufacturer confirmation"
     })
     save(manfile,manifest)
     report={
         "date":date.today().isoformat(),"source":SOURCE,"license":"ODbL-1.0",
-        "rows_scanned":scanned,"catalogue_total":len(seen),
+        "rows_scanned":scanned,"catalogue_total":entries,
+        "catalogue_distinct_barcodes":len(seen),
+        "duplicate_barcode_groups_quarantined":len(duplicates),
+        "duplicate_entries":entries-len(seen),
         "with_ingredient_text_before":before,
         "new_japan_texts":added["japan"],
         "new_supplemental_texts":added["supplemental"],
