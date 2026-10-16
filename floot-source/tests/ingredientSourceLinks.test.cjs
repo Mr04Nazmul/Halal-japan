@@ -12,13 +12,13 @@ function loadTS(file){
 }
 const {ingredientSources,janSourceLinks,validEAN13}=loadTS(path.join(__dirname,'../helpers/ingredientSourceLinks.ts'));
 test('all advertised official sources link to distinct public manufacturer/reference destinations',()=>{
- assert.equal(ingredientSources.length,15);
+ assert.equal(ingredientSources.length,19);
  assert.equal(new Set(ingredientSources.map(s=>s.id)).size,ingredientSources.length);
  for(const s of ingredientSources){
   assert.match(s.url,/^https:\/\//);
   assert.ok(s.description.length>30);
  }
- for(const id of ['topvalu','sevenpremium','meiji','familymart','lawson','openfoodfacts','ksppos','caa','fooddb','mext','halallens','glico','morinaga','kagome','nissin'])
+ for(const id of ['topvalu','sevenpremium','meiji','familymart','lawson','openfoodfacts','ksppos','caa','fooddb','mext','halallens','glico','morinaga','kagome','nissin','upcdatabase','nutritionix','openfda','publicapis'])
   assert.ok(ingredientSources.some(s=>s.id===id));
  assert.equal(ingredientSources.find(s=>s.id==='ksppos').evidence,'jan_or_name_only');
  assert.equal(ingredientSources.find(s=>s.id==='fooddb').evidence,'reference_only');
