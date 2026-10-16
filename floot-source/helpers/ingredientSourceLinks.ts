@@ -21,7 +21,7 @@ export const ingredientSources:IngredientSource[]=[
  {id:'halallens',title:'HalalLens research client',region:'references',description:'Third-party ingredient-rule research project, not independently certified manufacturer facts.',evidence:'reference_only',url:'https://github.com/halallens-no/halal-scanner',publicBrowse:true}
 ];
 export function validEAN13(input:string):boolean{
- if(!/^\\d{13}$/.test(input))return false;
+ if(!/^\d{13}$/.test(input))return false;
  const v=Array.from(input,Number);
  const sum=v.slice(0,12).reverse().reduce((s,x,i)=>s+x*(i%2===0?3:1),0);
  return (10-sum%10)%10===v[12];
