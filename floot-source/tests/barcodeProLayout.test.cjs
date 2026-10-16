@@ -11,6 +11,8 @@ test('Barcode Pro scan-first UI has top-level camera action, manual search and p
   'onClick={()=>{setError(\'\');setScanning(true)}',
   'id="product-lookup"',
   'id="scan-result"',
+  "setScanning(false);setView('home');setBusy(true)",
+  "getElementById('scan-result')?.scrollIntoView",
   'INGREDIENT SCREENING RESULT',
   'Ingredients <span>原材料名・添加物</span>',
   'DATA SOURCE',
