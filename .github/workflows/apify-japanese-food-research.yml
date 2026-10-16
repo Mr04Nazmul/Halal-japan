@@ -1,0 +1,33 @@
+name: Apify Japanese Food Research
+on:
+  workflow_dispatch:
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check Apify secret
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+        run: |
+          if [ -z "$APIFY_TOKEN" ]; then
+            echo "::error::Set APIFY_TOKEN in Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+      - name: Collect official manufacturer page candidates
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          APIFY_ACTOR_ID: bgGC9uvqqfOkeeVjY
+        run: node research/apify/collect.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apify-official-food-candidates
+          path: research/apify/output/*.json
+          if-no-files-found: ignore
