@@ -11,13 +11,16 @@ on:
         required: false
         default: '25'
   schedule:
-    - cron: '15 */6 * * *'
+    - cron: '12 * * * *'
+concurrency:
+  group: ingredient-collector-${{ github.workflow }}
+  cancel-in-progress: false
 permissions:
   contents: read
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 110
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
