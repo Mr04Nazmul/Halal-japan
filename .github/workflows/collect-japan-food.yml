@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - '.github/workflows/collect-japan-food.yml'
+      - 'scripts/collect_japan_ingredients.py'
+      - 'scripts/import_collected_ingredients.py'
   workflow_dispatch:
     inputs:
       pages:
