@@ -1,0 +1,30 @@
+name: OFF Japanese ingredient staging threshold
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '51 * * * *'
+permissions:
+  contents: read
+jobs:
+  collect-and-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch source-backed candidates
+        run: python scripts/import_off_japan_ingredients.py --pages 20 --page-size 100
+      - name: Import only if at least 1000 qualified records
+        run: python scripts/stage_off_ingredient_batch.py
+      - name: Preserve inspection file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: off-ingredient-stage-candidates
+          path: data/off_japan_ingredient_candidates.jsonl
+          if-no-files-found: warn
