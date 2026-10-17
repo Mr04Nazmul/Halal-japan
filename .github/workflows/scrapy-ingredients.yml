@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/scrapy-ingredients.yml'
   schedule:
-    - cron: '27 3 * * *'
+    - cron: '27 * * * *'
 permissions:
   contents: read
 jobs:
