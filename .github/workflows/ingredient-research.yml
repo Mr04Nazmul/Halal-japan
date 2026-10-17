@@ -1,0 +1,26 @@
+name: Prepare ingredient research dataset
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'research/inbox/**'
+      - 'tools/ingredient_research.py'
+      - '.github/workflows/ingredient-research.yml'
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Process CSV source data and deduplicate evidence
+        run: python tools/ingredient_research.py
+      - name: Upload candidates and audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ingredient-research-report
+          path: research/output/
+          retention-days: 30
