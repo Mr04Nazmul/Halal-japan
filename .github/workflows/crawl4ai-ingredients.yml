@@ -52,3 +52,5 @@ jobs:
             data/http_ingredient_evidence.jsonl
             data/manufacturer_ingredient_candidates.csv
           if-no-files-found: warn
+
+# Restart request 2026-10-17 09:48 JST
