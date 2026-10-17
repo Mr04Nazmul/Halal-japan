@@ -1,7 +1,7 @@
 import json,sys,tempfile,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
-from crawl_japanese_ingredients import Collector,extract,product_url
+from crawl_japanese_ingredients import Collector,extract,product_url,canonical
 
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
@@ -18,6 +18,18 @@ class Extraction(unittest.TestCase):
   self.assertIsNone(extract(HTML+'<dl><dt>原材料</dt><dd>豚肉</dd></dl>',URL)[0])
   r,_=extract(HTML.replace('<tr><th>JANCODE</th><td>4973728910141</td></tr>',''),URL)
   self.assertIsNone(r['jan'])
+ def test_unicode_path_is_percent_encoded_before_request(self):
+  self.assertEqual(canonical('https://muso.co.jp/item/tag/新商品'),
+   'https://muso.co.jp/item/tag/%E6%96%B0%E5%95%86%E5%93%81')
+ def test_unicode_encode_failures_are_requeued_on_extractor_upgrade(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",
+    ('https://muso.co.jp/item/tag/新商品','done',5,"UnicodeEncodeError:'ascii' codec can't encode characters"))
+   c.db.execute("DELETE FROM metadata WHERE key='extractor_version'");c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
+   c.db.close()
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):

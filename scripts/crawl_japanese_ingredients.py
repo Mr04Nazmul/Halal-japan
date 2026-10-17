@@ -7,13 +7,13 @@ allergen-only text, invented JANs, country-prefix guesses or certifications.
 import argparse,hashlib,json,re,sqlite3,time,unicodedata,urllib.request,urllib.error
 from datetime import datetime,timezone
 from pathlib import Path
-from urllib.parse import urlsplit,urlunsplit,urljoin,parse_qsl,urlencode
+from urllib.parse import urlsplit,urlunsplit,urljoin,parse_qsl,urlencode,quote
 from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-10-17-v2'
+EXTRACTOR_VERSION='official-fields-2026-10-17-v3'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'muso.co.jp':r'/item/\d+\.html',
@@ -46,7 +46,11 @@ def normalized(s):return ''.join(unicodedata.normalize('NFKC',s).split())
 def canonical(u):
  p=urlsplit(u)
  q=sorted((k,v) for k,v in parse_qsl(p.query) if k in {'id','iid','actmode','p','page'})
- return urlunsplit(('https',p.netloc.lower(),p.path.replace('/index.php/','/'),urlencode(q),''))
+ path=quote(p.path,safe="/%:@!def canonical(u):
+ p=urlsplit(u)
+ q=sorted((k,v) for k,v in parse_qsl(p.query) if k in {'id','iid','actmode','p','page'})
+ return urlunsplit(('https',p.netloc.lower(),p.path.replace('/index.php/','/'),urlencode(q),''))'()*+,;=-._~")
+ return urlunsplit(('https',p.netloc.lower(),path.replace('/index.php/','/'),urlencode(q),''))
 def source(u):
  host=(urlsplit(u).hostname or '').lower()
  return next((d for d in SOURCES if host==d or host.endswith('.'+d)),None)
@@ -132,7 +136,7 @@ class Collector:
   if not previous or previous[0]!=EXTRACTOR_VERSION:
    # Revisit only pages rejected by older field extraction.  Network failures,
    # robots decisions and accepted records are not reset.
-   self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity')")
+   self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity') OR error LIKE 'UnicodeEncodeError:%'")
    self.db.execute("INSERT OR REPLACE INTO metadata VALUES('extractor_version',?)",(EXTRACTOR_VERSION,))
    self.db.commit()
   self.robots={};self.last={}
@@ -140,6 +144,7 @@ class Collector:
   self.db.executemany('INSERT OR IGNORE INTO queue(url) VALUES(?)',[(canonical(u),) for u in urls if allowed_link(u)])
   self.db.commit()
  def request(self,url):
+  url=canonical(url)
   host=urlsplit(url).netloc;delay=2-(time.time()-self.last.get(host,0))
   if delay>0:time.sleep(delay)
   self.last[host]=time.time()
@@ -149,6 +154,7 @@ class Collector:
    if len(data)>3_000_000:raise ValueError('page_too_large')
    return data.decode(r.headers.get_content_charset() or 'utf-8',errors='replace')
  def permitted(self,url):
+  url=canonical(url)
   host=urlsplit(url).netloc
   if host not in self.robots:
    rp=RobotFileParser()
