@@ -1,4 +1,4 @@
-name: Crawl Japanese Ingredients to 100k
+name: Crawl Japanese Ingredients to 20k
 on:
   workflow_dispatch:
   schedule:
@@ -20,7 +20,7 @@ permissions:
   contents: read
   actions: write
 concurrency:
-  group: japanese-ingredients-100k
+  group: japanese-ingredients-20k
   cancel-in-progress: false
 jobs:
   collect:
@@ -62,11 +62,11 @@ jobs:
           fi
       - name: Crawl one bounded batch toward 100000 actual ingredient products
         if: github.ref == 'refs/heads/main'
-        run: python -u scripts/crawl_japanese_ingredients.py --target 100000 --minutes 35 --max-pages 1500
+        run: python -u scripts/crawl_japanese_ingredients.py --target 20000 --minutes 35 --max-pages 1500
       - name: Finalize consistent exports even after an interrupted batch
         id: finalize
         if: always() && github.ref == 'refs/heads/main' && steps.restore.outcome == 'success' && hashFiles('crawler-state/state.sqlite3') != ''
-        run: python scripts/crawl_japanese_ingredients.py --checkpoint-only --target 100000
+        run: python scripts/crawl_japanese_ingredients.py --checkpoint-only --target 20000
       - name: Preserve state and source-backed ingredient results
         id: checkpoint
         if: always() && steps.finalize.outcome == 'success'
