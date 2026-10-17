@@ -1,5 +1,9 @@
 name: OFF Japanese ingredient candidate import
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/off-japan-ingredients.yml'
   workflow_dispatch:
   schedule:
     - cron: '41 2 * * *'
