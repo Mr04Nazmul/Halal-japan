@@ -1,6 +1,8 @@
 name: Import OFF ingredient catalogue to Supabase review queue
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
   push:
     branches: [main]
     paths:
