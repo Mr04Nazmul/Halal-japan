@@ -26,3 +26,5 @@ jobs:
           path: data/off_japan_ingredient_candidates.jsonl
           if-no-files-found: error
           retention-days: 30
+
+# Data collection retry requested 2026-10-17 12:39 JST
