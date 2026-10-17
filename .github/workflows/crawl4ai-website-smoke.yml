@@ -1,0 +1,52 @@
+name: Crawl4AI live website smoke test
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/crawl4ai-website-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  check-website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Crawl4AI and browser
+        run: |
+          python -m pip install "crawl4ai>=0.9,<0.10"
+          crawl4ai-setup
+      - name: Render public website and save diagnostics
+        env:
+          TARGET_URL: https://mr04nazmul.github.io/Halal-japan/
+        run: |
+          python - <<'PY'
+          import asyncio,json,os
+          from pathlib import Path
+          from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+          async def main():
+              config=BrowserConfig(headless=True)
+              async with AsyncWebCrawler(config=config) as crawler:
+                  result=await crawler.arun(url=os.environ["TARGET_URL"],config=CrawlerRunConfig(cache_mode=CacheMode.BYPASS, page_timeout=60000, delay_before_return_html=3.0))
+                  md=str(result.markdown or "")
+                  html=str(result.html or "")
+                  terms=["scanner","barcode","ingredient","restaurant","prayer","qibla","স্ক্যান","原材料"]
+                  report={"url":os.environ["TARGET_URL"],"success":bool(result.success),"status_code":getattr(result,"status_code",None),"title":getattr(getattr(result,"metadata",{}),"get",lambda *_:None)("title"),"markdown_characters":len(md),"html_characters":len(html),"keyword_hits":{word:(word.lower() in (md+" "+html).lower()) for word in terms},"error_message":str(getattr(result,"error_message",""))[:600]}
+                  Path("crawl4ai-website-report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+                  print(json.dumps(report,ensure_ascii=False,indent=2))
+                  if not result.success or not html:raise SystemExit("Website crawl failed")
+          asyncio.run(main())
+          PY
+      - name: Preserve website health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawl4ai-website-report
+          path: crawl4ai-website-report.json
+          retention-days: 30
+          if-no-files-found: ignore
