@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - '.github/workflows/crawl4ai-ingredients.yml'
+      - 'scripts/crawl4ai_ingredients.py'
+      - 'scripts/extract_crawl_ingredient_candidates.py'
+      - 'data/manufacturer_seed_urls.txt'
   workflow_dispatch:
     inputs:
       max_urls:
