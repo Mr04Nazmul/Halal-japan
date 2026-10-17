@@ -1,0 +1,24 @@
+name: Import OFF ingredient catalogue to Supabase review queue
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/import_off_catalogue_to_supabase.py
+      - .github/workflows/import-off-catalogue-supabase.yml
+permissions:
+  contents: read
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Submit deduplicated source-backed ingredient records for review
+        run: python -u scripts/import_off_catalogue_to_supabase.py
