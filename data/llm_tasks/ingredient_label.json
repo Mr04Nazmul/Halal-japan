@@ -1,0 +1,5 @@
+[
+  "Explain how to extract 原材料名 from a Japanese product label, without fabricating content.",
+  "Define a JSON schema for source-backed Japanese food ingredient records.",
+  "List typical OCR errors for Japanese food ingredients."
+]
