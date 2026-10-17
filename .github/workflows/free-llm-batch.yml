@@ -1,0 +1,50 @@
+name: Free LLM batch (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: "Provider (groq or openrouter)"
+        required: true
+        default: groq
+        type: choice
+        options:
+          - groq
+          - openrouter
+permissions:
+  contents: read
+jobs:
+  free-llm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate selected provider credential
+        env:
+          PROVIDER: ${{ inputs.provider }}
+        run: |
+          if [ "$PROVIDER" = "groq" ] && [ -z "$GROQ_API_KEY" ]; then
+            echo "::error::Configure GROQ_API_KEY in Repository Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          if [ "$PROVIDER" = "openrouter" ] && [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::error::Configure OPENROUTER_API_KEY in Repository Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+      - name: Run 20 independent example requests
+        env:
+          PROVIDER: ${{ inputs.provider }}
+        run: python tools/free_llm_batch.py --provider "$PROVIDER" --input tools/llm_prompts_example.json --output llm-results.json --workers 3
+      - name: Upload results for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: free-llm-results
+          path: llm-results.json
+          if-no-files-found: ignore
+          retention-days: 7
