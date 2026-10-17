@@ -1,0 +1,29 @@
+name: Scrapy Japanese ingredient discovery
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/scrapy-ingredients.yml'
+  schedule:
+    - cron: '27 3 * * *'
+permissions:
+  contents: read
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install 'Scrapy>=2.11,<3'
+      - name: Discover public manufacturer ingredient pages
+        run: scrapy runspider scripts/scrapy_ingredient_discovery.py -O scrapy-ingredient-candidates.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scrapy-ingredient-candidates
+          path: scrapy-ingredient-candidates.jsonl
+          if-no-files-found: warn
