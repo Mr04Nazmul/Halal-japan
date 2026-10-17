@@ -42,7 +42,7 @@ jobs:
           fi
       - name: Run 20 independent example requests
         env:
-          PROVIDER: ${{ inputs.provider }}
+          PROVIDER: ${{ inputs.provider || 'groq' }}
         run: python tools/free_llm_batch.py --provider "$PROVIDER" --input tools/llm_prompts_example.json --output llm-results.json --workers 3
       - name: Upload results for review
         if: always()
