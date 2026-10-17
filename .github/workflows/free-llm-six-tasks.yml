@@ -1,0 +1,38 @@
+name: Six independent Free LLM tasks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/free-llm-six-tasks.yml'
+permissions:
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        task: [ingredient_label, jan_validation, ocr_review, source_verification, data_normalization, halal_uncertainty]
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Ensure Groq key configured
+        run: |
+          if [ -z "$GROQ_API_KEY" ]; then echo "::error::Missing GROQ_API_KEY GitHub Secret"; exit 1; fi
+      - name: Run LLM task group
+        run: python tools/free_llm_batch.py --provider groq --input "data/llm_tasks/${{ matrix.task }}.json" --output "result-${{ matrix.task }}.json" --workers 1
+      - name: Store output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "llm-${{ matrix.task }}"
+          path: "result-${{ matrix.task }}.json"
+          if-no-files-found: ignore
+          retention-days: 7
