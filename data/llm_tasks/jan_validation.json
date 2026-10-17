@@ -1,0 +1,5 @@
+[
+  "Describe JAN-13 check-digit validation.",
+  "Explain how to detect duplicates across Japanese barcode datasets.",
+  "Provide rules for preserving leading zeroes in barcode strings."
+]
