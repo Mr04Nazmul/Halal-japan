@@ -1,4 +1,4 @@
-name: Crawl Japanese Ingredients to 20k
+name: Crawl Japanese Ingredients to 100k
 on:
   workflow_dispatch:
   schedule:
@@ -20,7 +20,7 @@ permissions:
   contents: read
   actions: write
 concurrency:
-  group: japanese-ingredients-20k
+  group: japanese-ingredients-100k
   cancel-in-progress: false
 jobs:
   collect:
@@ -45,28 +45,52 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p crawler-state
-          previous=$(gh api "repos/$REPOSITORY/actions/artifacts?name=japan-ingredients-state&per_page=30" --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.id) | reverse | .[0].workflow_run.id // empty')
-          if [ -n "$previous" ]; then
-            gh run download "$previous" --repo "$REPOSITORY" -n japan-ingredients-state -D crawler-state
-            python - <<'PY'
-          import json,sqlite3
-          db=sqlite3.connect('crawler-state/state.sqlite3')
+          rm -rf crawler-state crawler-candidates
+          mkdir -p crawler-state crawler-candidates
+          mapfile -t previous_runs < <(
+            gh api "repos/$REPOSITORY/actions/artifacts?name=japan-ingredients-state&per_page=30" \
+              --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | reverse | .[:10] | .[].workflow_run.id' |
+            awk '!seen[$0]++'
+          )
+          best_run=''
+          best_count=-1
+          for previous in "${previous_runs[@]}"; do
+            candidate="crawler-candidates/$previous"
+            mkdir -p "$candidate"
+            if ! gh run download "$previous" --repo "$REPOSITORY" -n japan-ingredients-state -D "$candidate"; then
+              continue
+            fi
+            count=$(python - "$candidate" <<'PY'
+          import json,sqlite3,sys
+          from pathlib import Path
+          root=Path(sys.argv[1])
+          summary=json.load(open(root/'summary.json'))
+          db=sqlite3.connect(root/'state.sqlite3')
           assert db.execute('pragma integrity_check').fetchone()[0]=='ok'
-          expected=json.load(open('crawler-state/summary.json'))['accepted_ingredient_products']
+          expected=int(summary['accepted_ingredient_products'])
           assert db.execute('select count(*) from products where conflict=0').fetchone()[0]==expected
-          print('Restored accepted ingredients:',expected)
+          print(expected)
           PY
+            ) || continue
+            if [ "$count" -gt "$best_count" ]; then
+              best_count="$count"
+              best_run="$previous"
+            fi
+          done
+          if [ -n "$best_run" ]; then
+            cp -a "crawler-candidates/$best_run/." crawler-state/
+            echo "Restored highest cumulative checkpoint: $best_count products from run $best_run"
           else
             echo 'First hosted run: previous 721-record chat checkpoint is separate; revalidate official sources without adding unimported counts.'
           fi
+          rm -rf crawler-candidates
       - name: Crawl one bounded batch toward 100000 actual ingredient products
         if: github.ref == 'refs/heads/main'
-        run: python -u scripts/crawl_japanese_ingredients.py --target 20000 --minutes 35 --max-pages 1500
+        run: python -u scripts/crawl_japanese_ingredients.py --target 100000 --minutes 35 --max-pages 1500
       - name: Finalize consistent exports even after an interrupted batch
         id: finalize
         if: always() && github.ref == 'refs/heads/main' && steps.restore.outcome == 'success' && hashFiles('crawler-state/state.sqlite3') != ''
-        run: python scripts/crawl_japanese_ingredients.py --checkpoint-only --target 20000
+        run: python scripts/crawl_japanese_ingredients.py --checkpoint-only --target 100000
       - name: Preserve state and source-backed ingredient results
         id: checkpoint
         if: always() && steps.finalize.outcome == 'success'
