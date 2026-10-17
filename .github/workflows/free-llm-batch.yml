@@ -1,5 +1,9 @@
 name: Free LLM batch (manual)
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/free-llm-batch.yml'
   workflow_dispatch:
     inputs:
       provider:
@@ -26,7 +30,7 @@ jobs:
           python-version: '3.12'
       - name: Validate selected provider credential
         env:
-          PROVIDER: ${{ inputs.provider }}
+          PROVIDER: ${{ inputs.provider || 'groq' }}
         run: |
           if [ "$PROVIDER" = "groq" ] && [ -z "$GROQ_API_KEY" ]; then
             echo "::error::Configure GROQ_API_KEY in Repository Settings > Secrets and variables > Actions"
