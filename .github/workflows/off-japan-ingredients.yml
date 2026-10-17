@@ -6,7 +6,7 @@ on:
       - '.github/workflows/off-japan-ingredients.yml'
   workflow_dispatch:
   schedule:
-    - cron: '41 2 * * *'
+    - cron: '41 * * * *'
 permissions:
   contents: read
 jobs:
