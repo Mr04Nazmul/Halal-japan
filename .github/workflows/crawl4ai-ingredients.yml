@@ -1,5 +1,5 @@
 name: Crawl4AI Japanese ingredient evidence
-# Re-trigger public ingredient evidence crawl
+# Re-trigger public ingredient evidence crawl: 2026-10-17 12:29 JST
 on:
   push:
     paths:
