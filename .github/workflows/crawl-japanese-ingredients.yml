@@ -113,4 +113,4 @@ jobs:
         if: always() && hashFiles('crawler-state/summary.json') != ''
         run: cat crawler-state/summary.json >> "$GITHUB_STEP_SUMMARY"
 
-# Manual batch wake: 2026-10-17T18:00+09:00 (resume existing checkpoint; keep 100000 target)
+# Manual batch wake: 2026-10-17T18:50+09:00 (resume existing checkpoint; keep 100000 target)
