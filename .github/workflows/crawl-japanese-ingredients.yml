@@ -89,4 +89,4 @@ jobs:
         if: always() && hashFiles('crawler-state/summary.json') != ''
         run: cat crawler-state/summary.json >> "$GITHUB_STEP_SUMMARY"
 
-# Manual batch wake: 2026-10-17T11:49+09:00
+# Manual batch wake: rerun requested 2026-10-17T12:07+09:00
