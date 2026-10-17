@@ -1,0 +1,74 @@
+name: Archive Japanese Ingredients to Supabase
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Crawl Japanese Ingredients to 100k"]
+    types: [completed]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: jhc-ingredient-supabase-archive
+  cancel-in-progress: false
+jobs:
+  archive:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: ${{ secrets.JHC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Secret availability
+        id: secrets
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Set JHC_SUPABASE_URL and JHC_SUPABASE_SERVICE_ROLE_KEY to enable archive; no import was attempted"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          python-version: '3.12'
+      - name: Restore highest verified cumulative checkpoint
+        if: steps.secrets.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p checkpoint-candidates
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=japan-ingredients-state&per_page=20" \
+            --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.id) | reverse | .[:3][] | [.id,.workflow_run.id] | @tsv' > checkpoint-candidates/ids.tsv
+          while IFS=$'\t' read -r artifact run; do
+            [ -n "$artifact" ] || continue
+            mkdir -p "checkpoint-candidates/$artifact"
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > "checkpoint-candidates/$artifact.zip"
+            unzip -oq "checkpoint-candidates/$artifact.zip" -d "checkpoint-candidates/$artifact"
+          done < checkpoint-candidates/ids.tsv
+          python - <<'PY'
+          import json,sqlite3,shutil,pathlib
+          root=pathlib.Path("checkpoint-candidates")
+          valid=[]
+          for p in root.iterdir():
+              if not p.is_dir():continue
+              try:
+                  summ=json.loads((p/"summary.json").read_text())
+                  items=json.loads((p/"products.json").read_text())
+                  db=sqlite3.connect(p/"state.sqlite3")
+                  good=db.execute("pragma integrity_check").fetchone()[0]=="ok"
+                  count=db.execute("select count(*) from products where conflict=0").fetchone()[0]
+                  db.close()
+                  if good and count==len(items)==summ["accepted_ingredient_products"]:
+                      valid.append((count,p,summ))
+              except Exception as e:print("Rejected checkpoint",p.name,type(e).__name__)
+          if not valid:raise SystemExit("No valid cumulative checkpoint; refusing import")
+          count,p,summ=max(valid,key=lambda x:x[0])
+          shutil.copyfile(p/"products.json","verified-products.json")
+          print("Selected artifact",p.name,"eligible products",count,"explicit JAN",summ["with_explicit_jan"])
+          PY
+      - name: Idempotent staging import
+        if: steps.secrets.outputs.ready == 'true'
+        run: python scripts/import_japan_ingredients_supabase.py verified-products.json
