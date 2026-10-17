@@ -1,0 +1,24 @@
+name: OFF Japanese ingredient candidate import
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 2 * * *'
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch Japan ingredient evidence with attribution
+        run: python scripts/import_off_japan_ingredients.py --pages 5 --page-size 100
+      - uses: actions/upload-artifact@v4
+        with:
+          name: off-japan-ingredient-candidates
+          path: data/off_japan_ingredient_candidates.jsonl
+          if-no-files-found: error
+          retention-days: 30
