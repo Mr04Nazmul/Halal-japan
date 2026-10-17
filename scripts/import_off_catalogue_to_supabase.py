@@ -5,10 +5,16 @@ from collections import Counter
 from pathlib import Path
 
 ROOT=Path(__file__).resolve().parents[1]/"data"
-sources=[ROOT/"openfoodfacts-japan.json",*sorted((ROOT/"world-food-shards").glob("*.json"))]
+sources=[p for p in [ROOT/"openfoodfacts-japan.json",*sorted((ROOT/"world-food-shards").glob("*.json"))] if p.exists() and p.stat().st_size > 0]
+if not sources:
+    print(json.dumps({"error":"No non-empty source dataset files available","candidate_ingredient_rows":0}),flush=True)
+    raise SystemExit(1)
 counts=Counter()
 for path in sources:
-    data=json.loads(path.read_text(encoding="utf-8"))
+    try:
+        data=json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise SystemExit(f"Invalid JSON in {path}: {e}")
     if data.get("license")!="ODbL-1.0":raise SystemExit("Unexpected license "+str(path))
     for row in data.get("products",data.get("records",[])):
         code=str(row.get("code",""))
