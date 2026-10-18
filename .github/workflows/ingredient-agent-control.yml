@@ -1,0 +1,66 @@
+name: Ingredient Agent Control Tower
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '47 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: jhc-ingredient-agent-control
+  cancel-in-progress: false
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Check collection workflows and resume only if stalled
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, subprocess, datetime
+          repo=os.environ["REPO"]
+          now=datetime.datetime.now(datetime.timezone.utc)
+          workflows={
+            "Ingredient crawler":"crawl-japanese-ingredients.yml",
+            "Source discovery":"agent-reach-public-sources.yml",
+            "Supabase archive":"archive-japanese-ingredients-supabase.yml",
+          }
+          def api(path):
+              p=subprocess.run(["gh","api",f"repos/{repo}/{path}"],text=True,capture_output=True)
+              if p.returncode: raise RuntimeError(p.stderr.strip())
+              return json.loads(p.stdout)
+          def parse(s):
+              return datetime.datetime.fromisoformat(s.replace("Z","+00:00"))
+          lines=["## Japan Ingredient Agent — hourly watchdog","",
+                 "Goal: 1,000 **new source-backed unique ingredient products/hour** (not guaranteed).","",
+                 "| Workflow | Latest status | Conclusion | URL |","|---|---|---|---|"]
+          data={}
+          for label, filename in workflows.items():
+              runs=api(f"actions/workflows/{filename}/runs?per_page=12").get("workflow_runs",[])
+              data[filename]=runs
+              r=runs[0] if runs else None
+              lines.append(f"| {label} | {r.get('status','unknown') if r else 'none'} | {r.get('conclusion','pending') if r else '—'} | {r.get('html_url','—') if r else '—'} |")
+          active=any(r.get("status") in ("queued","in_progress","waiting","requested","pending") for r in data[workflows["Ingredient crawler"]])
+          recent=any((now-parse(r["created_at"])).total_seconds()<5400 for r in data[workflows["Ingredient crawler"]])
+          lines+=["","The crawler checkpoint is an artifact, **not proof of a Supabase import**.","The archive workflow runs automatically after successful crawler completion."]
+          if active:
+              lines+=["","Crawler already queued/running; no duplicate dispatched."]
+          elif recent:
+              lines+=["","Recent crawler run exists; no duplicate dispatched."]
+          else:
+              p=subprocess.run(["gh","workflow","run",workflows["Ingredient crawler"],"--repo",repo,"--ref","main"],text=True,capture_output=True)
+              if p.returncode:
+                  lines+=["",f"WARNING: crawler dispatch failed: {p.stderr.strip()[:350]}"]
+                  print(p.stderr)
+              else:
+                  lines+=["","Crawler was stalled (>90 minutes without a new run); a new batch was dispatched."]
+          lines+=["","For actual unique product/import totals, inspect crawler-state/summary.json and Supabase staging database. Never infer counts from green workflow checks."]
+          report="\n".join(lines)+"\n"
+          print(report)
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as f: f.write(report)
+          PY
