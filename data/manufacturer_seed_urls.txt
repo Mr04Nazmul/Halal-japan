@@ -1,23 +1,29 @@
-# Public manufacturer product pages; add source URLs only where crawling is permitted.
+# Japan-only public product and ingredient sources. Keep official retailer/manufacturer URLs; review robots.txt and evidence before database import.
+# Convenience stores: Lawson (official product catalog and categories)
+https://www.lawson.co.jp/recommend/original/select/
+https://www.lawson.co.jp/recommend/original/bakery/index.html
+https://www.lawson.co.jp/recommend/original/gentei/index.html
+https://www.lawson.co.jp/company/activity/social/consumer/
+# Convenience stores: FamilyMart (official catalog and product safety/category pages)
+https://www.family.co.jp/goods.html
+https://www.family.co.jp/goods/safety/goods020.html
+https://www.family.co.jp/goods/safety/goods060.html
+https://www.family.co.jp/goods/safety/friedfoods.html
+# Drinks: ITO EN official product catalog and ingredient information
+https://www.itoen.jp/products/
+https://www.itoen.jp/products/quality/production/
+https://www.itoen.jp/products/quality/materials/
+# Meiji official product pages
 https://www.meiji.co.jp/products/yogurt/4902705133099.html
 https://www.meiji.co.jp/products/yogurt/4902705011632.html
-https://www.meiji.co.jp/products/yogurt/4902705017412.html
-https://www.meiji.co.jp/products/yogurt/4902705130647.html
-https://www.meiji.co.jp/products/yogurt/4902705098824.html
-https://www.meiji.co.jp/products/yogurt/4902705097131.html
-https://www.meiji.co.jp/products/yogurt/4902705097148.html
 https://www.meiji.co.jp/products/chocolate/4902777143460.html
 https://www.meiji.co.jp/products/chocolate/20391.html
-https://www.meiji.co.jp/products/chocolate/04500.html
-https://www.meiji.co.jp/products/chocolate/21506.html
-https://www.meiji.co.jp/products/chocolate/04777.html
 https://www.meiji.co.jp/products/dairyfoods/1101295.html
 https://www.meiji.co.jp/products/milkpowder/4902705129641.html
-https://www.meiji.co.jp/products/milkpowder/4902705129658.html
+https://www.meiji.co.jp/products/nutritional_products/4902705117365.html
+https://www.meiji.co.jp/products/drink/4902705117570.html
+https://www.meiji.co.jp/products/icecream/4902705096646.html
+# Morinaga official product pages
 https://www.morinaga.co.jp/products/detail.php?id=PRD2010-07-0029
 https://www.morinaga.co.jp/cocoa/senobi/
 https://www.morinaga.co.jp/products/detail.php?id=PRD2020-01-0001
-https://www.meiji.co.jp/products/nutritional_products/4902705117365.html
-https://www.meiji.co.jp/products/nutritional_products/4902705106246.html
-https://www.meiji.co.jp/products/drink/4902705117570.html
-https://www.meiji.co.jp/products/icecream/4902705096646.html
