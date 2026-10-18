@@ -2,13 +2,18 @@ name: Agent Reach public food source discovery
 on:
   workflow_dispatch:
   schedule:
-    - cron: '23 2 * * 2'
+    - cron: '23 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - scripts/agent_reach_public_sources.py
+      - .github/workflows/agent-reach-public-sources.yml
 permissions:
   contents: read
 jobs:
   research:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -21,6 +26,19 @@ jobs:
           agent-reach doctor
       - name: Discover allowed public source references
         run: python scripts/agent_reach_public_sources.py
+      - name: Write auditable run summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json, pathlib, os
+          file=pathlib.Path('data/research/agent_reach_public_sources.json')
+          data=json.loads(file.read_text()) if file.exists() else {'records': []}
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
+              f.write('## Agent Reach public source research\\n\\n')
+              f.write(f"Discovered source references: {len(data['records'])}\\n\\n")
+              f.write('Verified new ingredient products: **0** (source discovery only).\\n\\n')
+              f.write('This does not imply successful Supabase import or product database access.\\n')
+          PY
       - name: Upload research references (not product database)
         uses: actions/upload-artifact@v4
         with:
