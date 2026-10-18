@@ -1,0 +1,35 @@
+ingredient_ja,ingredient_en,classification,confidence,review_note,source_url
+豚肉,pork,haram_candidate,high,"Pork ingredient; confirm exact label context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ポーク,pork,haram_candidate,high,"Pork ingredient; confirm exact label context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+豚脂,pork fat,haram_candidate,high,"Pork-derived fat",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+豚脂肪,pork fat,haram_candidate,high,"Pork-derived fat",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ラード,lard,haram_candidate,high,"Usually pork fat; check label",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ハム,ham,source_check,medium,"Usually meat; determine animal source and halal slaughter/certification",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+牛肉,beef,source_check,medium,"Beef is not automatically haram; halal slaughter/certification must be checked",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+牛脂,beef fat,source_check,medium,"Animal source and processing require verification",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+鶏肉,chicken,source_check,medium,"Chicken is not automatically haram; halal slaughter/certification must be checked",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ビーフ,beef,source_check,medium,"Check halal slaughter/certification",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+チキン,chicken,source_check,medium,"Check halal slaughter/certification",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+動物性油脂,animal fat,mushbooh_review,medium,"Animal species/source not specified",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+加工油脂,processed fat,mushbooh_review,low,"Source may vary; ask manufacturer",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+食用精製加工油脂,refined processed fat,mushbooh_review,low,"Source may vary; ask manufacturer",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+食用油脂,edible fat,mushbooh_review,low,"Source may vary; ask manufacturer",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+混合油脂,mixed fat,mushbooh_review,low,"Source may vary; ask manufacturer",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+コンソメ,consommé,source_check,medium,"May contain meat extracts; inspect full ingredients",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+アルコール,alcohol,context_dependent,medium,"Determine type, purpose, amount, and applicable halal standard",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+洋酒,western liquor,source_check,medium,"Alcohol-containing flavoring; verify product context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+酒精,ethanol,context_dependent,medium,"Check source and use; do not classify from word alone",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ラム,rum,source_check,medium,"May refer to rum alcohol or lamb depending on context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+酒,sake/alcohol,context_dependent,low,"Japanese term is broad; inspect surrounding label",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ワイン,wine,source_check,medium,"Wine/alcohol ingredient; review product context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ブランデー,brandy,source_check,medium,"Alcohol-containing ingredient; review product context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ウイスキー,whisky,source_check,medium,"Alcohol-containing ingredient; review product context",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+味醂,mirin,source_check,medium,"Check type and alcohol content",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+みりん,mirin,source_check,medium,"Check type and alcohol content",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ゼラチン,gelatin,mushbooh_review,medium,"Source can be fish, bovine, porcine, or other; verify source/certification",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+コラーゲンペプチド,collagen peptides,mushbooh_review,medium,"Source species and certification must be checked",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+乳化剤,emulsifier,mushbooh_review,low,"Could be plant, microbial, or animal-derived; identify specific additive/source",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+乳化剤大豆由来,soy-derived emulsifier,likely_halal_candidate,medium,"Plant-derived source indicated; check exact additive and product certification",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+マーガリン,margarine,mushbooh_review,low,"Fat source and additives vary by product",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ショートニング,shortening,mushbooh_review,low,"Fat source and additives vary by product",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
+ファットスプレッド,fat spread,mushbooh_review,low,"Fat source and additives vary by product",https://github.com/ahmadradi11/halalcheck_LINE_bot_GAS
