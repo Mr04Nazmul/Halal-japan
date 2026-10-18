@@ -12,7 +12,7 @@ on:
       max_urls:
         description: 'Maximum URLs per run (1–250)'
         required: false
-        default: '25'
+        default: '250'
   schedule:
     - cron: '12 * * * *'
 concurrency:
@@ -35,7 +35,7 @@ jobs:
           crawl4ai-setup
       - name: Crawl permitted public pages
         env:
-          CRAWL_MAX_URLS: ${{ inputs.max_urls || '25' }}
+          CRAWL_MAX_URLS: ${{ inputs.max_urls || '250' }}
         run: python scripts/crawl4ai_ingredients.py
       - name: HTTP ingredient crawl fallback
         if: always()
