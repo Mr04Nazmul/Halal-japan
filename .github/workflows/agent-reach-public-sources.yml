@@ -1,0 +1,29 @@
+name: Agent Reach public food source discovery
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 2 * * 2'
+permissions:
+  contents: read
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Agent Reach capability
+        continue-on-error: true
+        run: |
+          python -m pip install --disable-pip-version-check 'https://github.com/Panniantong/Agent-Reach/archive/refs/heads/main.zip'
+          agent-reach doctor
+      - name: Discover allowed public source references
+        run: python scripts/agent_reach_public_sources.py
+      - name: Upload research references (not product database)
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-reach-public-source-references
+          path: data/research/agent_reach_public_sources.json
+          retention-days: 14
