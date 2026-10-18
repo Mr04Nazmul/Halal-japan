@@ -19,6 +19,9 @@ def jan_valid(j):
     return (10-sum(int(d)*(1 if i%2==0 else 3) for i,d in enumerate(s[:12]))%10)%10==int(s[-1])
 rows=[]
 seen=set()
+rejections={}
+def reject(reason):
+    rejections[reason]=rejections.get(reason,0)+1
 for p in items:
     ident=p.get("product_id")
     ingredient=p.get("ingredients_ja")
@@ -26,15 +29,25 @@ for p in items:
     source=p.get("source_url")
     rule=p.get("rule_result")
     jan=p.get("jan")
-    if not isinstance(ident,str) or not ident or ident in seen: continue
-    if not all(isinstance(x,str) and x.strip() for x in (ingredient,name,source)): continue
-    if p.get("ingredient_field_status")!="complete_displayed_field":continue
-    if rule not in ("HALAL","HARAM"): continue
-    if p.get("halal_certified") is not False:continue
-    if not source.startswith("https://"): continue
-    if jan and not jan_valid(jan): continue
+    if not isinstance(ident,str) or not ident:
+        reject("missing identity");continue
+    if ident in seen:
+        reject("duplicate identity");continue
+    if not all(isinstance(x,str) and x.strip() for x in (ingredient,name,source)):
+        reject("missing product, ingredient or source field");continue
+    if p.get("ingredient_field_status")!="complete_displayed_field":
+        reject("incomplete ingredient field");continue
+    if rule not in ("HALAL","HARAM"):
+        reject("unreviewed rules result");continue
+    if p.get("halal_certified") is not False:
+        reject("unclear certification flag");continue
+    if not source.startswith("https://"):
+        reject("unsafe source URL");continue
+    if jan and not jan_valid(jan):
+        reject("invalid JAN");continue
     # The crawler's local accepted identity is the only import identity.
-    if jan and ident!="jan:"+str(jan):continue
+    if jan and ident!="jan:"+str(jan):
+        reject("JAN identity mismatch");continue
     seen.add(ident)
     rows.append(dict(identity_key=ident,jan_code=str(jan) if jan else None,
         product_name=name,ingredients_ja=ingredient,additives_ja=p.get("additives_ja") or "",
@@ -44,8 +57,17 @@ for p in items:
         evidence={"source_type":p.get("source_type"),"field_status":p.get("ingredient_field_status"),
                   "reuse_permission":p.get("reuse_permission","not_established")},
         snapshot_hash=p.get("source_html_sha256"),collected_at=p.get("retrieved_at")))
-if len(rows)!=len(items):
-    sys.exit(f"Safety check: {len(rows)} importable but {len(items)} cumulative items; refusing partial snapshot")
+# Preserve valid rows while quarantining and counting invalid records.
+# If more than 5% are rejected, fail rather than silently importing corrupt batches.
+rejected=len(items)-len(rows)
+print(f"Validation: {len(rows)} importable / {len(items)} provided; {rejected} rejected: {json.dumps(rejections,sort_keys=True)}",flush=True)
+if not rows or rejected>max(10,int(len(items)*0.05)):
+    sys.exit("Safety check: empty batch or more than 5% rejected; refusing import")
+if os.environ.get("GITHUB_STEP_SUMMARY"):
+    with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as report:
+        report.write(f"## Staging import validation\\n\\nAccepted: {len(rows)} / {len(items)}. Quarantined (not imported): {rejected}.\\n\\n")
+        for reason,count in sorted(rejections.items()):
+            report.write(f"- {reason}: {count}\\n")
 print(f"Importing {len(rows)} distinct complete-ingredient records into staging only",flush=True)
 for i in range(0,len(rows),100):
     req=urllib.request.Request(url+"/rest/v1/jhc_crawler_ingredient_staging?on_conflict=identity_key",
