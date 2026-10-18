@@ -1,6 +1,11 @@
 name: Archive Japanese Ingredients to Supabase
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - scripts/import_japan_ingredients_supabase.py
+      - .github/workflows/archive-japanese-ingredients-supabase.yml
   workflow_run:
     workflows: ["Crawl Japanese Ingredients to 100k"]
     types: [completed]
@@ -12,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   archive:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
