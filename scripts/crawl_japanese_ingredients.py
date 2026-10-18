@@ -46,11 +46,9 @@ def normalized(s):return ''.join(unicodedata.normalize('NFKC',s).split())
 def canonical(u):
  p=urlsplit(u)
  q=sorted((k,v) for k,v in parse_qsl(p.query) if k in {'id','iid','actmode','p','page'})
- path=quote(p.path,safe="/%:@!def canonical(u):
- p=urlsplit(u)
- q=sorted((k,v) for k,v in parse_qsl(p.query) if k in {'id','iid','actmode','p','page'})
- return urlunsplit(('https',p.netloc.lower(),p.path.replace('/index.php/','/'),urlencode(q),''))'()*+,;=-._~")
+ path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
  return urlunsplit(('https',p.netloc.lower(),path.replace('/index.php/','/'),urlencode(q),''))
+
 def source(u):
  host=(urlsplit(u).hostname or '').lower()
  return next((d for d in SOURCES if host==d or host.endswith('.'+d)),None)
