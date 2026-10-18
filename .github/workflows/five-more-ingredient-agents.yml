@@ -1,0 +1,51 @@
+name: Five More Japan Ingredient Agents
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '53 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/five-more-ingredient-agents.yml
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: five-more-ingredient-agents
+  cancel-in-progress: false
+jobs:
+  dispatch:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: Scrapy manufacturer page discovery
+            workflow: scrapy-ingredients.yml
+          - task: Japanese OFF ingredient candidate extraction
+            workflow: off-japan-ingredients.yml
+          - task: OFF Japan complete ingredient collection
+            workflow: collect-japan-food.yml
+          - task: Japan product lead discovery
+            workflow: collect-japan-products.yml
+          - task: Apify official manufacturer research
+            workflow: apify-japanese-food-research.yml
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Dispatch source-specific agent
+        env:
+          CHILD_WORKFLOW: ${{ matrix.workflow }}
+          TASK_NAME: ${{ matrix.task }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "## $TASK_NAME" >> "$GITHUB_STEP_SUMMARY"
+          active=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$CHILD_WORKFLOW/runs?per_page=15" --jq '[.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "requested")] | length')
+          if [ "$active" -gt 0 ]; then
+            echo "Already active ($active). Skipped duplicate." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            gh workflow run "$CHILD_WORKFLOW" --repo "$GITHUB_REPOSITORY" --ref main
+            echo "Dispatched $CHILD_WORKFLOW. Check child logs/artifacts to confirm new records." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
