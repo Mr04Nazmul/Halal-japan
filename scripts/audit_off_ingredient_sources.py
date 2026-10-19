@@ -29,7 +29,11 @@ def main():
         j=json.loads(file.read_text(encoding="utf-8"))
         for p in j.get("records",[]):
             barcode=str(p["code"])
-            if barcode in products:\n                # Overlapping shards are expected; preserve the existing Japanese record.\n                if not products[barcode]["has_text"] and (p.get("ingredients_text") or "").strip():\n                    products[barcode]["has_text"]=True\n                continue
+            if barcode in products:
+                # Overlapping shards are expected; preserve the existing Japanese record.
+                if not products[barcode]["has_text"] and (p.get("ingredients_text") or "").strip():
+                    products[barcode]["has_text"]=True
+                continue
             products[barcode]={"scope":p.get("scope") or "unknown","has_text":bool((p.get("ingredients_text") or "").strip())}
     if len(products)!=100000 or len(products)!=manifest.get("total_unique_records"):
         raise ValueError("Source audit aborted: expected exactly 100k unique barcodes")
