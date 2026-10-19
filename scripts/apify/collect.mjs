@@ -19,16 +19,16 @@ async function request(url, opts={}) {
   if (!res.ok) throw new Error('Apify HTTP '+res.status+' '+(await res.text()).slice(0,300));
   return res.json();
 }
-const run = await request(endpoint+'/acts/'+encodeURIComponent(actorId)+'/runs?waitForFinish=120', {method:'POST',body:JSON.stringify(input)});
+const run = await request(endpoint+'/acts/'+encodeURIComponent(actorId)+'/runs', {method:'POST',body:JSON.stringify(input)});
 if (!run.data?.id) throw new Error('Actor did not return run ID; verify its input schema.');
 let status=run.data.status;
 let runInfo=run.data;
-for (let n=0;n<24 && !['SUCCEEDED','FAILED','ABORTED','TIMED-OUT'].includes(status);n++) {
+for (let n=0;n<100 && !['SUCCEEDED','FAILED','ABORTED','TIMED-OUT'].includes(status);n++) {
   await new Promise(resolve=>setTimeout(resolve,5000));
   const current=await request(endpoint+'/actor-runs/'+encodeURIComponent(run.data.id));
   runInfo=current.data; status=runInfo.status;
 }
-if (status!=='SUCCEEDED') throw new Error('Actor status '+status+'; inspect Apify run '+run.data.id);
+if (status!=='SUCCEEDED') throw new Error('Actor status '+status+' after polling; inspect Apify run '+run.data.id);
 const datasetId=runInfo.defaultDatasetId;
 if (!datasetId) throw new Error('No default dataset ID');
 const items = await request(endpoint+'/datasets/'+encodeURIComponent(datasetId)+'/items?format=json&limit=1000&clean=true');
