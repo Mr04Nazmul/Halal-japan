@@ -5,6 +5,10 @@ from pathlib import Path
 class JapaneseProductLinks(scrapy.Spider):
     name="japanese_product_links"
     custom_settings={"ROBOTSTXT_OBEY":True,"DOWNLOAD_DELAY":2,"CONCURRENT_REQUESTS_PER_DOMAIN":1,"DEPTH_LIMIT":2,"CLOSESPIDER_PAGECOUNT":300,"LOG_LEVEL":"INFO"}
+    async def start(self):
+        for request in self.start_requests():
+            yield request
+
     def start_requests(self):
         seeds=Path("data/manufacturer_seed_urls.txt")
         for u in seeds.read_text(encoding="utf-8").splitlines()[:80]:
