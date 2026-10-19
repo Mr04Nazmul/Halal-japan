@@ -2,7 +2,7 @@
   "attribution": "Contains data from Open Food Facts (https://world.openfoodfacts.org), made available under the Open Database License.",
   "license": "ODbL-1.0",
   "scope": "en:japan country tags only; not proof of availability or halal certification",
-  "record_count": 639,
+  "record_count": 645,
   "records": [
     {
       "code": "0037600112314",
@@ -2315,6 +2315,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4549414729528",
+      "product_name": "Frozen Blueberries",
+      "brands": "Topvalu",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792449375,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4549414729528",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4549414736885",
       "product_name": "トップバリュ　サラダチキン",
       "brands": "イオン",
@@ -3393,6 +3407,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4589693023283",
+      "product_name": "ぱくぱくきくらげ 梅しそ風味",
+      "brands": "マイナット",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792451754,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4589693023283",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4589850829512",
       "product_name": "瀬戸内レモンレモネード",
       "brands": "ポッカサッポロ",
@@ -3556,6 +3584,20 @@
       "last_modified_t": 1791804155,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4595775778088",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4595775778101",
+      "product_name": "鮭&炊き込みご飯",
+      "brands": "ごちそうShape",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792453388,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4595775778101",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -7481,6 +7523,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4951561290330",
+      "product_name": "ポテトスティック",
+      "brands": "千年屋",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792446848,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4951561290330",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4952794818032",
       "product_name": "しらたき",
       "brands": "ヨコオ",
@@ -7616,6 +7672,20 @@
       "last_modified_t": 1792380123,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4961596019639",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4961681009309",
+      "product_name": "ナチュラルチーズ",
+      "brands": "株式会社　エヌ・シーエル",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792449159,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4961681009309",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8526,6 +8596,20 @@
       "last_modified_t": 1792296320,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4984352149142",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4986869002149",
+      "product_name": "十六雑穀ごはん",
+      "brands": "幸南株式会社",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792449151,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4986869002149",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
