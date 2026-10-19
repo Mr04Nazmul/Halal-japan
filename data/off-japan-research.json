@@ -2,7 +2,7 @@
   "attribution": "Contains data from Open Food Facts (https://world.openfoodfacts.org), made available under the Open Database License.",
   "license": "ODbL-1.0",
   "scope": "en:japan country tags only; not proof of availability or halal certification",
-  "record_count": 636,
+  "record_count": 639,
   "records": [
     {
       "code": "0037600112314",
@@ -1610,6 +1610,20 @@
       "last_modified_t": 1792149034,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/2502761005891",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "2514799003084",
+      "product_name": "国産若鶏ムネカツレツ用（カレー）",
+      "brands": "万代",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792427944,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/2514799003084",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -3267,6 +3281,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4582529600030",
+      "product_name": "チョコレート",
+      "brands": "ダンデライオン・チョコレート",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792422218,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4582529600030",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4582588600491",
       "product_name": "お芋の妖精 エルフの魔法",
       "brands": "Sweet Bank株式会社",
@@ -3878,6 +3906,20 @@
       "last_modified_t": 1791858905,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4807770274275",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4810268015489",
+      "product_name": "Творог 1%",
+      "brands": "Савушкин",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792430114,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4810268015489",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8789,7 +8831,7 @@
       "quantity": "500 g",
       "ingredients_text": "Semola di grano duro, acqua.",
       "country_tag": "en:japan",
-      "last_modified_t": 1791918977,
+      "last_modified_t": 1792426271,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/8076800195019",
       "license": "ODbL-1.0",
