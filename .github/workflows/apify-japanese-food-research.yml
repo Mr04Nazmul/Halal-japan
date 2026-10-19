@@ -1,10 +1,14 @@
 name: Apify Japanese Food Research
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/apify-japanese-food-research.yml'
+      - 'scripts/apify/collect.mjs'
 jobs:
   research:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
