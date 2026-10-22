@@ -2,7 +2,7 @@
   "attribution": "Contains data from Open Food Facts (https://world.openfoodfacts.org), made available under the Open Database License.",
   "license": "ODbL-1.0",
   "scope": "en:japan country tags only; not proof of availability or halal certification",
-  "record_count": 696,
+  "record_count": 793,
   "records": [
     {
       "code": "0037600112314",
@@ -14,6 +14,20 @@
       "last_modified_t": 1791956288,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/0037600112314",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0077315003019",
+      "product_name": "dax",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792504641,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0077315003019",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -313,6 +327,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0220499004789",
+      "product_name": "切れてるいかの照焼",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "増粘剤(加工デンプン)、酒精、カラメル色素、調味料(アミノ酸等)(一部に小麦・いか・大豆を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792547510,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0220499004789",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0220521003674",
+      "product_name": "北海道加工 たらこ(スライス)",
+      "brands": "",
+      "quantity": "88g",
+      "ingredients_text": "助宗鱈卵巣(ロシア)、食塩/調味料(アミノ酸等)、酸化防止剤(V.C)、ナイアシン、着色料(赤102、黄5)、発色剤(亜硝酸Na)、酵素",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792503395,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0220521003674",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0220576804677",
       "product_name": "大粒むきえびの旨辛焼(トムヤムソース)",
       "brands": "",
@@ -411,6 +453,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0230666109803",
+      "product_name": "お肉Deワンプレート",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "加工デンプン、ソルビット、増粘剤(加工デンプン、増粘多糖類)、調味料(アミノ酸等)、リン酸塩(Na)、PH調整剤、乳化剤、酸化防止剤(V.C)香辛料、酸味料、発色剤(硝酸K、亜硝酸Na)、カゼインNa、環状オリゴ糖、酸化ケイ素、カラメル色素、チアミン、酵素、香料(一部に小麦・卵・乳成分・牛肉・大豆・鶏肉・豚肉・ゼラチンを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792542236,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0230666109803",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0230734302549",
       "product_name": "アンガス黒牛もも赤身ステーキ・ガーリック味",
       "brands": "",
@@ -467,6 +523,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0230796104877",
+      "product_name": "プルっと牛すじ欧風カレー",
+      "brands": "",
+      "quantity": "246g",
+      "ingredients_text": "増粘剤(加工デンプン、キサンタン)、カラメル色素、調味料(アミノ酸等)、香料、甘味料(アセスルファムK)、乳化剤、酸味料(一部に小麦・乳成分・牛肉・大豆・鶏肉・バナナを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792501659,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0230796104877",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0230801202819",
       "product_name": "かたロース肉使用のローストポーク",
       "brands": "",
@@ -490,6 +560,20 @@
       "last_modified_t": 1792147056,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/0230862202513",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0230862203503",
+      "product_name": "【国内産】まろやかな味わい若どりレバー焼",
+      "brands": "",
+      "quantity": "354g",
+      "ingredients_text": "増粘剤(加工デンプン、キサンタン)、カラメル色素、調味料(アミノ酸等)(一部に小麦・ごま・大豆・鶏肉を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792502027,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0230862203503",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -593,6 +677,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0245015205983",
+      "product_name": "照焼チキンステーキ弁当",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "酢酸Na、増粘剤(加工デンプン)、pH調整剤、着色料(カラメル、コチニール)、甘味料(ソルビット)、リン酸塩(Na)、調味料(アミノ酸等)、酒精、グリシン、クエン酸、酸味料、ショ糖エステル(一部に小麦・ごま・さば・大豆・鶏肉・りんごを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792554128,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0245015205983",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0245015805985",
       "product_name": "店内焼上げ骨取り塩さば弁当",
       "brands": "",
@@ -602,6 +700,20 @@
       "last_modified_t": 1791699833,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/0245015805985",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0245048005581",
+      "product_name": "豚ロースの生姜焼重",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "白飯、豚肉ロース、玉葱スライス、たれ(しょうが、水あめ、醤油、その他)、キャベツ、きんぴらごぼう、桜大根、マヨネーズ、レモン、植物油脂、小ねぎ、白ごま/増粘剤(加工デンプン)、カラメル色素、酢酸Na、酒精、リン酸塩(Na)、調味料(アミノ酸)、pH調整剤、グリシン、クエン酸、野菜色素、香料(一部に小麦・卵・ごま・さば・大豆・豚肉・りんごを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792548126,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0245048005581",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -677,6 +789,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0245287102430",
+      "product_name": "北海道産黒カレイのから揚(おろしぽん酢付)小",
+      "brands": "",
+      "quantity": "72g",
+      "ingredients_text": "調味料(アミノ酸等)、増粘剤(加工デンプン)、カラメル色素、酸化防止剤(V.C)、酸味料(一部に小麦・さば・大豆・りんごを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792502730,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0245287102430",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0245416502988",
       "product_name": "桜姫鶏の焼とり むねぽんじり串(七味焼)",
       "brands": "",
@@ -733,6 +859,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0245580603955",
+      "product_name": "竹輪のおつまみ磯辺揚げ(大)",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "加工デンプン、ソルビット、炭酸Ca、調味料(アミノ酸等)、PH調整剤、膨脹剤、トレハロース、増粘多糖類、乳化剤、カロチノイド色素(一部に小麦・卵・乳成分・大豆・豚肉を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792570164,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0245580603955",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0245826304905",
+      "product_name": "海老づくし",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "酢飯、赤えび、甘海老、ボイルむきえび、レモン、寿司海老、がり、濃口醤油、胡瓜、練りわさび、数の子バラ子、大葉、焼海苔/甘味料(ソルビット、ステビア)、酸味料、調味料(アミノ酸等)、酢酸(Na)グリシン、ショ糖エステル、酵素、チアミン、pH調整剤、着色料(アナトー、紅麹)(一部にえび・かに・小麦・卵・乳成分・大豆を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792552095,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0245826304905",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0245898103901",
       "product_name": "五目ちらし寿司",
       "brands": "",
@@ -775,6 +929,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0248167702980",
+      "product_name": "ブルーベリーとクリームチーズのスクエアブレッド",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "パン生地(小麦粉、小麦全粒粉、その他)(国内製造)、ブルーベリージャム、クリームチーズ、小麦粉/加工デンプン、糊料(増粘多糖類)、乳化剤、ソルビット、酸味料、香料、pH調整剤、保存料(ソルビン酸K)、酵素、クエン酸Ca、V.C(一部に小麦・卵・乳成分・りんごを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792546613,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0248167702980",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0248168002980",
+      "product_name": "お芋あんとクリームチーズのスクエアブレッド",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "パン生地(小麦粉、小麦全粒粉、その他)(国内製造)、スイートポテトあん、クリームチーズ、洗いごま/加工デンプン、乳化剤、ソルビット、pH調整剤、香料、クチナシ色素、保存料(ソルビン酸K)、増粘剤(キサンタン)、酵素、V.C(一部に小麦・卵・乳成分・ごまを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792554248,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0248168002980",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0248197601680",
       "product_name": "プレーンベーグル",
       "brands": "",
@@ -789,6 +971,48 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "0248305301181",
+      "product_name": "アップルカスター",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "パン生地(小麦粉、マーガリン、砂糖、その他)(国内製造)、りんごブレザーブ、フラワーペースト(牛乳、オリゴ糖、砂糖、加工油脂、その他)、粉糖(グラニュ糖、コーンスターチ)、油脂加工食品(植物油脂、粉末状大豆たん白)液体調味料砂糖、デキストリン、植物油)/加工デンプン、グリシン、乳化剤、酸味料、保存料(ソルビン酸K)、香料、酸化防止剤(V.C、V.E)、乳酸Ca、増粘多糖類、pH調整剤、V.C、甘味料(スクラロース)、酵素、カロチン色素(一部に小麦・卵・乳成分・大豆・りんご・ゼラチンを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792550933,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0248305301181",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0248310602983",
+      "product_name": "ミニパンオショコラ 6個",
+      "brands": "",
+      "quantity": "6個",
+      "ingredients_text": "パン生地(小麦粉、準チョコレート、マーガリン、その他)(国内製造)油脂加工食品(植物油脂、粉末状大豆たん白)/乳化剤、香料、V.C、酵素、酸化防止剤(V.E)、甘味料(スクラロース)、カロチン色素(一部に小麦・卵・乳成分・大豆を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792499979,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0248310602983",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0248313001585",
+      "product_name": "安納芋の蜜芋クイニーアマン",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "パン生地(小麦粉、マーガリン、砂糖、その他)(国内製造)、洗いごま/乳化剤、香料、V.C、酸化防止剤(V.E)、カロチン色素、メタリン酸Na、酵素(一部に小麦・卵・乳成分・ごま・大豆を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792549787,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0248313001585",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "0248351401989",
       "product_name": "手作り生チョコくるみパイ1/4",
       "brands": "",
@@ -798,6 +1022,20 @@
       "last_modified_t": 1792209407,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/0248351401989",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0248386101984",
+      "product_name": "甘栗デニッシュ",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "パン生地(栗あん、小麦粉、マーガリン、その他)(国内製造)、アーモンドスライス、液体調味料(砂糖、デキストリン、植物油)、油脂加工食品(植物油脂、粉末状大豆たん白)/着色料(カラメル、カロチノイド)、乳化剤、香料、pH調整剤、増粘多糖類、V.C、酸化防止剤(V.E)、酵素(一部に小麦・卵・乳成分・アーモンド・大豆を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792500241,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0248386101984",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -1260,6 +1498,20 @@
       "last_modified_t": 1791930625,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/0471101766957",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "0477088069852",
+      "product_name": "Chicken Caesar Salad",
+      "brands": "Simply To Go",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792515714,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/0477088069852",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -1755,6 +2007,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "2507111005316",
+      "product_name": "味付豚ハラミ",
+      "brands": "トライアルカンパニー",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792518384,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/2507111005316",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "2514799003084",
       "product_name": "国産若鶏ムネカツレツ用（カレー）",
       "brands": "万代",
@@ -1965,6 +2231,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "2746399102540",
+      "product_name": "国産さば照り焼き",
+      "brands": "イオンビッグ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553349,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/2746399102540",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "2748171703266",
+      "product_name": "釜上げしらす",
+      "brands": "イオンリテール(株)",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792494177,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/2748171703266",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "3263670014457",
       "product_name": "Sardines Pêche Responsable à la sauce tomate bio sans huile 135g",
       "brands": "Phare d'Eckmühl, Phare d'eckmühl",
@@ -2002,6 +2296,20 @@
       "last_modified_t": 1792130629,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/45084102",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4514410179844",
+      "product_name": "湖池屋　フライドポテト",
+      "brands": "Koikeya",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792493190,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4514410179844",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -2343,6 +2651,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4547315996100",
+      "product_name": "かりんとう",
+      "brands": "Muji",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792547978,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4547315996100",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4548151013624",
       "product_name": "鶏胸ひき肉",
       "brands": "イオン・マックスバリュ",
@@ -2413,6 +2735,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4549414138238",
+      "product_name": "おろしにんにく",
+      "brands": "トップバリュ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792557508,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4549414138238",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4549414543292",
       "product_name": "Cut Cabbage",
       "brands": "Topvalu",
@@ -2455,6 +2791,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4549414716399",
+      "product_name": "ハヤシ",
+      "brands": "トップバリュ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792563857,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4549414716399",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4549414717907",
       "product_name": "レモン風味の塩焼きそば",
       "brands": "イオン",
@@ -2478,6 +2828,20 @@
       "last_modified_t": 1792449375,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4549414729528",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4549414734928",
+      "product_name": "蒸し鶏",
+      "brands": "トップバリュ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792552903,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4549414734928",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -2819,6 +3183,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4560292292836",
+      "product_name": "Red Bull Apple Edition",
+      "brands": "Red Bull",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792560336,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4560292292836",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4560304566481",
       "product_name": "麻婆茄子",
       "brands": "世田谷自然食品",
@@ -2856,6 +3234,20 @@
       "last_modified_t": 1792490519,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4560304568911",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4560304568942",
+      "product_name": "海老の濃厚マヨソース",
+      "brands": "トオカツフーズ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792537912,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4560304568942",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -2912,6 +3304,20 @@
       "last_modified_t": 1792288174,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4570018721137",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4570034957565",
+      "product_name": "明太唐揚げ",
+      "brands": "株式会社沖縄やまや",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792547029,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4570034957565",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -2996,6 +3402,20 @@
       "last_modified_t": 1791864954,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4571109382428",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4571194864144",
+      "product_name": "ALPRON WPC ミルクココア風味 チョコチップ入り",
+      "brands": "ALPRON",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792546568,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4571194864144",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -3183,6 +3603,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4573356893030",
+      "product_name": "ほどけるパールグミ シャインマスカット味",
+      "brands": "株式会社ストロングハート",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792556719,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4573356893030",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4573525945829",
       "product_name": "さばみそ煮",
       "brands": "D-price",
@@ -3206,6 +3640,20 @@
       "last_modified_t": 1791873463,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4573545200281",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4573556621518",
+      "product_name": "まいにち食べたい！ 乾燥マンゴー",
+      "brands": "正栄食品工業株式会社",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792542250,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4573556621518",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -3248,6 +3696,20 @@
       "last_modified_t": 1792321158,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4580207248949",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4580306260439",
+      "product_name": "白身魚フライ海苔弁当",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "ご飯(国産米仕様)、白身魚フライ、竹輪磯辺天、焼売、スパゲティ、コロッケ、漬物、タルタルソース、金平牛蒡、ボトル醤油、味付おかか、海苔、ケチャップ/pH調整剤、加工澱粉、トレハロース、調味料(アミノ酸等)、甘味料(ソルビット)、グリシン、糊料(増粘多糖類、加工澱粉)、膨脹剤、乳化剤、酸味料、着色料(カロチノイド、野菜色素、カラメル、ウコン)、酒精、香料、酸化防止剤(V.C)、乳酸Ca、香辛料抽出物、(一部に卵・小麦・えび・かに・ごま・大豆・鶏肉・豚肉・ゼラチンを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792549486,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4580306260439",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -3533,6 +3995,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4582503901825",
+      "product_name": "THE PROTEIN クリームオブライス",
+      "brands": "ザプロ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792537683,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4582503901825",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4582529600030",
       "product_name": "チョコレート",
       "brands": "ダンデライオン・チョコレート",
@@ -3589,6 +4065,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4582776309571",
+      "product_name": "混ぜて食べる明太子焼きじゃがサラダ",
+      "brands": "",
+      "quantity": "1盛",
+      "ingredients_text": "馬鈴薯(国産)、ゆで卵、半固体状ドレッシング、水菜、明太子、植物油脂、プロセスチーズ、食塩、胡椒/調味料(アミノ酸等)、増粘剤(増粘多糖類、加工デンプン)、乳化剤グリシン、酢酸(Na)、ベニコウジ色素、酸化防止剤(V.C)、酸味料、グリセリン脂肪酸エステル、酵素、発色剤(亜硝酸Na)、香辛料抽出物、pH調整剤(一部に小麦・卵・乳成分・大豆・ゼラチンを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792550374,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4582776309571",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4582776309588",
       "product_name": "混ぜて食べるガーリック焼きじゃがサラダ",
       "brands": "",
@@ -3612,6 +4102,20 @@
       "last_modified_t": 1792207330,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4582788163185",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4589414322398",
+      "product_name": "海苔おかき",
+      "brands": "eatime",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792507468,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4589414322398",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -3673,6 +4177,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4589886361079",
+      "product_name": "クエン酸ゴールドプラススティック",
+      "brands": "日本堂製薬株式会社",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792557625,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4589886361079",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4595056847144",
       "product_name": "ショコラマドレーヌ",
       "brands": "リビエール",
@@ -3724,6 +4242,20 @@
       "last_modified_t": 1792233945,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4595555838056",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4595558041019",
+      "product_name": "手作りパンとワッフル",
+      "brands": "モン・リブラン",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792502688,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4595558041019",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -3911,6 +4443,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4601662006155",
+      "product_name": "Parmalat Comfort 0.05",
+      "brands": "Parmalat",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792558944,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4601662006155",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4602014018604",
       "product_name": "Сырок  творожный",
       "brands": "Светлогорье",
@@ -3948,6 +4494,20 @@
       "last_modified_t": 1791825750,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4605504522711",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4607011260322",
+      "product_name": "Cookie oat",
+      "brands": "Posidelkino",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792541803,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4607011260322",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -4004,6 +4564,20 @@
       "last_modified_t": 1792491898,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4710174110370",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4711115020086",
+      "product_name": "Bubble tea mango iced",
+      "brands": "Madam Hong",
+      "quantity": "320ml",
+      "ingredients_text": "Water, mango juice from concentrate 10%, apple juice from concentrate 10%, bursting bubble 5% (water, sugar, mango juice from concentrate 10%, seaweed extract, calcium lactate, malic acid, citric acid, mango flavouring, colour: E160a, acidity regulator: sodium citrate, gelling agent: xanthan gum, preservative: potassium sorbate), sugar, acid: citric acid, black tea extract 0.4%, flavouring, antioxidant: ascorbic acid, colour: carotene, antioxidant: ascorbic acid",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792557745,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4711115020086",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -4079,6 +4653,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4751018890171",
+      "product_name": "Tomato Crisp bread",
+      "brands": "The beginnings",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792525940,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4751018890171",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4752050610673",
       "product_name": "manna",
       "brands": "Rimi",
@@ -4102,6 +4690,20 @@
       "last_modified_t": 1791734323,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4770245049237",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4770276202182",
+      "product_name": "Skrandukai",
+      "brands": "Kaišiadorių Paukštynas",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792493207,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4770276202182",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -4247,6 +4849,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4810411012891",
+      "product_name": "Козинак подсолнечный",
+      "brands": "TARATORKI, Красный пищевик",
+      "quantity": "50 g",
+      "ingredients_text": "roasted sunflower kernels, sugar, syrup.",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792520571,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4810411012891",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4810729011135",
       "product_name": "Творог Классический Обезжиренный",
       "brands": "Клецкая Крыначка",
@@ -4373,6 +4989,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901001705115",
+      "product_name": "タンパク質がしっかり捕れるスープ コーンクリーム",
+      "brands": "Knorr, Ajinomoto",
+      "quantity": "438g(1人120mlで15人分)",
+      "ingredients_text": "乳たん白(ニュージーランド製造、ドイツ製造)、スイートコーン、乳糖、デキストリン、食用加工油脂、脱脂粉乳、クリーミングパウダー、でん粉、食塩、砂糖、コーンバターパウダー、バターソテーオニオンパウダー、チキンエキス、キス、たまねぎ、香辛料/調味料(アミノ酸等)、乳化剤、V.D、(一部に小麦・乳成分・大豆・鶏肉を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792494096,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901001705115",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901002075422",
       "product_name": "Golden curry medium",
       "brands": "S&B",
@@ -4457,6 +5087,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901006213103",
+      "product_name": "たい焼アイス",
+      "brands": "imuraya",
+      "quantity": "60ml×5コ",
+      "ingredients_text": "砂糖(タイ製造、国内製造)、水あめ、もなか(小麦を含む)、小豆、乳製品、植物油脂、チョコレートコーチング(乳成分を含む)、コーンスターチ、還元水あめ、食塩/ソルビトール、加工でん粉、乳化剤(大豆由来)、香料(乳・大豆由来)、安定剤(増粘多糖類)、カラメル色素、膨張剤、カロテン色素",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792501090,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901006213103",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901006241502",
       "product_name": "肉まん",
       "brands": "井村屋, 井村屋ゴールド",
@@ -4466,6 +5110,20 @@
       "last_modified_t": 1792376501,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4901006241502",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901006242073",
+      "product_name": "ピザまん",
+      "brands": "井村屋ゴールド",
+      "quantity": "186グラム(2コ入)",
+      "ingredients_text": "小麦粉(国内製造)、砂糖、たまねぎ、ナチュラルチーズ、トマトペースト、調製ラード、小麦全粒粉、トマトケチャップ、乳等を主要原料とする食品、ベーコン、にんにくペースト、食塩、イースト、こんにゃくいもペースト、プロセスチーズ、香辛料、りんご果汁、しょうゆ/増粘剤(加工でん粉、増粘多糖類)、調味料(アミノ酸等)、膨張剤、安定剤(加工でん粉、増粘多糖類)、乳化剤、加工でん粉、酢酸Na、カゼインNa、リン酸塩(Na)、pH調整剤、パプリカ色素、くん液、酸化防止剤(V.C)、香料、発色剤(亜硝酸Na)、クチナシ色素、香辛料抽出物、(一部に小麦・卵・乳成分・大豆・豚肉・りんごを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553629,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901006242073",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -4597,6 +5255,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901071410797",
+      "product_name": "スーパーカップ　1.5倍　濃厚味噌󠄀",
+      "brands": "エースコック",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792505964,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901071410797",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901071411053",
       "product_name": "福福彩菜麻辣湯春雨",
       "brands": "エースコック",
@@ -4667,6 +5339,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901112680776",
+      "product_name": "大人のスイートヨーグルト",
+      "brands": "Danone",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792567186,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901112680776",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901112800631",
       "product_name": "オイコスアサイーボール",
       "brands": "Danone Japan",
@@ -4718,6 +5404,20 @@
       "last_modified_t": 1792404106,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4901117550111",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901150110617",
+      "product_name": "麻婆丼 小辛",
+      "brands": "大塚食品",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792503258,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901150110617",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -4807,6 +5507,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901231426637",
+      "product_name": "ウインナーソーセージ",
+      "brands": "伊藤ハム",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792534641,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901231426637",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901231490850",
+      "product_name": "Cheese Wiener チーズイン",
+      "brands": "伊藤ハム",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792570456,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901231490850",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901250951455",
       "product_name": "蒸し鶏とザーサイの塩だれサラダ",
       "brands": "",
@@ -4877,6 +5605,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901313256015",
+      "product_name": "こつぶっこ",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792567187,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901313256015",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901313282274",
       "product_name": "超カリカリすぎるうす焼き",
       "brands": "亀田製菓",
@@ -4928,6 +5670,34 @@
       "last_modified_t": 1791792909,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4901325403377",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901330112998",
+      "product_name": "かっぱえびせん 鳴門の塩とわさび味",
+      "brands": "Calbee, カルビー",
+      "quantity": "55g",
+      "ingredients_text": "小麦粉(国内製造)、植物油、えび、でん粉、砂糖、食塩、ぶどう糖、デキストリン、酵母エキスパウダー、発酵酵母エキスパウダー、本わさびパウダー/調味料(アミノ酸等)、膨脹剤、香辛料抽出物、酸味料、甘味料(甘草)、香料",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792542885,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901330112998",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901330113063",
+      "product_name": "かっぱえびせん 九州柚子胡椒と焼きあごだし味",
+      "brands": "Calbee",
+      "quantity": "50g",
+      "ingredients_text": "小麦粉(国内製造)、植物油、えび、でん粉、砂糖、食塩、柚子こしょうパウダー、かつお節パウダー、粉末しょうゆ(大豆を含む)、焼きあごパウダー、唐辛子パウダー/調味料(アミノ酸等)、膨脹剤、香料、酸味料、甘味料(甘草)、香辛料抽出物",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792542538,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901330113063",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -5157,6 +5927,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901515015625",
+      "product_name": "青菜とレタスのシャキッと炒めの素",
+      "brands": "Kikkoman",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792496690,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901515015625",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901515015809",
       "product_name": "ぐーめん ぶっかけとろろ",
       "brands": "キッコーマン",
@@ -5297,6 +6081,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901577055218",
+      "product_name": "キューピーあえるパスタソース ミートソース フォン・ド・ヴォー仕立て",
+      "brands": "キユーピー",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792495210,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901577055218",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901577075346",
       "product_name": "キューピーマヨネーズ",
       "brands": "キューピー",
@@ -5395,6 +6193,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901625316933",
+      "product_name": "バニラウエハース",
+      "brands": "生活応援",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792556577,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901625316933",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901625317077",
       "product_name": "ひねり揚げ めんたいこ風味",
       "brands": "生活志向",
@@ -5404,6 +6216,34 @@
       "last_modified_t": 1792481481,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4901625317077",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901626021461",
+      "product_name": "ソフトせん　えびしお味",
+      "brands": "三幸製菓",
+      "quantity": "50g",
+      "ingredients_text": "米、植物油脂（えびを含む）、砂糖、食塩、エビエキス、えびパウダー、たんぱく加水分解物、油脂加工品／加工でん粉、調味料（アミノ酸等）、植物レシチン、酸化防止剤（ローズマリー抽出物）",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792550401,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901626021461",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4901661107359",
+      "product_name": "マシュマロチョコレート いちご味",
+      "brands": "クリート株式会社",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792563911,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901661107359",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -5535,6 +6375,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901777452626",
+      "product_name": "Craft Boss バナナラテの午後3時",
+      "brands": "Suntory",
+      "quantity": "500ml",
+      "ingredients_text": "牛乳(国内製造)、砂糖、乳製品、コーヒー、食用油脂、乳等を主要原料とする食品/乳化剤、香料、カゼインNa、塩化K、塩化Mg、安定剤(セルロース)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792541898,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901777452626",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901777453173",
       "product_name": "キウイ 愛媛産",
       "brands": "",
@@ -5647,6 +6501,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901870125366",
+      "product_name": "おにぎりおかか昆布",
+      "brands": "CGC",
+      "quantity": "100g",
+      "ingredients_text": "切り口 ① CGC ブラ使 おにぎりおかか昆布 ※ 良質の北海道産昆布をおにぎりに使いやすいサイ 風味豊かなおかかとふっくらとした昆布を合わせ 名称 つくだに 原材料名 昆布(北海道)、砂糖、しょうゆ、混合節粉 (かつお節、さば節、いわし節)、たん白加水分解物、 還元水あめ、醸造酢、ごま、食塩、かつおエキス、風 味調味料、寒天、酵母エキス / 調味料(アミノ酸 等)、酸味料、(一部に小麦・大豆・ごま・さば・ゼラチン を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792498427,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901870125366",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4901870647523",
       "product_name": "Shoppers' Price Dry Highball",
       "brands": "Shoppers' Price",
@@ -5731,6 +6599,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4901990349314",
+      "product_name": "焼そば ホタテバター醤油味",
+      "brands": "Toyo Suisan, マルちゃん",
+      "quantity": "462g(めん135g×3)",
+      "ingredients_text": "めん(小麦粉(国内製造)、植物油、食塩/グリシン、かんすい、クチナシ色素、保存料(しらこたん白)、(一部に小麦・さけを含む))、添付調味料(醤油、砂糖、食塩、植物油、ほたてエキス、香辛料、酵母エキス、バター加工品/調味料(アミノ酸等)、酒精、カラメル色素、香料、増粘多糖類、(一部にえび・小麦・乳成分・大豆・豚肉を含む))",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792503900,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4901990349314",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4902013500477",
       "product_name": "アーモンドキャラメル",
       "brands": "筑豊製菓",
@@ -5754,6 +6636,20 @@
       "last_modified_t": 1792206211,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4902054300425",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4902054300791",
+      "product_name": "果実工房 Grape100%",
+      "brands": "製造者/トモエ乳業(株)",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792504695,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902054300791",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -5913,6 +6809,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4902110267105",
+      "product_name": "あえるだけパスタソース たらこバター醤油",
+      "brands": "マ・マー",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792556300,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902110267105",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4902110267112",
       "product_name": "マ・マー 七味明太子生風味",
       "brands": "日清製粉ウェルナ",
@@ -5950,6 +6860,20 @@
       "last_modified_t": 1791775777,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4902110285154",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4902110285178",
+      "product_name": "もちもち生パスタ 旨辛ペペロンチーニ",
+      "brands": "マ・マー, 日清製粉welna",
+      "quantity": "270グラム",
+      "ingredients_text": "めん(小麦粉(国内製造)、植物性たん白、マリーゴールドエキスパウダー/加工でん粉、着色料(カロチン))、植物油脂、ショルダーベーコン、ショートニング、食塩、にんにくペースト、魚介エキス、酵母エキス粉末、香味油、にんにく粉末、香辛料、あさりエキス、チキンコンソメ、増粘剤(加工でん粉、増粘多糖類)、調味料(アミノ酸等)、乳化剤、酢酸Na、グリシン、リン酸塩(Na)、香料、発色剤(亜硝酸Na)、(一部にかに・小麦・卵・乳成分・大豆・鶏肉・豚肉を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553319,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902110285178",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -6123,6 +7047,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4902170059245",
+      "product_name": "オーマイ 濃いあえるパスタソース カルボナーラ 1人前",
+      "brands": "Oh’my",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553789,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902170059245",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4902170260047",
       "product_name": "蟹のほぐし身と生クリームの蟹トマトクリーム",
       "brands": "ニップン",
@@ -6249,6 +7187,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4902220262007",
+      "product_name": "骨取りたらの甘酢あんかけ",
+      "brands": "日本生活協同組合連合会",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792502184,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902220262007",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4902220757145",
       "product_name": "辛子明太子",
       "brands": "cope",
@@ -6272,6 +7224,20 @@
       "last_modified_t": 1791775327,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4902226313475",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4902380218913",
+      "product_name": "日清ヘルシークリア",
+      "brands": "",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792567254,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902380218913",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -6454,6 +7420,20 @@
       "last_modified_t": 1792470241,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4902555218311",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4902555277769",
+      "product_name": "カントリーマアム 厳選チョコ",
+      "brands": "Fujiya",
+      "quantity": "12枚",
+      "ingredients_text": "小麦粉(国内製造)、砂糖、植物油脂、チョコレートチップ(乳成分を含む)、還元水あめ、卵、白ねりあん(乳成分を含む)、ココア、全脂大豆粉、カカオマス、全粉乳水あめ、アーモンドペースト、食塩、卵黄(卵を含む)、脱脂粉乳/加エデンプン、乳化剤(乳・小麦・大豆由来)、安定剤(加工デンプン、キサンタン)、膨脹剤、香料(乳・大豆由来)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792550765,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902555277769",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -6692,6 +7672,20 @@
       "last_modified_t": 1792126514,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4902715297002",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4902719851279",
+      "product_name": "【加熱用】ちゃんこ鍋 (豚・鶏) (麺入り)",
+      "brands": "丸協食産",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553844,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4902719851279",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -6977,6 +7971,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4903032501117",
+      "product_name": "Black Thunder",
+      "brands": "Yuraku",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792493108,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4903032501117",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4903080303411",
       "product_name": "麺許皆伝 カレー味",
       "brands": "Yakult",
@@ -7098,6 +8106,20 @@
       "last_modified_t": 1791801311,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4903110782407",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4903110795841",
+      "product_name": "ミートソースとチーズのフランスパン",
+      "brands": "",
+      "quantity": "1個",
+      "ingredients_text": "小麦粉(国内製造)、トマトミートフィリング(トマトペースト、たまねぎ、粉あめ、豚肉、植物性たん白、パン粉、砂糖、エキス調味料、ワイン、たまねぎ粉末、食塩、植物油脂、シーズニングオイル、こしょう、ナツメグパウダー、卵白粉)、チーズフラワーペースト、砂糖、バジルソース、ショートニング、乳化油脂、食塩、発酵風味料、パン酵母、ライ麦粉、麦芽エキス/加工デンプン、乳化剤、調味料(アミノ酸等)、酢酸(Na)、グリシン、増粘多糖類、着色料(紅麹、フラボノイド、クチナシ、カロテノイド)、ポリリン酸Na、pH調整剤、イーストフード、保存料(ソルビン酸K)、環状オリゴ糖、香料、V.C、キシロース、酵素、(一部に乳成分・卵・小麦・牛肉・大豆・とり肉・豚肉を含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792551699,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4903110795841",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -7691,6 +8713,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4931961863433",
+      "product_name": "濃厚鶏白湯スープの素",
+      "brands": "Mizkan",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792504667,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4931961863433",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4932503127853",
       "product_name": "紅茶パウダー アールグレイ",
       "brands": "富澤商店",
@@ -7789,6 +8825,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4935958874075",
+      "product_name": "炙り焼こいわしピロ",
+      "brands": "一榮食品",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792506735,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4935958874075",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4936169005203",
       "product_name": "大根おろし",
       "brands": "",
@@ -7854,6 +8904,20 @@
       "last_modified_t": 1791975681,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4941647481837",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4942009651981",
+      "product_name": "にんにくが効いたピリ辛スタミナ醬",
+      "brands": "久保醸造",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792493608,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4942009651981",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8153,6 +9217,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4952932060392",
+      "product_name": "はさみ揚げれんこん",
+      "brands": "川上",
+      "quantity": "4枚",
+      "ingredients_text": "水煮れんこん(れんこん(中国))、魚肉すり身(魚肉、砂糖)、枝豆、植物油、還元水飴、食塩、魚介エキス、ふどう糖、卵白、一味唐辛子、サカナ調味液、白だし/加工でん粉、調味料(アミノ酸等)、pH調整剤、乳酸Ca、着色料(クチナシ)、環状オリゴ糖、酵母粉末、漂白剤(次亜硫酸Na)、(一部に卵・小麦・大豆を含む)土:26.09.17",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792550006,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4952932060392",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4952993403688",
+      "product_name": "北海たこカルパッチョ",
+      "brands": "トナミ食品工業",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792558296,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4952993403688",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4953823004006",
       "product_name": "爽　濃いいちご&練乳ミルク",
       "brands": "ロッテ",
@@ -8162,6 +9254,20 @@
       "last_modified_t": 1791948547,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4953823004006",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4953823209548",
+      "product_name": "生チョコパイ",
+      "brands": "Lotte",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792501027,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4953823209548",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8246,6 +9352,20 @@
       "last_modified_t": 1791805833,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4955819701630",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4957954080533",
+      "product_name": "花ふりかけ",
+      "brands": "中嶋屋本店",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792551791,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4957954080533",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8349,6 +9469,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4962515001735",
+      "product_name": "和歌山の南高梅種抜き極香しそ味",
+      "brands": "大野農園",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792535073,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4962515001735",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4963863038589",
       "product_name": "和生菓子",
       "brands": "阪神製菓株式会社",
@@ -8391,6 +9525,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4964339121736",
+      "product_name": "いりごま〈黒〉",
+      "brands": "namisato",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792528100,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4964339121736",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4965346351321",
       "product_name": "The Pure",
       "brands": "",
@@ -8400,6 +9548,20 @@
       "last_modified_t": 1792307872,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4965346351321",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4965415701859",
+      "product_name": "サラダチキンペッパー",
+      "brands": "株式会社カルネス",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553299,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4965415701859",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8470,6 +9632,20 @@
       "last_modified_t": 1792465675,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4965919501016",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4968442901421",
+      "product_name": "クリームに溺れるとろけるプリン",
+      "brands": "ファミマ",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792507870,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4968442901421",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8671,6 +9847,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4971958022559",
+      "product_name": "しらたき",
+      "brands": "くらし良好, カンエツ",
+      "quantity": "180g",
+      "ingredients_text": "こんにゃく粉(国産)/水酸化カルシウム(こんにゃく用凝固剤)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792541225,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4971958022559",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4971958052952",
       "product_name": "こんにゃくの味噌田楽",
       "brands": "くらし良好",
@@ -8741,6 +9931,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4972884202404",
+      "product_name": "えび・イカミックス",
+      "brands": "毎日美味",
+      "quantity": "200g (正味重量160g)",
+      "ingredients_text": "いか、えび、食塩/調味料(アミノ酸等)、pH調整剤(一部にえび・いかを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792548298,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4972884202404",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4972884275613",
       "product_name": "むきえび",
       "brands": "毎味水産",
@@ -8783,6 +9987,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4973413930843",
+      "product_name": "納豆",
+      "brands": "日の出っ子",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792546353,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4973413930843",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4973450027506",
       "product_name": "みなさまのお墨付き　鍋つゆ　マイルドな味わい　とんこつ",
       "brands": "西友",
@@ -8792,6 +10010,20 @@
       "last_modified_t": 1791785928,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4973450027506",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4973450036737",
+      "product_name": "生姜ラーメン",
+      "brands": "西友",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792568657,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4973450036737",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -8890,6 +10122,20 @@
       "last_modified_t": 1792413484,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4973894300296",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4973918981111",
+      "product_name": "聖護院かぶらのもみじおろしぽん酢",
+      "brands": "",
+      "quantity": "15g",
+      "ingredients_text": "醤油(国内製造)、ゆず果汁、にんじんピューレ、砂糖、大根、食塩、醸造酢、ゆず果皮、かぶ、還元水あめ、パインアップル果汁、りんごパルプ、かつお削りぶし、レモン果汁、たん白加水分解物、香辛料、昆布、しいたけエキス/調味料(アミノ酸等)、増粘剤(加工デンプン)、カラメル色素、酸化防止剤(ビタミンC)、酸味料、(一部に小麦・さば・大豆・りんごを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792502972,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4973918981111",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -9086,6 +10332,20 @@
       "last_modified_t": 1791769548,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4977247032353",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4977910744323",
+      "product_name": "久原醤油あごだし入り白だし茶わんむし",
+      "brands": "久原",
+      "quantity": "160g",
+      "ingredients_text": "鶏卵(国産)、かに風味蒲鉾、えび、つゆ[食塩、だし(かつお節、焼きあご)、水あめ、砂糖、その他]、竹の子水煮、しょうゆ、椎茸、ゼラチン、みりん、コンブエキス、調味料(アミノ酸等)、リン酸塩(Na,K)、酒精、酸味料、トレハロース、加工でん粉、香料、トマト色素、パプリカ色素、(一部に卵・えび・かに・小麦・ゼラチン・大豆・さばを含む)",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792547238,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4977910744323",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -9343,6 +10603,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4987072034361",
+      "product_name": "イージーファイバー ダイエット",
+      "brands": "小林製薬",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792541428,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4987072034361",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4987072054673",
       "product_name": "のどぬ～る 鎮痛カプセルa",
       "brands": "小林製薬",
@@ -9413,6 +10687,34 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "4987977000577",
+      "product_name": "シュミテクト やさしくホワイトニングEX",
+      "brands": "Haleon",
+      "quantity": "100g",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792540572,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4987977000577",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4987977000591",
+      "product_name": "シュミテクト 歯周病ケア+口臭予防",
+      "brands": "Haleon",
+      "quantity": "95g",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792540662,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4987977000591",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "4989902012419",
       "product_name": "家伝ゆべし 栗入りあん",
       "brands": "かんの屋",
@@ -9436,6 +10738,20 @@
       "last_modified_t": 1791771276,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/4990002001005",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "4991849201764",
+      "product_name": "しあわせばうむ ジャージーミルク Baumkuchen",
+      "brands": "りんどう湖牧場",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792543545,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/4991849201764",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -9497,6 +10813,20 @@
       "review_status": "needs_verification"
     },
     {
+      "code": "5705830013446",
+      "product_name": "Julens Marcipanbrød",
+      "brands": "REMA 1000",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792520857,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/5705830013446",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
       "code": "6924187863354",
       "product_name": "每日坚果 (什锦果仁)",
       "brands": "洽洽",
@@ -9506,6 +10836,20 @@
       "last_modified_t": 1791846040,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/6924187863354",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "6947881819182",
+      "product_name": "小馬哥 网紅辣棒",
+      "brands": "安徽雪伟食品有限公司",
+      "quantity": "",
+      "ingredients_text": "",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792504717,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/6947881819182",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
@@ -9604,6 +10948,20 @@
       "last_modified_t": 1792232146,
       "source": "Open Food Facts",
       "source_url": "https://world.openfoodfacts.org/product/8001770063013",
+      "license": "ODbL-1.0",
+      "halal_verified": false,
+      "review_status": "needs_verification"
+    },
+    {
+      "code": "8001770063174",
+      "product_name": "Pomodoro e Basilico",
+      "brands": "Ortodoro",
+      "quantity": "680g",
+      "ingredients_text": "トマト、玉ねぎ、ひまわり油、バジル、砂糖、食塩、オリーブオイル、にんにく",
+      "country_tag": "en:japan",
+      "last_modified_t": 1792553867,
+      "source": "Open Food Facts",
+      "source_url": "https://world.openfoodfacts.org/product/8001770063174",
       "license": "ODbL-1.0",
       "halal_verified": false,
       "review_status": "needs_verification"
