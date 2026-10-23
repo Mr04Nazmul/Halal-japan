@@ -33,16 +33,21 @@ def get(page):
             time.sleep(delay)
 def main():
     pages=max(1,min(3,int(os.environ.get("OFF_PAGES","2"))))
+    # Rotate a bounded window so a recurring run does not retry the same first pages forever.
+    default_start = 1 + ((int(datetime.now(timezone.utc).timestamp() // 3600) * pages) % 200)
+    start_page=max(1,min(500,int(os.environ.get("OFF_START_PAGE",str(default_start)))))
     previous={"records":[]}
     if OUT.exists():previous=json.loads(OUT.read_text(encoding="utf-8"))
     records={str(p["code"]):p for p in previous.get("records",[]) if p.get("code")}
-    added=changed=seen=0
-    for page in range(1,pages+1):
+    added=changed=seen=failed_pages=0
+    print(f"OFF Japan research pages {start_page}..{start_page+pages-1}",flush=True)
+    for page in range(start_page,start_page+pages):
         try:
             data=get(page)
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
-            print(f"::warning::Open Food Facts API unavailable after retries ({exc}); preserving existing dataset. No new products collected for page {page}.", flush=True)
-            break
+            failed_pages+=1
+            print(f"::warning::Open Food Facts API unavailable after retries ({exc}); skipping page {page} and preserving existing dataset.", flush=True)
+            continue
         if not isinstance(data.get("products"),list):raise RuntimeError("Unexpected OFF schema")
         for p in data["products"]:
             seen+=1
@@ -61,14 +66,15 @@ def main():
             if code not in records:added+=1
             elif records[code]!=item:changed+=1
             records[code]=item
-        if page<pages:time.sleep(2)
+        if page<start_page+pages-1:time.sleep(2)
     if not seen:
         print("::warning::No API products collected. Existing research data left unchanged.", flush=True)
+        print(json.dumps({"start_page":start_page,"api_rows_checked":0,"failed_pages":failed_pages,"new":0,"updated":0,"total_saved":len(records)}))
         return
     OUT.parent.mkdir(parents=True,exist_ok=True)
     payload={"attribution":"Contains data from Open Food Facts (https://world.openfoodfacts.org), made available under the Open Database License.",
              "license":"ODbL-1.0","scope":"en:japan country tags only; not proof of availability or halal certification",
              "record_count":len(records),"records":sorted(records.values(),key=lambda p:p["code"])}
     OUT.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    print(json.dumps({"api_rows_checked":seen,"new":added,"updated":changed,"total_saved":len(records)}))
+    print(json.dumps({"start_page":start_page,"api_rows_checked":seen,"failed_pages":failed_pages,"new":added,"updated":changed,"total_saved":len(records)}))
 if __name__=="__main__":main()
