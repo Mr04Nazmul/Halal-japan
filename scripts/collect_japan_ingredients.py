@@ -22,26 +22,32 @@ if OUT.exists():
     with OUT.open(encoding="utf-8",newline="") as f:
         for row in csv.DictReader(f):
             if row.get("barcode"): seen.add(row["barcode"])
-written=0; pages=0; errors=[]
+written=0; pages=0; errors=[]; attempted_pages=0; consecutive_failures=0
 with OUT.open("a",encoding="utf-8",newline="") as f:
     writer=csv.DictWriter(f,fieldnames=keys)
     if f.tell()==0: writer.writeheader()
     for page in range(START,START+MAX):
+        attempted_pages += 1
         query=urllib.parse.urlencode({"countries_tags":"en:japan","page":page,"page_size":100,"fields":FIELDS,"sort_by":"nothing"})
         req=urllib.request.Request(BASE+"?"+query,headers=HEADERS)
         payload=None
-        for attempt in range(3):
+        for attempt in range(2):
             try:
                 with urllib.request.urlopen(req,timeout=45) as response:
                     payload=json.load(response)
                 break
             except (urllib.error.HTTPError,urllib.error.URLError,TimeoutError) as exc:
                 print(f'ERROR page={page} attempt={attempt+1}: {exc}',flush=True)
-                if attempt<2: time.sleep(30*(attempt+1))
+                if attempt<1: time.sleep(8)
         if payload is None:
             errors.append({'page':page,'error':'upstream_unavailable'})
-            print('STOP: source unavailable; next scheduled run will retry',flush=True)
-            break
+            consecutive_failures += 1
+            print(f'SKIP page={page}: upstream unavailable ({consecutive_failures} consecutive failures)',flush=True)
+            if consecutive_failures >= 4:
+                print('STOP: four consecutive unavailable pages; next scheduled run will retry',flush=True)
+                break
+            continue
+        consecutive_failures = 0
         products=payload.get("products",[])
         if not products: break
         for p in products:
@@ -56,5 +62,5 @@ with OUT.open("a",encoding="utf-8",newline="") as f:
         STATE.write_text(json.dumps({"last_page":page,"pages_this_run":pages,"new_ingredient_products":written,"unique_csv_rows":len(seen),"errors":errors},indent=2))
         print(f"page={page} new={written} total={len(seen)}",flush=True)
         time.sleep(7)
-STATE.write_text(json.dumps({"last_page_processed":START+pages-1,"pages_this_run":pages,"new_ingredient_products":written,"unique_csv_rows":len(seen),"errors":errors,"status":"source_unavailable" if errors else "completed"},indent=2))
+STATE.write_text(json.dumps({"last_page_processed":START+attempted_pages-1,"pages_this_run":pages,"pages_attempted":attempted_pages,"new_ingredient_products":written,"unique_csv_rows":len(seen),"errors":errors,"status":"source_unavailable" if errors and pages==0 else "partial_source_errors" if errors else "completed"},indent=2))
 print(f"Done: {written} new ingredient-bearing records; {len(seen)} total; errors={len(errors)}")
