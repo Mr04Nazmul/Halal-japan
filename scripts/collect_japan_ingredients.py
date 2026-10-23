@@ -9,7 +9,12 @@ OUT = Path("data/japan_ingredients.csv")
 STATE = Path("data/japan_ingredients_state.json")
 HEADERS = {"User-Agent": "JapanHalalCheckerCollector/1.0 (https://github.com/Mr04Nazmul/Halal-japan; research contact via GitHub issues)", "Accept": "application/json"}
 MAX = min(int(os.environ.get("MAX_PAGES", "30")), 1000)
-START = max(1,int(os.environ.get("START_PAGE","1")))
+# Scheduled runs rotate the starting OFF page instead of rechecking pages 1-2
+# every hour when upstream page 3 intermittently returns HTTP 503.
+# Manual runs can still override START_PAGE for reproducible research.
+DEFAULT_START_PAGE = 1 + ((int(time.time() // 3600) * 3) % 240)
+START = max(1, int(os.environ.get("START_PAGE") or DEFAULT_START_PAGE))
+print(f"OFF ingredient collection starting at page {START}; max_pages={MAX}", flush=True)
 OUT.parent.mkdir(parents=True,exist_ok=True)
 keys = ["barcode","product_name","brand","ingredients_ja","ingredients_en","ingredients_raw","source","source_url","labels","analysis_tags","last_modified","verification"]
 seen = set()
