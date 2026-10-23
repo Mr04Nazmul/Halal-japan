@@ -1,7 +1,7 @@
-name: Refresh public food ingredient data
+name: Refresh public food ingredient research data
 on:
   schedule:
-    - cron: '17 3 * * *'
+    - cron: '17 * * * *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -17,16 +17,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fetch publicly shared Japanese product data
-        run: python scripts/refresh_off_products.py
-      - name: Commit changed data
+      - name: Collect public Open Food Facts Japan research candidates
+        env:
+          OFF_PAGES: '3'
+        run: python scripts/collect_off_japan.py
+      - name: Commit changed research data only
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/auto-products.json
+          git add data/off-japan-research.json
           if git diff --cached --quiet; then
-            echo "No changed data"
+            echo "No changed research data"
           else
-            git commit -m "data: refresh attributed Japanese food records"
+            git commit -m "data: refresh attributed OFF Japan research candidates"
             git push
           fi
