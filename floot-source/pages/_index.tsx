@@ -106,6 +106,13 @@ export default function Home(){
    <p>Store availability has not been confirmed. Ingredient screening is not a halal certificate; compare the latest package label.</p>
   </details>
   <div className={styles.sourceBar}><div><span>DATA SOURCE</span><strong>{result.source||'Not available'}</strong></div>{result.productUrl?<a href={result.productUrl} target="_blank" rel="noopener noreferrer">View original <ArrowUpRight size={16}/></a>:null}</div>
+  {result.manufacturerEvidence?.length?<details className={styles.resultDisclosure}>
+   <summary><FileText size={17}/> Ingredient source evidence <ChevronRight size={18}/></summary>
+   {result.manufacturerEvidence.map((e,i)=><div key={i}>
+    <p>{e.type}{e.reviewedAt?' · Checked '+e.reviewedAt:''}</p>
+    {e.url&&/^https:\/\//i.test(e.url)?<a href={e.url} target="_blank" rel="noopener noreferrer">Open manufacturer evidence ↗</a>:null}
+   </div>)}
+  </details>:null}
   <details className={styles.certificateDisclosure} key={result.code}>
    <summary className={styles.certificateToggle}><ShieldCheck size={15} aria-hidden="true"/> Halal Certificate <span aria-hidden="true" className={styles.certificateArrow}>⌄</span></summary>
    <div className={styles.certificateContent}>
@@ -160,3 +167,4 @@ export default function Home(){
  </div></div>}
  </main>
 }
+

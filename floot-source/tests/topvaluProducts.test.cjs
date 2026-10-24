@@ -35,11 +35,11 @@ const find=code=>records.find(p=>p.code===code);
 const judge=code=>{const p=find(code);return ingredientDecision(
  p.ingredients+(p.additives?'／'+p.additives:''),false,p.officialOnlineIngredientDeclaration);
 };
-test('pork-containing seasoned nori and gelatin pudding are flagged as prohibited',()=>{
+test('pork is prohibited while pudding gelatin requires species evidence',()=>{
  assert.ok(find('4549414695632').ingredients.includes('豚肉'));
  assert.equal(judge('4549414695632').verdict,'haram_ingredient');
  assert.ok(find('4549414546729').ingredients.includes('ゼラチン'));
- assert.equal(judge('4549414546729').verdict,'haram_ingredient');
+ assert.equal(judge('4549414546729').verdict,'needs_review');
 });
 test('full web-listed simple-source ingredients yield ingredient-only green, never certified',()=>{
  for(const code of ['4549414087208','4549414545142','4902121482184'])
@@ -48,3 +48,4 @@ test('full web-listed simple-source ingredients yield ingredient-only green, nev
 test('unknown emulsifier origins remain CHECK, never automatic halal',()=>{
  assert.equal(judge('4549414662009').verdict,'needs_review');
 });
+

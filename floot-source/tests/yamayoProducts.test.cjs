@@ -33,9 +33,10 @@ test('four complete original bottled juice labels have ingredient-only clear sta
   assert.ok(p.sourceUrl?.startsWith('https://'));
  }
 });
-test('Yamayo Le Lectier gummy declares gelatin; app precaution flags it',()=>{
+test('Yamayo Le Lectier gummy gelatin needs source evidence',()=>{
  const g=products.find(x=>x.code==='4571310560806');
  assert.ok(g.ingredients.includes('ゼラチン'));
- assert.equal(scan(g.ingredients,false,true).verdict,'haram_ingredient');
+ assert.equal(scan(g.ingredients,false,true).verdict,'needs_review');
  assert.ok(g.sourceUrl?.includes('product.smts-online.jp'));
 });
+

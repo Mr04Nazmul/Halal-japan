@@ -26,8 +26,8 @@ const checks=[
  ['豚骨スープ、小麦','haram_ingredient'],
  ['pork fat, rice','haram_ingredient'],
  ['lard, wheat flour','haram_ingredient'],
- ['ゼラチン、砂糖','haram_ingredient'],
- ['gelatin, sugar','haram_ingredient'],
+ ['ゼラチン、砂糖','needs_review'],
+ ['gelatin, sugar','needs_review'],
  ['本みりん、醤油','haram_ingredient'],
  ['料理酒、砂糖','haram_ingredient'],
  ['米、豚肉不使用','needs_review'],
@@ -76,9 +76,9 @@ test('origin uncertainty does not become a religious certificate',()=>{
  assert.equal(r.findings[0].severity,'uncertain');
 });
 
-test('E441 standalone gelatin E-code triggers strict precautionary HARAM',()=>{
+test('E441 gelatin E-code requires species evidence',()=>{
  const r=decide('砂糖、E441');
- assert.equal(r.verdict,'haram_ingredient');
+ assert.equal(r.verdict,'needs_review');
  assert.ok(r.findings.some(f=>f.ingredient.includes('E441')));
 });
 test('E120 carmine is uncertain rather than universal haram classification',()=>{
@@ -111,4 +111,28 @@ test('similar E-code E4412 must not be misidentified as E441',()=>{
 });
 test('E441-free absence statement is not proof ingredient contains gelatin',()=>{
  assert.notEqual(decide('rice, E441-free').verdict,'haram_ingredient');
+});
+
+
+test('fish gelatin on complete label is ingredient-clear, never certified',()=>{
+ assert.equal(decide('ゼラチン（魚由来）',false,true).verdict,'ingredient_clear');
+ assert.equal(decide('フィッシュゼラチン、砂糖',false,true).verdict,'ingredient_clear');
+});
+test('bovine gelatin still requires slaughter or certification evidence',()=>{
+ assert.equal(decide('ゼラチン（牛由来）',false,true).verdict,'needs_review');
+});
+test('fish gelatin does not clear pork elsewhere in recipe',()=>{
+ assert.equal(decide('ゼラチン（魚由来）、豚肉',false,true).verdict,'haram_ingredient');
+});
+test('qualified fish ingredient does not clear additional unknown gelatin',()=>{
+ assert.equal(decide('魚由来ゼラチン、ゼラチン',false,true).verdict,'needs_review');
+});
+test('exact manufacturer origin evidence resolves gelatin only',()=>{
+ const evidence={origin:'fish',sourceUrl:'https://www.ethical-eeco.jp/products/detail/269',ingredientStatement:'ゼラチン（国内製造）'};
+ assert.equal(decide(evidence.ingredientStatement,false,true,evidence).verdict,'ingredient_clear');
+ assert.equal(decide(evidence.ingredientStatement,false,false,evidence).verdict,'needs_review');
+ assert.equal(decide('ゼラチン、砂糖',false,true,evidence).verdict,'needs_review');
+ assert.equal(decide('ゼラチン、香料',false,true,{...evidence,ingredientStatement:'ゼラチン、香料'}).verdict,'needs_review');
+ assert.equal(decide(evidence.ingredientStatement,false,true,{...evidence,origin:'bovine'}).verdict,'needs_review');
+ assert.equal(decide(evidence.ingredientStatement,true,true,{...evidence,origin:'porcine'}).verdict,'haram_ingredient');
 });

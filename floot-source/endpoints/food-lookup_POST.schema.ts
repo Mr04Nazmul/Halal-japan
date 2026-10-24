@@ -1,3 +1,4 @@
+import {gelatinOriginFoods} from '../helpers/gelatinOriginFoods';
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
 import {yamayoProducts} from '../helpers/yamayoProducts';
@@ -174,6 +175,21 @@ async function lookupSupplementaryFood(query:string,isBarcode:boolean):Promise<L
 
 async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
+ // Exact name/JAN plus exact declaration: gelatin evidence cannot transfer to another SKU.
+ const gelatinFood=gelatinOriginFoods.find(p=>
+  /^\d{8,14}$/.test(query)?!!p.code&&barcodeEquivalent(p.code,query):
+  p.name.normalize('NFKC').toLocaleLowerCase()===query.normalize('NFKC').toLocaleLowerCase());
+ if(gelatinFood){
+  const decision=ingredientDecision(gelatinFood.ingredients,false,true,{
+   origin:gelatinFood.origin,sourceUrl:gelatinFood.originEvidenceUrl,
+   ingredientStatement:gelatinFood.ingredients});
+  return {found:true,name:gelatinFood.name,barcode:gelatinFood.code,brand:gelatinFood.brand,
+   ingredients:gelatinFood.ingredients,image:null,source:'Official product label and species evidence',
+   productUrl:gelatinFood.sourceUrl,...decision,
+   manufacturerEvidence:[{type:'Gelatin-related source: '+gelatinFood.origin+'; form: '+gelatinFood.ingredientForm,
+    url:gelatinFood.originEvidenceUrl,issuer:gelatinFood.brand,reviewedAt:gelatinFood.checkedAt}],
+   coverageNote:'Species evidence checked '+gelatinFood.checkedAt+'. The full ingredient list is screened separately. Fish origin does not clear other additives. Bovine origin does not establish slaughter compliance. No whole-product halal certificate is claimed. Confirm the current package.'};
+ }
  // Manufacturer-supplied JAN and full package ingredients with express reuse permission.
  // Never substitute the JAN of a mixed gift set for an individual juice bottle.
  const yamayo=yamayoProducts.find(p=>
@@ -346,3 +362,4 @@ export async function postFoodLookup(body:z.infer<typeof schema>):Promise<Lookup
   reasons:['An issuer-verified, in-date halal certificate has been matched to this exact product, brand and barcode. Check the source and current packaging.'],
   coverageNote:(result.coverageNote||'')+' Product-specific halal certificate checked against issuer evidence on '+cert.verifiedAt+'.'});
 }
+
