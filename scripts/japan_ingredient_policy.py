@@ -2,7 +2,7 @@
 import re
 import unicodedata
 
-RULE_VERSION = 'user-ingredients-2026-10-17-v1'
+RULE_VERSION = 'user-ingredients-2026-10-25-v2'
 TERMS = {
     'pork': r'豚肉|豚脂|豚骨|豚エキス|豚由来|ポーク|ラード|\b(?:pork|porcine|lard)\b',
     'gelatin': r'ゼラチン|\bgelatine?\b',
@@ -14,10 +14,10 @@ TERMS = {
     'processed_fat': r'加工油脂|\bprocessed fats?\b',
     'hydrolyzed_protein': r'(?:たんぱく|たん白|タンパク|蛋白)加水分解物|\bhydroly[sz]ed protein\b',
     'fermented_seasoning': r'発酵調味料|醗酵調味料|\bfermented seasoning\b',
-    'cooking_alcohol': r'料理酒|みりん|味醂|酒精|アルコール|洋酒|\b(?:cooking sake|rice wine|mirin|ethanol|alcohol)\b',
+    'cooking_alcohol': r'料理酒|みりん|味醂|酒精|アルコール|洋酒|清酒|日本酒|赤ワイン|白ワイン|輸入ワイン|ワイン(?!ビネガー|酢)|\b(?:cooking sake|rice wine|mirin|ethanol|alcohol|wine)\b',
 }
 
-def screen(ingredients, additives='', complete=True):
+def screen(ingredients, additives='', complete=True, product_name=''):
     text=unicodedata.normalize('NFKC',str(ingredients or '')).lower().strip()
     result={'rule_version':RULE_VERSION,'halal_certified':False,
             'decision_basis':'user_configured_ingredient_rules','matched_terms':[]}
@@ -33,5 +33,5 @@ def screen(ingredients, additives='', complete=True):
     text=re.sub(r'乳化剤\s*\(\s*(?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)\s*\)',' plant_emulsifier ',text)
     text=re.sub(r'\b(?:plant[- ]based|vegetable[- ]derived|soy[- ]derived)\s+emulsifiers?\b',' plant_emulsifier ',text)
     hits=[{'rule':name,'text':m.group(0)} for name,pattern in TERMS.items() if (m:=re.search(pattern,text))]
-    return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
+    # Alcoholic drinks often list only grains, grapes or preservatives.\n    # Product identity is essential: ingredients alone must not mark wine/beer HALAL.\n    name=unicodedata.normalize('NFKC',str(product_name or '')).lower()\n    if not re.search(r'ノンアルコール|ノンアル|アルコール0|アルコールゼロ',name):\n        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン',name)\n        if alcohol:hits.append({'rule':'alcoholic_product_name','text':alcohol.group(0)})\n    return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
                 reason='matched_user_prohibited_terms' if hits else 'no_user_prohibited_term_in_displayed_ingredients')
