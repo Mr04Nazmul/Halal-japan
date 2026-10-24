@@ -11,6 +11,7 @@ from urllib.parse import urlsplit,urlunsplit,urljoin,parse_qsl,urlencode,quote
 from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
+from japan_ingredient_food_filter import is_nonfood_name
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-10-17-v3'
@@ -102,7 +103,7 @@ def extract(html,url):
   if len(parts)>2:name=parts[2]
  name=re.sub(r'\s*の詳細情報$','',name).strip()
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
- if re.search(r'ペット|ドッグ|キャット|犬用|猫用|洗剤|シャンプー|化粧',name):return None,'non_human_food'
+ if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
  for k,vs in fields.items():
   if re.fullmatch(r'JAN(?:コード|CODE)?|POSコード',k):
