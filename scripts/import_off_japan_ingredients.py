@@ -2,8 +2,26 @@
 """Collect Open Food Facts Japanese ingredient evidence without claiming halal status.
 Uses public paginated OFF API with finite caps and source URLs. No DB writes.
 """
-import argparse,json,time,urllib.parse,urllib.request
+import argparse,json,re,time,urllib.parse,urllib.request
 from pathlib import Path
+
+# The OFF 'countries=japan' search can also return global catalogue products.
+# Keep only candidates with a Japanese-language name AND ingredient list.
+# This is a language/identity gate, not manufacturer verification or halal approval.
+JP_TEXT = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
+JP_KANA = re.compile(r"[\u3040-\u30ff]")
+
+def valid_ean(code):
+ if len(code) not in (8,13) or not code.isascii() or not code.isdigit():return False
+ digits=[int(c) for c in code]
+ total=sum(d*(3 if i%2==0 else 1) for i,d in enumerate(reversed(digits[:-1])))
+ return (10-total%10)%10==digits[-1]
+
+def is_japanese_ingredient_candidate(code,name,ingredients):
+ name=str(name or "").strip();ingredients=str(ingredients or "").strip()
+ return (valid_ean(code) and len(name)>1 and len(ingredients)>=8
+         and bool(JP_TEXT.search(name)) and bool(JP_TEXT.search(ingredients))
+         and bool(JP_KANA.search(name) or JP_KANA.search(ingredients)))
 
 def main():
  p=argparse.ArgumentParser()
@@ -13,7 +31,7 @@ def main():
  a=p.parse_args()
  a.pages=max(1,min(a.pages,20)); a.page_size=max(1,min(a.page_size,100))
  out=Path(a.output);out.parent.mkdir(parents=True,exist_ok=True)
- seen=set();total=0
+ seen=set();total=0;rejected=0
  with out.open("w",encoding="utf8") as f:
   for page in range(1,a.pages+1):
    params={"action":"process","json":"1","tagtype_0":"countries","tag_contains_0":"contains","tag_0":"japan","fields":"code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja,url","page":str(page),"page_size":str(a.page_size)}
@@ -26,11 +44,14 @@ def main():
    for row in products:
     code=str(row.get("code") or "").strip()
     ingredients=(row.get("ingredients_text_ja") or row.get("ingredients_text") or "").strip()
-    if not code or not ingredients or code in seen:continue
+    name=(row.get("product_name_ja") or row.get("product_name") or "").strip()
+    if not is_japanese_ingredient_candidate(code,name,ingredients):
+     rejected+=1;continue
+    if code in seen:continue
     seen.add(code)
-    item={"barcode":code,"name":row.get("product_name_ja") or row.get("product_name"),"brand":row.get("brands"),"ingredients":ingredients,"source_url":row.get("url") or "https://world.openfoodfacts.org/product/"+code,"source":"Open Food Facts","verification":"requires_review"}
+    item={"barcode":code,"name":name,"brand":row.get("brands"),"ingredients":ingredients,"source_url":row.get("url") or "https://world.openfoodfacts.org/product/"+code,"source":"Open Food Facts","verification":"requires_review"}
     f.write(json.dumps(item,ensure_ascii=False)+"\n");total+=1
    print(f"page={page} ingredient_records={total}",flush=True)
    time.sleep(2)
- print(json.dumps({"ingredient_records":total,"output":str(out)}))
+ print(json.dumps({"ingredient_records":total,"rejected_non_japanese_or_invalid_ean":rejected,"output":str(out)}))
 if __name__=="__main__":main()
