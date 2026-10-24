@@ -8,6 +8,8 @@ on:
     paths:
       - scripts/crawl_japanese_ingredients.py
       - scripts/japan_ingredient_policy.py
+      - scripts/japan_ingredient_food_filter.py
+      - tests/test_japan_ingredient_food_filter.py
       - scripts/japan_ingredient_sources.json
       - .github/workflows/crawl-japanese-ingredients.yml
   pull_request:
