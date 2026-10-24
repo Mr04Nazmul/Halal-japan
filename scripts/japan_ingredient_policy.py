@@ -33,5 +33,11 @@ def screen(ingredients, additives='', complete=True, product_name=''):
     text=re.sub(r'乳化剤\s*\(\s*(?:植物性|植物由来|大豆由来|ひまわり由来|なたね由来)\s*\)',' plant_emulsifier ',text)
     text=re.sub(r'\b(?:plant[- ]based|vegetable[- ]derived|soy[- ]derived)\s+emulsifiers?\b',' plant_emulsifier ',text)
     hits=[{'rule':name,'text':m.group(0)} for name,pattern in TERMS.items() if (m:=re.search(pattern,text))]
-    # Alcoholic drinks often list only grains, grapes or preservatives.\n    # Product identity is essential: ingredients alone must not mark wine/beer HALAL.\n    name=unicodedata.normalize('NFKC',str(product_name or '')).lower()\n    if not re.search(r'ノンアルコール|ノンアル|アルコール0|アルコールゼロ',name):\n        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン',name)\n        if alcohol:hits.append({'rule':'alcoholic_product_name','text':alcohol.group(0)})\n    return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
+    # Alcoholic drinks often list only grains, grapes or preservatives.
+    # Product identity is essential: ingredients alone must not mark wine/beer HALAL.
+    name=unicodedata.normalize('NFKC',str(product_name or '')).lower()
+    if not re.search(r'ノンアルコール|ノンアル|アルコール0|アルコールゼロ',name):
+        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン',name)
+        if alcohol:hits.append({'rule':'alcoholic_product_name','text':alcohol.group(0)})
+    return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
                 reason='matched_user_prohibited_terms' if hits else 'no_user_prohibited_term_in_displayed_ingredients')
