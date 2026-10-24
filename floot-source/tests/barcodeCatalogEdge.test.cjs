@@ -30,3 +30,24 @@ test('separate additives are included and conflicting label variants rejected',(
 });
 
 test('non-food material declarations are not assessed as food ingredients',()=>{assert.equal(parse(page(jan).replace('エネルギー 100kcal','素材情報'),jan),null);});
+
+const meijiJan='4902705125308',meijiUrl='https://www.meiji.co.jp/products/icecream/'+meijiJan+'.html';
+const meijiHtml='<meta property="og:url" content="'+meijiUrl+'"><h1>明治 エッセル スーパーカップ 超バニラ 200ml</h1><table><tr><th scope="row">原材料名</th><td>乳製品、植物油脂、砂糖、卵黄、食塩／香料、アナトー色素</td></tr></table><h2>栄養成分表示</h2><div>アレルギー関連情報 豚肉 ゼラチン</div>';
+test('Meiji exact-JAN official label excludes unrelated allergy dictionary',()=>{
+ const r=parserSandbox.parseMeijiDeclaration(meijiHtml,meijiJan,meijiUrl);
+ assert.equal(r.barcode,meijiJan);assert.equal(r.ingredient_declaration_reviewed,true);
+ assert.match(r.ingredients,/香料/);assert.doesNotMatch(r.ingredients,/豚肉|ゼラチン/);
+});
+test('Meiji rejects wrong identity, maintenance and conflicting ingredient variants',()=>{
+ const parse=parserSandbox.parseMeijiDeclaration;
+ assert.equal(parse(meijiHtml,jan,meijiUrl),null);
+ assert.equal(parse(meijiHtml.replace(meijiUrl,'https://example.org/'),meijiJan,meijiUrl),null);
+ assert.equal(parse('<h1>Maintenance</h1>',meijiJan,meijiUrl),null);
+ assert.equal(parse(meijiHtml+'<th>原材料名</th><td>豚肉</td>',meijiJan,meijiUrl),null);
+});
+test('Meiji research fetches official label without any database discovery record',async()=>{
+ const calls=[];parserSandbox.fetch=async(u)=>{calls.push(u);return u===meijiUrl?new Response(meijiHtml,{headers:{'content-type':'text/html'}}):new Response('',{status:404});};
+ const r=await parserSandbox.researchMeijiBarcode(meijiJan);
+ assert.equal(r.evidence_url,meijiUrl);assert.equal(calls.length,2);
+ calls.length=0;assert.equal(await parserSandbox.researchMeijiBarcode('https://evil.example/'),null);assert.equal(calls.length,0);
+});

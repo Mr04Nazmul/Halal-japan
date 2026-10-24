@@ -72,6 +72,38 @@ function parseTopvaluDeclaration(html:string,jan:string){
   evidence_url:'https://www.topvalu.net/items/detail/'+jan+'/',category:'Official online ingredients',
   ingredient_declaration_reviewed:true,reviewed_at:new Date(Date.now()+9*3600000).toISOString().slice(0,10)};
 }
+function parseMeijiDeclaration(html:string,jan:string,expected:string){
+ const clean=html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ');
+ const urls=[...clean.matchAll(/<meta\b[^>]*property=["']og:url["'][^>]*content=["']([^"']+)["'][^>]*>/gi)].map(m=>m[1]);
+ if(urls.length!==1||urls[0]!==expected||!expected.endsWith('/'+jan+'.html'))return null;
+ const ingredients:string[]=[];
+ for(const m of clean.matchAll(/<th\b[^>]*>([\s\S]*?)<\/th>\s*<td\b[^>]*>([\s\S]*?)<\/td>/gi)){
+  if(plainHtml(m[1])==='原材料名')ingredients.push(plainHtml(m[2]));
+ }
+ const unique=[...new Set(ingredients)];
+ const heading=clean.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+ if(!heading||unique.length!==1||!unique[0]||unique[0].length>8000||!/栄養成分表示/.test(clean))return null;
+ return {barcode:jan,name:plainHtml(heading[1]),name_ja:plainHtml(heading[1]),brand:'Meiji / 明治',
+  ingredients:unique[0],image_url:null,evidence_source:'Meiji live official exact-JAN ingredient declaration',
+  evidence_url:expected,category:'Official online ingredients',ingredient_declaration_reviewed:true,
+  reviewed_at:new Date(Date.now()+9*3600000).toISOString().slice(0,10)};
+}
+async function researchMeijiBarcode(input:string){
+ const jan=input.length===14&&input.startsWith('0')?input.slice(1):input;
+ if(!/^490(?:270|277)\d{7}$/.test(jan))return null;
+ // Two observed official category URL patterns; never request a caller-supplied URL.
+ const results=await Promise.all(['icecream','yogurt'].map(async category=>{
+  const expected='https://www.meiji.co.jp/products/'+category+'/'+jan+'.html';
+  try{
+   const page=await fetch(expected,{redirect:'error',signal:AbortSignal.timeout(2800),headers:{Accept:'text/html','User-Agent':'JapanHalalChecker/1.0 (single-product ingredient research)'}});
+   if(!page.ok||!String(page.headers.get('content-type')||'').includes('text/html'))return null;
+   const html=await page.text();if(html.length>800000)return null;
+   return parseMeijiDeclaration(html,jan,expected);
+  }catch{return null;}
+ }));
+ const matches=results.filter(Boolean);
+ return matches.length===1?matches[0]:null;
+}
 async function researchOfficialBarcode(jan:string){
  if(!/^\d{13}$/.test(jan))return null;
  // Use stored URL only as a private discovery lead; never export private scraped labels.
@@ -130,6 +162,9 @@ Deno.serve(async (req: Request) => {
     if (!found.ok) return response({error:"Catalog not available"},502,origin);
     const rows=await found.json();
     let p=Array.isArray(rows) ? rows[0] : null;
+    if(isJan && !String(p?.ingredients||'').trim()){
+      const official=await researchMeijiBarcode(jan);if(official)p=official;
+    }
     // Separate licensed Japan-market community data from private manufacturer
     // research. Never return arbitrary staging records or caller-supplied filters.
     if(isJan && !String(p?.ingredients||'').trim()){
