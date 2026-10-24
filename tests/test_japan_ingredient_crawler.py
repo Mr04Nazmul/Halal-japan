@@ -13,6 +13,11 @@ class Extraction(unittest.TestCase):
   bourbon=HTML.replace('原材料','原材料名／添加物名').replace('米、食塩','小麦粉／乳化剤（大豆由来）、香料')
   r,e=extract(bourbon,'https://www.bourbon.co.jp/product/detail/35359-03.html')
   self.assertIsNone(e);self.assertEqual(r['rule_result'],'HARAM')
+ def test_additives_only_field_is_not_a_complete_ingredient_list(self):
+  html=HTML.replace('米、食塩','添加物：酸化防止剤(亜硫酸塩)')
+  r,e=extract(html,URL)
+  self.assertIsNone(r)
+  self.assertEqual(e,'additives_only_incomplete_ingredients')
  def test_missing_and_ambiguous_never_count(self):
   self.assertIsNone(extract('<h1>米菓</h1><p>アレルゲン：小麦</p>',URL)[0])
   self.assertIsNone(extract(HTML+'<dl><dt>原材料</dt><dd>豚肉</dd></dl>',URL)[0])
