@@ -6,6 +6,8 @@ on:
     paths:
       - scripts/import_japan_ingredients_supabase.py
       - scripts/japan_ingredient_barcodes.py
+      - scripts/japan_ingredient_food_filter.py
+      - tests/test_japan_ingredient_food_filter.py
       - tests/test_japan_ingredient_barcodes.py
       - .github/workflows/archive-japanese-ingredients-supabase.yml
   workflow_run:
@@ -44,6 +46,9 @@ jobs:
       - name: Test JAN-8 and JAN-13 barcode validation
         if: steps.secrets.outputs.ready == 'true'
         run: python -m unittest discover -s tests -p 'test_japan_ingredient_barcodes.py' -v
+      - name: Test food-only source validation
+        if: steps.secrets.outputs.ready == 'true'
+        run: python -m unittest discover -s tests -p 'test_japan_ingredient_food_filter.py' -v
       - name: Restore highest verified cumulative checkpoint
         if: steps.secrets.outputs.ready == 'true'
         shell: bash
