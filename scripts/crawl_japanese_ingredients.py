@@ -16,6 +16,7 @@ UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-10-17-v3'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
+ 'sbfoods.co.jp':r'/products/detail/\d+\.html',
  'muso.co.jp':r'/item/\d+\.html',
  'ohsawa-japan.co.jp':r'actmode=ItemDetail.*iid=\d+|iid=\d+.*actmode=ItemDetail',
  'sokensha.co.jp':r'/products/product_detail/\d+',
