@@ -17,6 +17,22 @@ class Rules(unittest.TestCase):
         for text in ['',None,'不明','豚肉不使用','乳化剤不使用','香料不使用']:
             self.assertEqual(screen(text)['rule_result'],'UNKNOWN')
         self.assertEqual(screen('米',complete=False)['rule_result'],'UNKNOWN')
+    def test_alcoholic_product_name_is_not_halal(self):
+        for name, ingredients in [
+            ('プレミアム生ビール','麦芽、ホップ'),
+            ('本格麦焼酎','麦、麦麹'),
+            ('オーガニック ワイン','ぶどう、酸化防止剤'),
+            ('Eagle Wings ケンタッキーバーボンウィスキー','グレーン、モルト'),
+        ]:
+            with self.subTest(name=name):
+                result=screen(ingredients,product_name=name)
+                self.assertEqual(result['rule_result'],'HARAM')
+                self.assertFalse(result['halal_certified'])
+    def test_wine_ingredient_and_non_alcoholic_exception(self):
+        self.assertEqual(screen('牛肉、赤ワイン、食塩')['rule_result'],'HARAM')
+        self.assertEqual(screen('米、清酒')['rule_result'],'HARAM')
+        self.assertEqual(screen('麦芽、ホップ',product_name='ノンアルコールビール')['rule_result'],'HALAL')
+        self.assertEqual(screen('ぶどう酢',product_name='ワインビネガー')['rule_result'],'HALAL')
     def test_clear_is_policy_only(self):
         r=screen('米(国産)、食塩')
         self.assertEqual(r['rule_result'],'HALAL')
