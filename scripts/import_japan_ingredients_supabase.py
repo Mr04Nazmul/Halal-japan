@@ -47,13 +47,15 @@ for p in items:
     if jan and ident!="jan:"+str(jan):
         reject("JAN identity mismatch");continue
     seen.add(ident)
-    rows.append(dict(identity_key=ident,jan_code=str(jan) if jan else None,
+    rows.append(dict(identity_key=ident,jan_code=str(jan) if jan and len(str(jan))==13 else None,
         product_name=name,ingredients_ja=ingredient,additives_ja=p.get("additives_ja") or "",
         source_url=source,source_publisher=p.get("source_publisher"),
         rule_result=rule,matched_terms=p.get("matched_terms") or [],
         rule_version=p.get("rule_version"),halal_certified=False,
         evidence={"source_type":p.get("source_type"),"field_status":p.get("ingredient_field_status"),
                   "reuse_permission":p.get("reuse_permission","not_established"),
+                  "original_barcode":str(jan) if jan else None,
+                  "barcode_type":"JAN-8" if jan and len(str(jan))==8 else ("JAN-13" if jan else None),
                   "verification_status":"official_ingredient_field_captured_pending_human_review",
                   "research_only":True,"packaging_verified":False},
         snapshot_hash=p.get("source_html_sha256"),collected_at=p.get("retrieved_at")))
@@ -62,7 +64,7 @@ for p in items:
 # earlier source-verified records. Fail closed on lookup errors.
 unique_rows=[]
 for row in rows:
-    jan=row["jan_code"]
+    jan=row["evidence"].get("original_barcode")
     if jan and len(jan)==8:
         lookup=url+"/rest/v1/jhc_crawler_ingredient_staging?select=identity_key&source_url=eq."+quote(row["source_url"],safe="")+"&limit=1"
         req=urllib.request.Request(lookup,headers={"apikey":key,"Authorization":"Bearer "+key})
