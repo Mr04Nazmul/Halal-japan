@@ -183,11 +183,16 @@ class Collector:
    tmp=self.path/(name+'.tmp');tmp.write_text(json.dumps(value,ensure_ascii=False,separators=(',',':'))+'\n');tmp.replace(self.path/name)
   self.db.commit();print(json.dumps(summary,ensure_ascii=False),flush=True)
  def run(self,seeds,max_pages,minutes):
-  self.enqueue(seeds);end=time.monotonic()+minutes*60;done=0
+  self.enqueue(seeds)
+  # Seeded official product URLs must not starve behind an ever-growing discovery queue.
+  # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
+  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_priority(url TEXT PRIMARY KEY)")
+  self.db.executemany("INSERT OR IGNORE INTO seed_priority(url) VALUES(?)",[(canonical(u),) for u in seeds if allowed_link(u)])
+  end=time.monotonic()+minutes*60;done=0
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
-    item=self.db.execute("SELECT url,attempts FROM queue q WHERE status='pending' AND next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY CASE WHEN url LIKE '%/detail/%' OR url LIKE '%/item/%html%' THEN 0 ELSE 1 END,rowid LIMIT 1",(now,now)).fetchone()
+    item=self.db.execute("SELECT url,attempts FROM queue q WHERE status='pending' AND next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY CASE WHEN EXISTS(SELECT 1 FROM seed_priority sp WHERE sp.url=q.url) THEN 0 ELSE 1 END,CASE WHEN q.url LIKE '%/detail/%' OR q.url LIKE '%/item/%html%' THEN 0 ELSE 1 END,q.rowid LIMIT 1",(now,now)).fetchone()
     if not item:break
     url,attempts=item;reason=None
     try:
