@@ -1,3 +1,4 @@
+import {reviewedProductEvidence} from '../helpers/reviewedProductEvidence';
 import {gelatinOriginFoods} from '../helpers/gelatinOriginFoods';
 import {z} from 'zod';
 import {ingredientDecision} from '../helpers/ingredientDecision';
@@ -195,6 +196,15 @@ async function lookupSupplementaryFood(query:string,isBarcode:boolean):Promise<L
 
 async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Promise<LookupResult>{
  const query=schema.parse(body).query;
+ // Reviewed product-specific prohibited ingredient evidence outranks empty metadata.
+ const reviewed=reviewedProductEvidence.find(p=>barcodeEquivalent(p.code,query));
+ if(reviewed)return {found:true,name:reviewed.name,barcode:reviewed.code,brand:reviewed.brand,
+  ingredients:reviewed.ingredientEvidence,image:null,source:'Reviewed official ingredient evidence (excerpt)',
+  productUrl:reviewed.ingredientSourceUrl,...ingredientDecision(reviewed.ingredientEvidence,false,false),
+  manufacturerEvidence:[{type:'Official prohibited-ingredient excerpt; full label is not reproduced',url:reviewed.ingredientSourceUrl,issuer:reviewed.brand,reviewedAt:reviewed.checkedAt},
+   {type:'Exact barcode / product identity cross-check; retailer, not halal certification',url:reviewed.barcodeSourceUrl,issuer:'Sugoi Mart',reviewedAt:reviewed.checkedAt}],
+  coverageNote:'INGREDIENT EXCERPT ONLY: '+reviewed.note};
+
  // Exact name/JAN plus exact declaration: gelatin evidence cannot transfer to another SKU.
  const gelatinFood=gelatinOriginFoods.find(p=>
   /^\d{8,14}$/.test(query)?!!p.code&&barcodeEquivalent(p.code,query):
@@ -327,7 +337,7 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
    :yamayoGift
    ?'Yamayo manufacturer JAN catalog plus current individual juice labels (October 2026): ingredient text is COMPILED FROM THE INCLUDED JUICE COMPONENTS, not a separate gift box ingredient label. No halal certification.'
    :'Yamayo manufacturer original juice label supplied with written permission in October 2026. This is an ingredient label, NOT a halal certificate. Always check current packaging; formulation may change.';
-  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:fromLicensedCommunity?'Contains data from Open Food Facts, available under ODbL-1.0 / DbCL-1.0. Japan-market community ingredients matched by exact barcode; not manufacturer-verified or halal-certified.':fromYamayoManufacturer?yamayoCoverage:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients,false,saved.ingredient_declaration_reviewed===true),manufacturerEvidence:saved.ingredient_declaration_reviewed===true?[{type:'Live exact-JAN official online ingredient declaration',url:saved.evidence_url,issuer:saved.brand,reviewedAt:saved.reviewed_at||null}]:[],coverageNote:saved.ingredient_declaration_reviewed===true?'Live manufacturer ingredient and additive declaration matched to the exact JAN. Compare package revision; additive origin and halal certification remain separate checks.':fromLicensedCommunity?'Contains data from Open Food Facts, available under ODbL-1.0 / DbCL-1.0. Japan-market community ingredients matched by exact barcode; not manufacturer-verified or halal-certified.':fromYamayoManufacturer?yamayoCoverage:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
   if(String(saved.ingredients||'').trim())return savedResult;
   noIngredientFallback=savedResult;
  }

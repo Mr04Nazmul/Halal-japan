@@ -11,3 +11,22 @@ test('unlicensed or non-Japan rows cannot escape staging',async()=>{for(const ev
 test('wrong exact JAN or untrusted source URL is discarded',async()=>{for(const item of [{...licensed,jan_code:'4901777193369'},{...licensed,source_url:'https://example.org/unrelated'}]){const {handler}=server(item);assert.equal((await (await handler(request())).json()).record,null);}});
 test('existing ingredient-bearing private catalogue remains preferred',async()=>{const {handler,calls}=server(licensed,{barcode:jan,name:'Existing',ingredients:'砂糖'});const body=await (await handler(request())).json();assert.equal(body.record.name,'Existing');assert.ok(!calls.some(([u])=>u.includes('jhc_crawler_ingredient_staging')));});
 test('foreign origins are rejected and persisted rate gate stays in force',async()=>{const a=server();assert.equal((await a.handler(request('https://evil.example'))).status,403);assert.equal(a.calls.length,0);const b=server(licensed,null,false);assert.equal((await b.handler(request())).status,429);assert.equal(b.calls.length,1);});
+const parserSandbox={Deno:{env:{get:()=>''},serve:()=>{}},URL,URLSearchParams,Response,TextEncoder,AbortSignal,crypto:webcrypto};
+vm.runInNewContext(code,parserSandbox);
+const parse=parserSandbox.parseTopvaluDeclaration;
+const page=(id,ing='米、食塩',add='')=>'<h1 class="item-detail__name">Example food</h1><dl><dt>JAN：</dt><dd>'+id+'</dd></dl><div class="item-spec"><dl><dt>原材料名</dt><dd>'+ing+'</dd></dl>'+(add?'<dl><dt>添加物</dt><dd>'+add+'</dd></dl>':'')+'<dl><dt>栄養成分</dt><dd>エネルギー 100kcal</dd></dl></div>';
+test('official-page parser requires matching on-page JAN and labelled declaration',()=>{
+ assert.equal(parse(page(jan),jan).ingredients,'米、食塩');
+ assert.equal(parse(page('4901777193369'),jan),null);
+ assert.equal(parse('<h1>Marketing</h1>'+page(jan).replace('原材料名','おすすめ'),jan),null);
+});
+test('unrelated allergy dictionaries and scripts cannot become the ingredient result',()=>{
+ const r=parse(page(jan)+'<script>"<dt>原材料名</dt><dd>豚肉</dd>"</script><div>豚肉・ゼラチン</div>',jan);
+ assert.equal(r.ingredients,'米、食塩');
+});
+test('separate additives are included and conflicting label variants rejected',()=>{
+ assert.equal(parse(page(jan,'じゃがいも','香料、乳化剤'),jan).ingredients,'じゃがいも／香料、乳化剤');
+ assert.equal(parse(page(jan)+'<dl><dt>原材料名</dt><dd>豚肉</dd></dl>',jan),null);
+});
+
+test('non-food material declarations are not assessed as food ingredients',()=>{assert.equal(parse(page(jan).replace('エネルギー 100kcal','素材情報'),jan),null);});

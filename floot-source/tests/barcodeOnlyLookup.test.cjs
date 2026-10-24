@@ -21,3 +21,10 @@ test('identity-only manufacturer response is not a verified label',async()=>{con
 test('declared non-zero official beverage alcohol stays HARAM',async()=>{const r=await lookup(fixtures({ingredientsVerified:true,products:[{code:CODE,product_name:'Alcoholic drink',ingredients_text:'水、砂糖',_alcoholPercent:3}]}))({query:CODE});assert.equal(r.verdict,'haram_ingredient');});
 test('zero alcohol metadata does not produce a prohibited ingredient',async()=>{const r=await lookup(fixtures({ingredientsVerified:true,products:[{code:CODE,ingredients_text:'水、砂糖',_alcoholPercent:0}]}))({query:CODE});assert.equal(r.verdict,'ingredient_clear');});
 test('unknown barcode has no invented halal/haram claim or required photo',async()=>{const r=await lookup(fixtures(null,false))({query:CODE});assert.equal(r.found,false);assert.equal(r.verdict,'unknown');const p=fs.readFileSync(path.join(root,'pages/_index.tsx'),'utf8');assert.ok(p.includes('Barcode evidence not yet available'));assert.ok(!p.includes('原材料名-এর ছবি দিন'));assert.ok(p.includes('Optional manual ingredient tools'));});
+test('reported Calbee Pizza Potato JAN uses official positive pork evidence before empty metadata',async()=>{
+ const r=await lookup(async()=>{throw Error('Curated exact evidence must resolve without a third-party call');})({query:'4901330581985'});
+ assert.equal(r.verdict,'haram_ingredient');assert.equal(r.barcode,'4901330581985');
+ assert.ok(r.ingredients.includes('豚肉'));assert.match(r.coverageNote,/EXCERPT ONLY/);
+ assert.ok(r.manufacturerEvidence.some(x=>x.url.startsWith('https://www.calbee.co.jp/')));
+ assert.ok(!r.reasons.join(' ').includes('alcohol'));
+});

@@ -41,6 +41,52 @@ async function serviceFetch(path: string, options: RequestInit = {}): Promise<Re
   });
   return res;
 }
+
+// Parse only labelled fields from one exact-JAN public manufacturer page.
+// Scripts, recommendation text and general allergen dictionaries are not ingredients.
+function plainHtml(value:string):string{
+ return value.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ')
+  .replace(/<[^>]+>/g,' ').replace(/&#(x[0-9a-f]+|[0-9]+);/gi,(_,n)=>{
+   const v=n[0].toLowerCase()==='x'?parseInt(n.slice(1),16):parseInt(n,10);
+   return v>0&&v<=0x10ffff?String.fromCodePoint(v):' ';
+  }).replace(/&(nbsp|amp|lt|gt|quot|apos);/g,(_,n)=>({nbsp:' ',amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"}[n]||' ')).replace(/\s+/g,' ').trim();
+}
+function parseTopvaluDeclaration(html:string,jan:string){
+ const clean=html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,' ');
+ const fields=new Map<string,string[]>();
+ for(const m of clean.matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/gi)){
+  const key=plainHtml(m[1]).normalize('NFKC').replace(/[\s:]/g,'');
+  const value=plainHtml(m[2]);fields.set(key,[...(fields.get(key)||[]),value]);
+ }
+ const nutrition=[...(fields.get('栄養成分')||[]),...(fields.get('栄養成分表示')||[])].join(' ');
+ if(!/エネルギー|熱量/.test(nutrition))return null;
+ const ids=fields.get('JAN')||[];
+ if(!ids.some(x=>x.normalize('NFKC').replace(/\s/g,'')===jan))return null;
+ const ingredients=[...new Set(fields.get('原材料名')||[])];
+ const additives=[...new Set(fields.get('添加物')||[])];
+ const name=clean.match(/<h1\b[^>]*class=["'][^"']*\bitem-detail__name\b[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i);
+ if(!name||ingredients.length!==1||!ingredients[0]||ingredients[0].length>8000||additives.length>1)return null;
+ return {barcode:jan,name:plainHtml(name[1]),name_ja:plainHtml(name[1]),brand:'AEON TOPVALU',
+  ingredients:ingredients[0]+(additives[0]?'／'+additives[0]:''),image_url:null,
+  evidence_source:'AEON TOPVALU live official exact-JAN ingredient declaration',
+  evidence_url:'https://www.topvalu.net/items/detail/'+jan+'/',category:'Official online ingredients',
+  ingredient_declaration_reviewed:true,reviewed_at:new Date(Date.now()+9*3600000).toISOString().slice(0,10)};
+}
+async function researchOfficialBarcode(jan:string){
+ if(!/^\d{13}$/.test(jan))return null;
+ // Use stored URL only as a private discovery lead; never export private scraped labels.
+ const leadParams=new URLSearchParams({select:'source_url',jan_code:'eq.'+jan,source_publisher:'eq.topvalu.net',limit:'1'});
+ const leadResponse=await serviceFetch('/rest/v1/jhc_crawler_ingredient_staging?'+leadParams.toString());
+ const leads=leadResponse.ok?await leadResponse.json():[];
+ const expected='https://www.topvalu.net/items/detail/'+jan+'/';
+ if(!Array.isArray(leads)||!leads.some(x=>String(x.source_url||'').replace(/\/$/,'')===expected.replace(/\/$/,'')))return null;
+ // Destination is constructed from a numeric JAN, never accepted from user input.
+ const page=await fetch(expected,{redirect:'error',signal:AbortSignal.timeout(4500),headers:{Accept:'text/html','User-Agent':'JapanHalalChecker/1.0 (single-product ingredient research)'}});
+ if(!page.ok||!String(page.headers.get('content-type')||'').includes('text/html'))return null;
+ const html=await page.text();if(html.length>800000)return null;
+ return parseTopvaluDeclaration(html,jan);
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin");
   if (req.method === "OPTIONS") {
@@ -112,11 +158,16 @@ Deno.serve(async (req: Request) => {
         }
       }catch{/* Retain a partial catalogue identity if the supplementary source fails. */}
     }
+    if(isJan && !String(p?.ingredients||'').trim()){
+      try{const researched=await researchOfficialBarcode(jan);if(researched)p=researched;}
+      catch{/* A missing page, maintenance, redirect or timeout is not ingredient evidence. */}
+    }
     // One narrow result; never support offset, list, export or raw database access.
     return response({record:p?{
       barcode:p.barcode||null,name:p.name||null,name_ja:p.name_ja||null,brand:p.brand||null,
       ingredients:p.ingredients||null,image_url:p.image_url||null,
-      evidence_source:p.evidence_source||null,evidence_url:p.evidence_url||null,category:p.category||null
+      evidence_source:p.evidence_source||null,evidence_url:p.evidence_url||null,category:p.category||null,
+      ingredient_declaration_reviewed:p.ingredient_declaration_reviewed===true,reviewed_at:p.reviewed_at||null
     }:null,source:"JHC protected product lookup",bulk_export:false},200,origin);
   } catch {
     return response({error:"Catalog temporarily unavailable"},502,origin);
