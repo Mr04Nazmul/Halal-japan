@@ -3,7 +3,8 @@
 Requires GitHub Secrets SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
 Does not touch existing product, scanner or certification tables.
 """
-import json,os,re,sys,urllib.request,urllib.error
+import json,os,sys,urllib.request,urllib.error
+from urllib.parse import quote
 from pathlib import Path
 
 url=os.environ.get("SUPABASE_URL","").rstrip("/")
@@ -13,10 +14,7 @@ if not url.startswith("https://") or not key:
 path=Path(sys.argv[1] if len(sys.argv)>1 else "crawler-state/products.json")
 items=json.loads(path.read_text(encoding="utf-8"))
 assert isinstance(items,list), "Expected cumulative array of ingredient products"
-def jan_valid(j):
-    if not j or not re.fullmatch(r"[0-9]{13}",str(j)):return False
-    s=str(j)
-    return (10-sum(int(d)*(1 if i%2==0 else 3) for i,d in enumerate(s[:12]))%10)%10==int(s[-1])
+from japan_ingredient_barcodes import jan_valid
 rows=[]
 seen=set()
 rejections={}
@@ -57,6 +55,25 @@ for p in items:
         evidence={"source_type":p.get("source_type"),"field_status":p.get("ingredient_field_status"),
                   "reuse_permission":p.get("reuse_permission","not_established")},
         snapshot_hash=p.get("source_html_sha256"),collected_at=p.get("retrieved_at")))
+# JAN-8 records may already have been researched under a URL-based identity.
+# Check source URL before inserting a new JAN identity to avoid duplicating those
+# earlier source-verified records. Fail closed on lookup errors.
+unique_rows=[]
+for row in rows:
+    jan=row["jan_code"]
+    if jan and len(jan)==8:
+        lookup=url+"/rest/v1/jhc_crawler_ingredient_staging?select=identity_key&source_url=eq."+quote(row["source_url"],safe="")+"&limit=1"
+        req=urllib.request.Request(lookup,headers={"apikey":key,"Authorization":"Bearer "+key})
+        try:
+            with urllib.request.urlopen(req,timeout=30) as response:
+                existing=json.loads(response.read())
+        except (urllib.error.URLError,ValueError) as e:
+            sys.exit(f"JAN-8 source deduplication lookup failed; refusing unsafe import: {type(e).__name__}")
+        if existing and existing[0].get("identity_key")!=row["identity_key"]:
+            reject("existing source URL (JAN-8)")
+            continue
+    unique_rows.append(row)
+rows=unique_rows
 # Preserve valid rows while quarantining and counting invalid records.
 # If more than 5% are rejected, fail rather than silently importing corrupt batches.
 rejected=len(items)-len(rows)
