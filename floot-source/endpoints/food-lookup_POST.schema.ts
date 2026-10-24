@@ -45,6 +45,26 @@ async function lookupSaved(query:string,isBarcode:boolean){
  return body.record||null;
 }
 
+async function lookupOfficialBarcode(code:string):Promise<LookupResult|null>{
+ const u=new URL(SUPA+'/functions/v1/halal-product-lookup');
+ u.searchParams.set('jan_code',code);u.searchParams.set('source','suntory');
+ const r=await fetch(u,{headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+CATALOG_ANON_JWT},signal:AbortSignal.timeout(6500)});
+ if(!r.ok)return null;
+ const body=await r.json();
+ if(body.ingredientsVerified!==true)return null;
+ const p=Array.isArray(body.products)?body.products.find((p:any)=>barcodeEquivalent(String(p.code||''),code)):null;
+ if(!p||!String(p.ingredients_text||p.ingredients_text_ja||'').trim())return null;
+ const ingredients=String(p.ingredients_text_ja||p.ingredients_text);
+ const decision=ingredientDecision(ingredients,false,true);
+ if(typeof p._alcoholPercent==='number' && p._alcoholPercent>0){decision.verdict='haram_ingredient';decision.reasons=['Manufacturer declares an alcoholic product ('+p._alcoholPercent+'%).'];decision.findings.push({ingredient:'Declared beverage alcohol',severity:'prohibited',reason:decision.reasons[0]});}
+ const sourceUrl=/^https:\/\//i.test(p._sourceUrl||'')?p._sourceUrl:null;
+ return {found:true,name:p.product_name||p.product_name_ja||code,barcode:p.code,brand:p.brands||null,
+  ingredients,image:p.image_url||null,source:body.source||'Official manufacturer barcode lookup',
+  productUrl:sourceUrl,...decision,
+  manufacturerEvidence:[{type:'Exact barcode and manufacturer ingredient declaration; not halal certification',url:sourceUrl,issuer:p.brands||null,reviewedAt:p._snapshotDate||null}],
+  coverageNote:'Automatically retrieved for this exact barcode. Origin-dependent additives still require evidence. No certification is inferred from the provider response.'};
+}
+
 const wholeFoods:Record<string,string>={
  'banana':'Banana (whole fresh fruit)','কলা':'কলা (তাজা ফল)','バナナ':'バナナ（生の果物）',
  'apple':'Apple (whole fresh fruit)','আপেল':'আপেল (তাজা ফল)','りんご':'りんご（生の果物）',
@@ -286,14 +306,18 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
 
  // Start independent lookups together, rather than waiting for a slow external
  // database before even checking the already-published local barcode shards.
+ const officialTask=isBarcode?lookupOfficialBarcode(query).catch(()=>null):Promise.resolve(null);
  const savedTask=lookupSaved(query,isBarcode).catch(e=>{console.warn('Saved product catalogue unavailable',e);return null;});
  const japanTask=lookupJapanResearch(query,isBarcode).catch(()=>null);
  const worldTask=lookupSupplementaryFood(query,isBarcode).catch(()=>null);
  const saved=await savedTask;
+ const officialBarcode=await officialTask;
+ if(officialBarcode)return officialBarcode;
  // A name/barcode-only record is a useful identification, not an ingredient answer.
  // Prefer ingredient-bearing local records and continue searching otherwise.
  let noIngredientFallback:LookupResult|null=null;
  if(saved && (!isBarcode || barcodeEquivalent(String(saved.barcode||''),query))){
+  const fromLicensedCommunity=String(saved.evidence_source||'').startsWith('Open Food Facts Japan (ODbL');
   const fromSevenPremiumPackageNotes=String(saved.evidence_source||'').includes('selected excerpts');
   const fromYamayoManufacturer=String(saved.evidence_source||'').startsWith('Manufacturer Yamayo ');
   const yamayoGummy=fromYamayoManufacturer&&String(saved.category||'').includes('Gummy');
@@ -303,7 +327,7 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
    :yamayoGift
    ?'Yamayo manufacturer JAN catalog plus current individual juice labels (October 2026): ingredient text is COMPILED FROM THE INCLUDED JUICE COMPONENTS, not a separate gift box ingredient label. No halal certification.'
    :'Yamayo manufacturer original juice label supplied with written permission in October 2026. This is an ingredient label, NOT a halal certificate. Always check current packaging; formulation may change.';
-  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:fromYamayoManufacturer?yamayoCoverage:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
+  const savedResult:LookupResult={found:true,name:saved.name_ja||saved.name,barcode:saved.barcode,brand:saved.brand,ingredients:saved.ingredients,image:saved.image_url,source:saved.evidence_source||'Floot catalogue snapshot',productUrl:saved.evidence_url,...ingredientDecision(saved.ingredients),manufacturerEvidence:[],coverageNote:fromLicensedCommunity?'Contains data from Open Food Facts, available under ODbL-1.0 / DbCL-1.0. Japan-market community ingredients matched by exact barcode; not manufacturer-verified or halal-certified.':fromYamayoManufacturer?yamayoCoverage:fromSevenPremiumPackageNotes?'Seven Premium package-ingredient excerpt sourced from a THIRD-PARTY review. This is NOT the complete label and has not been confirmed by Seven-Eleven or the manufacturer. The scanned product, ingredients and availability may have changed. Check current packaging; do not assume Halal certification.':'Migrated product record; NOT independently certified. Ingredient details may be outdated.'};
   if(String(saved.ingredients||'').trim())return savedResult;
   noIngredientFallback=savedResult;
  }
