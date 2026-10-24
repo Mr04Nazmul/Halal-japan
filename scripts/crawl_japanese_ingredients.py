@@ -90,6 +90,7 @@ def extract(html,url):
  values={normalized(v):v for v in values if 1<len(v)<12000 and re.search(r'[ぁ-んァ-ヶ一-龯]',v)}
  if len(values)!=1:return None,'missing_or_ambiguous_ingredients'
  ingredients=next(iter(values.values()))
+ if re.match(r'^\s*(?:添加物|添加物名)\s*[:：]',ingredients):return None,'additives_only_incomplete_ingredients'
  if re.search(r'原材料名が入ります|原材料名欄では|アレルゲン情報|栄養成分表示|https?://|\ufffd',ingredients):return None,'non_ingredient_text'
  title=soup.find('h1')
  name=next(iter(fields.get('商品名',[])),title.get_text(' ',strip=True) if title else '')
