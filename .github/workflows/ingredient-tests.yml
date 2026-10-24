@@ -16,6 +16,11 @@ jobs:
         run: |
           node tests/ingredient-regression.cjs
           node --test tests/seven-premium-evidence.test.cjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test OFF Japanese-language and JAN candidate validation
+        run: python -m unittest discover -s tests -p 'test_off_japanese_candidates.py' -v
       - name: Install live scanner dependencies
         working-directory: floot-source
         run: npm install --no-audit --no-fund
