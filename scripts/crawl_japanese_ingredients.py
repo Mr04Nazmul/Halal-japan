@@ -113,7 +113,7 @@ def extract(html,url):
  additives=' '.join(dict.fromkeys(fields.get('添加物',[])))
  brand=next(iter(fields.get('メーカー名',[])),source(url))
  jan=codes[0] if len(codes)==1 else None
- decision=screen(ingredients,additives)
+ decision=screen(ingredients,additives,product_name=name)
  if decision['rule_result']=='UNKNOWN':return None,'incomplete_ingredient_declaration'
  key='jan:'+jan if jan else 'name:'+source(url)+'|'+normalized(name)
  result={'product_id':key,'name_ja':name,'brand':brand,'jan':jan,'ingredients_ja':ingredients,
