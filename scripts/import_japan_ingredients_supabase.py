@@ -16,6 +16,7 @@ items=json.loads(path.read_text(encoding="utf-8"))
 assert isinstance(items,list), "Expected cumulative array of ingredient products"
 from japan_ingredient_barcodes import jan_valid
 from japan_ingredient_food_filter import is_nonfood_name
+from japan_ingredient_policy import screen
 rows=[]
 seen=set()
 rejections={}
@@ -49,12 +50,18 @@ for p in items:
     # The crawler's local accepted identity is the only import identity.
     if jan and ident!="jan:"+str(jan):
         reject("JAN identity mismatch");continue
+    # Re-screen old crawler checkpoints using the current policy before import.
+    # Product-name alcohol risks were previously mislabeled HALAL.
+    decision=screen(ingredient,p.get("additives_ja") or "",product_name=name)
+    if decision["rule_result"]=="UNKNOWN":
+        reject("current policy requires review");continue
+    rule=decision["rule_result"]
     seen.add(ident)
     rows.append(dict(identity_key=ident,jan_code=str(jan) if jan and len(str(jan))==13 else None,
         product_name=name,ingredients_ja=ingredient,additives_ja=p.get("additives_ja") or "",
         source_url=source,source_publisher=p.get("source_publisher"),
-        rule_result=rule,matched_terms=p.get("matched_terms") or [],
-        rule_version=p.get("rule_version"),halal_certified=False,
+        rule_result=rule,matched_terms=decision["matched_terms"],
+        rule_version=decision["rule_version"],halal_certified=False,
         evidence={"source_type":p.get("source_type"),"field_status":p.get("ingredient_field_status"),
                   "reuse_permission":p.get("reuse_permission","not_established"),
                   "original_barcode":str(jan) if jan else None,
