@@ -3,7 +3,8 @@
 Requires GitHub Secrets SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
 Does not touch existing product, scanner or certification tables.
 """
-import json,os,re,sys,urllib.request,urllib.error
+import json,os,sys,urllib.request,urllib.error
+from urllib.parse import quote
 from pathlib import Path
 
 url=os.environ.get("SUPABASE_URL","").rstrip("/")
@@ -13,10 +14,7 @@ if not url.startswith("https://") or not key:
 path=Path(sys.argv[1] if len(sys.argv)>1 else "crawler-state/products.json")
 items=json.loads(path.read_text(encoding="utf-8"))
 assert isinstance(items,list), "Expected cumulative array of ingredient products"
-def jan_valid(j):
-    if not j or not re.fullmatch(r"[0-9]{13}",str(j)):return False
-    s=str(j)
-    return (10-sum(int(d)*(1 if i%2==0 else 3) for i,d in enumerate(s[:12]))%10)%10==int(s[-1])
+from japan_ingredient_barcodes import jan_valid
 rows=[]
 seen=set()
 rejections={}
@@ -55,8 +53,29 @@ for p in items:
         rule_result=rule,matched_terms=p.get("matched_terms") or [],
         rule_version=p.get("rule_version"),halal_certified=False,
         evidence={"source_type":p.get("source_type"),"field_status":p.get("ingredient_field_status"),
-                  "reuse_permission":p.get("reuse_permission","not_established")},
+                  "reuse_permission":p.get("reuse_permission","not_established"),
+                  "verification_status":"official_ingredient_field_captured_pending_human_review",
+                  "research_only":True,"packaging_verified":False},
         snapshot_hash=p.get("source_html_sha256"),collected_at=p.get("retrieved_at")))
+# JAN-8 records may already have been researched under a URL-based identity.
+# Check source URL before inserting a new JAN identity to avoid duplicating those
+# earlier source-verified records. Fail closed on lookup errors.
+unique_rows=[]
+for row in rows:
+    jan=row["jan_code"]
+    if jan and len(jan)==8:
+        lookup=url+"/rest/v1/jhc_crawler_ingredient_staging?select=identity_key&source_url=eq."+quote(row["source_url"],safe="")+"&limit=1"
+        req=urllib.request.Request(lookup,headers={"apikey":key,"Authorization":"Bearer "+key})
+        try:
+            with urllib.request.urlopen(req,timeout=30) as response:
+                existing=json.loads(response.read())
+        except (urllib.error.URLError,ValueError) as e:
+            sys.exit(f"JAN-8 source deduplication lookup failed; refusing unsafe import: {type(e).__name__}")
+        if existing and existing[0].get("identity_key")!=row["identity_key"]:
+            reject("existing source URL (JAN-8)")
+            continue
+    unique_rows.append(row)
+rows=unique_rows
 # Preserve valid rows while quarantining and counting invalid records.
 # If more than 5% are rejected, fail rather than silently importing corrupt batches.
 rejected=len(items)-len(rows)
@@ -69,13 +88,21 @@ if os.environ.get("GITHUB_STEP_SUMMARY"):
         for reason,count in sorted(rejections.items()):
             report.write(f"- {reason}: {count}\\n")
 print(f"Importing {len(rows)} distinct complete-ingredient records into staging only",flush=True)
+newly_inserted=0
 for i in range(0,len(rows),100):
-    req=urllib.request.Request(url+"/rest/v1/jhc_crawler_ingredient_staging?on_conflict=identity_key",
+    req=urllib.request.Request(url+"/rest/v1/jhc_crawler_ingredient_staging?on_conflict=identity_key&select=identity_key",
         data=json.dumps(rows[i:i+100],ensure_ascii=False).encode("utf-8"),method="POST",
         headers={"apikey":key,"Authorization":"Bearer "+key,"Content-Type":"application/json",
-                 "Prefer":"resolution=ignore-duplicates,return=minimal"})
+                 "Prefer":"resolution=ignore-duplicates,return=representation"})
     try:
-        with urllib.request.urlopen(req,timeout=45) as response:response.read()
+        with urllib.request.urlopen(req,timeout=45) as response:
+            inserted=json.loads(response.read())
+        if not isinstance(inserted,list) or len(inserted)>len(rows[i:i+100]):
+            sys.exit("Unexpected Supabase insert response; count is not reliable")
+        newly_inserted+=len(inserted)
     except urllib.error.HTTPError as e:
         sys.exit(f"Supabase import batch {i//100+1} failed: HTTP {e.code}, {e.read(500).decode(errors='replace')}")
-print(f"All {len(rows)} records processed idempotently (existing identities were ignored).",flush=True)
+print(f"Staging import complete: {newly_inserted} NEW unique rows; {len(rows)-newly_inserted} existing identities ignored; {rejected} quarantined.",flush=True)
+if os.environ.get("GITHUB_STEP_SUMMARY"):
+    with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as report:
+        report.write(f"\nNewly inserted staging rows: {newly_inserted}. Existing identities ignored: {len(rows)-newly_inserted}.\n")
