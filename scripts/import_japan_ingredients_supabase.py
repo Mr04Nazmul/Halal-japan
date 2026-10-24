@@ -3,7 +3,7 @@
 Requires GitHub Secrets SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
 Does not touch existing product, scanner or certification tables.
 """
-import json,os,sys,urllib.request,urllib.error
+import json,os,sys,re,urllib.request,urllib.error
 from urllib.parse import quote
 from pathlib import Path
 
@@ -37,6 +37,8 @@ for p in items:
         reject("non-food product");continue
     if not all(isinstance(x,str) and x.strip() for x in (ingredient,name,source)):
         reject("missing product, ingredient or source field");continue
+    if re.match(r'^\s*(?:添加物|添加物名)\s*[:：]',ingredient):
+        reject("additives-only incomplete ingredients");continue
     if p.get("ingredient_field_status")!="complete_displayed_field":
         reject("incomplete ingredient field");continue
     if rule not in ("HALAL","HARAM"):
