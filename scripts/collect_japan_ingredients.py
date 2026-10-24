@@ -64,3 +64,7 @@ with OUT.open("a",encoding="utf-8",newline="") as f:
         time.sleep(7)
 STATE.write_text(json.dumps({"last_page_processed":START+attempted_pages-1,"pages_this_run":pages,"pages_attempted":attempted_pages,"new_ingredient_products":written,"unique_csv_rows":len(seen),"errors":errors,"status":"source_unavailable" if errors and pages==0 else "partial_source_errors" if errors else "completed"},indent=2))
 print(f"Done: {written} new ingredient-bearing records; {len(seen)} total; errors={len(errors)}")
+# A failed upstream fetch is not a successful collection. Keep the state JSON
+# and let the workflow upload its artifact via `if: always()` for diagnosis.
+if pages == 0 and errors:
+    raise SystemExit("Collection failed: no OFF pages could be fetched; see state JSON for HTTP errors")
