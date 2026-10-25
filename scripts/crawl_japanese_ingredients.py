@@ -238,7 +238,8 @@ class Collector:
           reason='accepted_new_product'
          else:reason='already_known_product'
        else:reason='discovery_navigation_page'
-     self.db.execute("UPDATE queue SET status='done',attempts=attempts+1,error=? WHERE url=?",(reason,url))
+     queue_error=None if reason in {'discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product'} else reason
+     self.db.execute("UPDATE queue SET status='done',attempts=attempts+1,error=? WHERE url=?",(queue_error,url))
     except Exception as e:
      code=getattr(e,'code',None);reason=type(e).__name__+':'+str(code or str(e)[:120])
      cooldown=86400 if code in (401,403) else 3600 if code==429 else 900
