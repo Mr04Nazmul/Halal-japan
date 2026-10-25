@@ -47,6 +47,26 @@ class Rules(unittest.TestCase):
         self.assertEqual(screen('枠外表面下部に記載')['rule_result'],'UNKNOWN')
         self.assertEqual(screen('米、発酵調味液')['rule_result'],'HARAM')
 
+    def test_distilled_alcohol_ingredient_regressions(self):
+        for ingredient in (
+            '焼酎甲類(国内製造)81%(さとうきび糖蜜)',
+            '小麦、食塩、米焼酎',
+            'すけそうだらの卵巣、ウオッカ',
+            '糖類、ブルーベリー、ブランデー',
+            'モルト、スピリッツ(国内製造)',
+            '小麦粉、ウォッカ',
+            'ジュニパー、ジン、食塩',
+        ):
+            with self.subTest(ingredient=ingredient):
+                r=screen(ingredient)
+                self.assertEqual(r['rule_result'],'HARAM')
+                self.assertFalse(r['halal_certified'])
+        for name in ('芳醇芋', '芳醇麦<ケース>', 'WHISKY malt&spirits', 'Wild Fox ロンドンドライジン'):
+            with self.subTest(name=name):
+                self.assertEqual(screen('麦、米麹',product_name=name)['rule_result'],'HARAM')
+        self.assertEqual(screen('食塩、ジンジャーパウダー')['rule_result'],'HALAL')
+        self.assertEqual(screen('水、バージンパルプ')['rule_result'],'HALAL')
+
     def test_clear_is_policy_only(self):
         r=screen('米(国産)、食塩')
         self.assertEqual(r['rule_result'],'HALAL')
