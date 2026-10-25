@@ -2,7 +2,7 @@
 import re
 import unicodedata
 
-RULE_VERSION = 'user-ingredients-2026-10-25-v2'
+RULE_VERSION = 'user-ingredients-2026-10-25-v3'
 TERMS = {
     'pork': r'豚肉|豚脂|豚骨|豚エキス|豚由来|ポーク|ラード|\b(?:pork|porcine|lard)\b',
     'gelatin': r'ゼラチン|\bgelatine?\b',
