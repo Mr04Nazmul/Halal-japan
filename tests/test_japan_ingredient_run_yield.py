@@ -35,6 +35,16 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             self.assertEqual(summary["current_run"]["top_rejection_reasons"],
                              {"missing_or_ambiguous_ingredients": 1})
 
+    def test_finalizer_preserves_last_run_metrics(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            collector.run([], max_pages=0, minutes=0)
+            finalizer = Collector(directory, 100)
+            finalizer.checkpoint()
+            summary = json.loads((Path(directory) / "summary.json").read_text())
+            self.assertEqual(summary["current_run"]["new_accepted"], 0)
+            self.assertEqual(summary["current_run"]["pages_processed"], 0)
+
     def test_checkpoint_only_does_not_claim_a_new_run(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
