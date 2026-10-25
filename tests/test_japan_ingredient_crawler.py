@@ -75,6 +75,39 @@ class Extraction(unittest.TestCase):
    self.assertEqual(visited[0],URL)
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(old,)).fetchone()[0],'pending')
    c.db.close()
+ def test_pending_product_url_outranks_old_navigation_backlog(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   navigation='https://muso.co.jp/item/tag/older-list'
+   product='https://www.meiji.co.jp/products/yogurt/4902705127654.html'
+   self.assertTrue(product_url(product))
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(product,)])
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   c.request=lambda u:(visited.append(u) or HTML)
+   c.run([],1,1)
+   self.assertEqual(visited,[product])
+   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(navigation,)).fetchone()[0],'pending')
+   c.db.close()
+ def test_discovered_product_is_prioritized_on_next_page(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   navigation='https://muso.co.jp/item/tag/first-list'
+   backlog='https://muso.co.jp/item/tag/older-list'
+   product='https://www.meiji.co.jp/products/yogurt/4902705127654.html'
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(backlog,)])
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   def page(url):
+    visited.append(url)
+    if url==navigation:return '<a href="'+product+'">新商品</a>'
+    return HTML
+   c.request=page
+   c.run([],2,1)
+   self.assertEqual(visited,[navigation,product])
+   c.db.close()
  def test_extractor_upgrade_requeues_only_field_rejections_once(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
