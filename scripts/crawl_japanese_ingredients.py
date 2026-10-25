@@ -181,10 +181,27 @@ class Collector:
     'extractor_version':EXTRACTOR_VERSION,
     'count_scope':'Distinct identities with full displayed Japanese ingredients from official Japanese product pages; not global/name-only indexes',
     'prior_chat_checkpoint_not_automatically_added':721}
+  if hasattr(self,'run_started_at'):
+   counts=self.db.execute("SELECT reason,count(*) FROM observations WHERE at>=? AND reason IS NOT NULL GROUP BY reason ORDER BY count(*) DESC LIMIT 12",(self.run_started_at,)).fetchall()
+   summary['current_run']={
+    'started_at':self.run_started_at,
+    'pages_processed':self.db.execute('SELECT count(*) FROM observations WHERE at>=?',(self.run_started_at,)).fetchone()[0],
+    'new_accepted':len(rows)-self.run_start_count,
+    'top_rejection_reasons':dict(counts)}
+  elif (self.path/'summary.json').exists():
+   # The workflow's --checkpoint-only finalizer runs in a fresh process.
+   # Preserve metrics from the bounded crawl instead of erasing them.
+   try:
+    previous=json.loads((self.path/'summary.json').read_text())
+    if previous.get('accepted_ingredient_products')==len(rows) and 'current_run' in previous:
+     summary['current_run']=previous['current_run']
+   except (OSError,ValueError,TypeError):pass
   for name,value in [('products.json',rows),('summary.json',summary)]:
    tmp=self.path/(name+'.tmp');tmp.write_text(json.dumps(value,ensure_ascii=False,separators=(',',':'))+'\n');tmp.replace(self.path/name)
   self.db.commit();print(json.dumps(summary,ensure_ascii=False),flush=True)
  def run(self,seeds,max_pages,minutes):
+  self.run_started_at=datetime.now(timezone.utc).isoformat()
+  self.run_start_count=self.count()
   self.enqueue(seeds)
   # Seeded official product URLs must not starve behind an ever-growing discovery queue.
   # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
