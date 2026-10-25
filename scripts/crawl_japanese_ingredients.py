@@ -142,7 +142,13 @@ class Collector:
    self.db.commit()
   self.robots={};self.last={}
  def enqueue(self,urls):
-  self.db.executemany('INSERT OR IGNORE INTO queue(url) VALUES(?)',[(canonical(u),) for u in urls if allowed_link(u)])
+  links=[canonical(u) for u in urls if allowed_link(u)]
+  self.db.executemany('INSERT OR IGNORE INTO queue(url) VALUES(?)',[(u,) for u in links])
+  # Newly discovered official product pages should be eligible immediately,
+  # without waiting behind thousands of already queued navigation pages.
+  if getattr(self,'product_priority_ready',False):
+   self.db.executemany('INSERT OR IGNORE INTO product_priority(url) VALUES(?)',
+    [(u,) for u in links if product_url(u)])
   self.db.commit()
  def request(self,url):
   url=canonical(url)
@@ -209,11 +215,25 @@ class Collector:
   # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_priority(url TEXT PRIMARY KEY)")
   self.db.executemany("INSERT OR IGNORE INTO seed_priority(url) VALUES(?)",[(canonical(u),) for u in seeds if allowed_link(u)])
+  # Prioritize all supported official product URL patterns, not just /detail/
+  # and /item/. TEMP state keeps the persisted checkpoint schema unchanged.
+  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS product_priority(url TEXT PRIMARY KEY)")
+  pending_products=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending'") if product_url(u)]
+  self.db.executemany("INSERT OR IGNORE INTO product_priority(url) VALUES(?)",pending_products)
+  self.product_priority_ready=True
   end=time.monotonic()+minutes*60;done=0
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
-    item=self.db.execute("SELECT url,attempts FROM queue q WHERE status='pending' AND next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY CASE WHEN EXISTS(SELECT 1 FROM seed_priority sp WHERE sp.url=q.url) THEN 0 ELSE 1 END,CASE WHEN q.url LIKE '%/detail/%' OR q.url LIKE '%/item/%html%' THEN 0 ELSE 1 END,q.rowid LIMIT 1",(now,now)).fetchone()
+    # First seeded URLs, then pending product URLs, then discovery pages.
+    # The indexed TEMP tables avoid calling Python regexes for every queued
+    # URL on every iteration, which matters for 100k+ pending URLs.
+    item=None
+    for priority in ('seed_priority','product_priority'):
+     item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
+     if item:break
+    if not item:
+     item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
     if not item:break
     url,attempts=item;reason=None
     try:
