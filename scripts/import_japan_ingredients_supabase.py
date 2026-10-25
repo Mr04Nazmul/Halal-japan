@@ -17,6 +17,7 @@ assert isinstance(items,list), "Expected cumulative array of ingredient products
 from japan_ingredient_barcodes import jan_valid
 from japan_ingredient_food_filter import is_nonfood_name
 from japan_ingredient_policy import screen
+from japan_ingredient_import_dedup import filter_existing_jan_conflicts
 rows=[]
 seen=set()
 rejections={}
@@ -101,6 +102,21 @@ if os.environ.get("GITHUB_STEP_SUMMARY"):
         report.write(f"## Staging import validation\\n\\nAccepted: {len(rows)} / {len(items)}. Quarantined (not imported): {rejected}.\\n\\n")
         for reason,count in sorted(rejections.items()):
             report.write(f"- {reason}: {count}\\n")
+# A JAN-13 may already be owned by a manufacturer-researched identity.
+# PostgREST on_conflict=identity_key alone cannot ignore the separate unique
+# JAN constraint. Preflight only candidate JANs and preserve existing records.
+try:
+    rows, jan_conflicts = filter_existing_jan_conflicts(rows, url, key)
+except RuntimeError as exc:
+    sys.exit(str(exc))
+if jan_conflicts:
+    print(f"Skipped {len(jan_conflicts)} existing JAN-13 codes owned by different identities; no records overwritten. Examples: {jan_conflicts[:10]}", flush=True)
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
+            report.write(f"Existing JAN-13 identity collisions safely skipped: {len(jan_conflicts)}.\\n")
+if not rows:
+    print("No rows remain after JAN-13 collision deduplication; import complete: 0 NEW rows.", flush=True)
+    sys.exit(0)
 print(f"Importing {len(rows)} distinct complete-ingredient records into staging only",flush=True)
 newly_inserted=0
 for i in range(0,len(rows),100):
