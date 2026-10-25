@@ -14,6 +14,7 @@ TERMS = {
     'processed_fat': r'加工油脂|\bprocessed fats?\b',
     'hydrolyzed_protein': r'(?:たんぱく|たん白|タンパク|蛋白)加水分解物|\bhydroly[sz]ed protein\b',
     'fermented_seasoning': r'発酵調味料|醗酵調味料|発酵調味液|醗酵調味液|\bfermented seasoning\b',
+    'distilled_alcohol': r'焼酎|ウォッカ|ウオッカ|ウイスキー|ウィスキー|ブランデー|スピリッツ|(?:^|[、,\s])ジン(?:$|[、,\s(（])',
     'cooking_alcohol': r'料理酒|みりん|味醂|酒精|アルコール|洋酒|清酒|日本酒|赤ワイン|白ワイン|輸入ワイン|ワイン(?!ビネガー|酢)|\b(?:cooking sake|rice wine|mirin|ethanol|alcohol|wine)\b',
 }
 
@@ -40,7 +41,7 @@ def screen(ingredients, additives='', complete=True, product_name=''):
     # Product identity is essential: ingredients alone must not mark wine/beer HALAL.
     name=unicodedata.normalize('NFKC',str(product_name or '')).lower()
     if not re.search(r'ノンアルコール|ノンアル|アルコール0|アルコールゼロ',name):
-        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン|(?:麦|芋)職人|鬼ころし|彩の香\s*(?:麦|芋)',name)
+        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン|whisk(?:y|ey)|ロンドンドライジン|芳醇(?:芋|麦)|(?:麦|芋)職人|鬼ころし|彩の香\s*(?:麦|芋)',name)
         if alcohol:hits.append({'rule':'alcoholic_product_name','text':alcohol.group(0)})
     return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
                 reason='matched_user_prohibited_terms' if hits else 'no_user_prohibited_term_in_displayed_ingredients')

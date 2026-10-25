@@ -5,7 +5,7 @@ from japan_ingredient_food_filter import is_nonfood_name
 
 class FoodFilter(unittest.TestCase):
     def test_reject_obvious_nonfoods(self):
-        for name in ("浴用石けん","ハンドソープ","犬用おやつ","犬のおやつ やわらか鶏ささみバー 12g×4本","猫のおやつ まぐろ","犬のごはん","猫のごはん","ペットのおやつ","ペットフード","ドッグフード","シャンプー","歯磨き粉","化粧水","洗顔フォーム"):
+        for name in ("浴用石けん","ハンドソープ","犬用おやつ","犬のおやつ やわらか鶏ささみバー 12g×4本","猫のおやつ まぐろ","犬のごはん","猫のごはん","ペットのおやつ","ペットフード","ドッグフード","シャンプー","歯磨き粉","化粧水","洗顔フォーム","ナチュラムーン・ナプキン昼用","オーガニックコットンナプキン","スカルプリッチプロフェッショナル"):
             with self.subTest(name=name):
                 self.assertTrue(is_nonfood_name(name))
     def test_keep_real_foods(self):
