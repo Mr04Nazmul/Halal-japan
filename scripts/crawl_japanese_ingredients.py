@@ -18,6 +18,7 @@ EXTRACTOR_VERSION='official-fields-2026-10-17-v3'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'sbfoods.co.jp':r'/products/detail/\d+\.html',
+ 'kyoritsu-foods.co.jp':r'/product/\d+/',
  'muso.co.jp':r'/item/\d+\.html',
  'ohsawa-japan.co.jp':r'actmode=ItemDetail.*iid=\d+|iid=\d+.*actmode=ItemDetail',
  'sokensha.co.jp':r'/products/product_detail/\d+',
@@ -107,7 +108,7 @@ def extract(html,url):
  if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
  for k,vs in fields.items():
-  if re.fullmatch(r'JAN(?:コード|CODE)?|POSコード',k):
+  if re.fullmatch(r'JAN(?:コード|CODE)?|POSコード',k) or (source(url)=='kyoritsu-foods.co.jp' and k=='コード'):
    for v in vs:
     codes.extend(c for c in re.findall(r'(?<!\d)\d{8,14}(?!\d)',v) if gtin(c))
  codes=list(dict.fromkeys(codes))

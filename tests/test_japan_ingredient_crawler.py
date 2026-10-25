@@ -119,4 +119,18 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status FROM queue').fetchone()[0],'done')
 
+ def test_kyoritsu_official_product_code_and_pork_gelatin(self):
+  url='https://www.kyoritsu-foods.co.jp/product/275/'
+  html='''<h1>ゼラチンリーフ</h1><table>
+  <tr><th>商品名</th><td>ゼラチンリーフ</td></tr>
+  <tr><th>コード</th><td>4901325124364</td></tr>
+  <tr><th>原材料名</th><td>ゼラチン（豚由来）</td></tr></table>'''
+  self.assertTrue(product_url(url))
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['jan'],'4901325124364')
+  self.assertEqual(record['ingredients_ja'],'ゼラチン（豚由来）')
+  self.assertEqual(record['rule_result'],'HARAM')
+  self.assertFalse(record['halal_certified'])
+
 if __name__=='__main__':unittest.main()
