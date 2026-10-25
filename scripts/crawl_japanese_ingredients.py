@@ -182,12 +182,14 @@ class Collector:
     'count_scope':'Distinct identities with full displayed Japanese ingredients from official Japanese product pages; not global/name-only indexes',
     'prior_chat_checkpoint_not_automatically_added':721}
   if hasattr(self,'run_started_at'):
-   counts=self.db.execute("SELECT reason,count(*) FROM observations WHERE at>=? AND reason IS NOT NULL GROUP BY reason ORDER BY count(*) DESC LIMIT 12",(self.run_started_at,)).fetchall()
+   counts=self.db.execute("SELECT reason,count(*) FROM observations WHERE at>=? AND reason IS NOT NULL AND reason NOT IN ('discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product') GROUP BY reason ORDER BY count(*) DESC LIMIT 12",(self.run_started_at,)).fetchall()
+   outcomes=self.db.execute("SELECT COALESCE(reason,'unclassified'),count(*) FROM observations WHERE at>=? GROUP BY COALESCE(reason,'unclassified') ORDER BY count(*) DESC LIMIT 12",(self.run_started_at,)).fetchall()
    summary['current_run']={
     'started_at':self.run_started_at,
     'pages_processed':self.db.execute('SELECT count(*) FROM observations WHERE at>=?',(self.run_started_at,)).fetchone()[0],
     'new_accepted':len(rows)-self.run_start_count,
-    'top_rejection_reasons':dict(counts)}
+    'top_rejection_reasons':dict(counts),
+    'page_outcomes':dict(outcomes)}
   elif (self.path/'summary.json').exists():
    # The workflow's --checkpoint-only finalizer runs in a fresh process.
    # Preserve metrics from the bounded crawl instead of erasing them.
@@ -221,6 +223,7 @@ class Collector:
       if urlsplit(url).path.endswith('.xml'):
        links=re.findall(r'<loc>\s*([^<]+)',html)
        self.enqueue([u.replace('&amp;','&') for u in links if allowed_link(u)])
+       reason='discovery_sitemap'
       else:
        soup=BeautifulSoup(html,'html.parser')
        self.enqueue([urljoin(url,a['href']) for a in soup.select('a[href]')])
@@ -230,8 +233,13 @@ class Collector:
          formula=normalized(record['ingredients_ja']+'|'+record['additives_ja'])
          old=self.db.execute('SELECT formula FROM products WHERE id=?',(record['product_id'],)).fetchone()
          if old and old[0]!=formula:self.db.execute('UPDATE products SET conflict=1 WHERE id=?',(record['product_id'],));reason='formula_conflict'
-         elif not old:self.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',(record['product_id'],formula,json.dumps(record,ensure_ascii=False)))
-     self.db.execute("UPDATE queue SET status='done',attempts=attempts+1,error=? WHERE url=?",(reason,url))
+         elif not old:
+          self.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',(record['product_id'],formula,json.dumps(record,ensure_ascii=False)))
+          reason='accepted_new_product'
+         else:reason='already_known_product'
+       else:reason='discovery_navigation_page'
+     queue_error=None if reason in {'discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product'} else reason
+     self.db.execute("UPDATE queue SET status='done',attempts=attempts+1,error=? WHERE url=?",(queue_error,url))
     except Exception as e:
      code=getattr(e,'code',None);reason=type(e).__name__+':'+str(code or str(e)[:120])
      cooldown=86400 if code in (401,403) else 3600 if code==429 else 900

@@ -35,6 +35,19 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             self.assertEqual(summary["current_run"]["top_rejection_reasons"],
                              {"missing_or_ambiguous_ingredients": 1})
 
+    def test_navigation_pages_are_counted_without_false_rejections(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            collector.permitted = lambda url: True
+            collector.request = lambda url: "<html><body><h1>Product catalogue</h1></body></html>"
+            collector.run(["https://www.sbfoods.co.jp/products/"], max_pages=1, minutes=1)
+            summary = json.loads((Path(directory) / "summary.json").read_text())
+            self.assertEqual(summary["current_run"]["pages_processed"], 1)
+            self.assertEqual(summary["current_run"]["new_accepted"], 0)
+            self.assertEqual(summary["current_run"]["top_rejection_reasons"], {})
+            self.assertEqual(summary["current_run"]["page_outcomes"],
+                             {"discovery_navigation_page": 1})
+
     def test_finalizer_preserves_last_run_metrics(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
