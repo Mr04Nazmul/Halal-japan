@@ -14,7 +14,7 @@ TERMS = {
     'processed_fat': r'加工油脂|\bprocessed fats?\b',
     'hydrolyzed_protein': r'(?:たんぱく|たん白|タンパク|蛋白)加水分解物|\bhydroly[sz]ed protein\b',
     'fermented_seasoning': r'発酵調味料|醗酵調味料|発酵調味液|醗酵調味液|\bfermented seasoning\b',
-    'distilled_alcohol': r'焼酎|ウォッカ|ウオッカ|ウイスキー|ウィスキー|ブランデー|スピリッツ|(?:^|[、,\\s])ジン(?:$|[、,\\s(（])',
+    'distilled_alcohol': r'焼酎|ウォッカ|ウオッカ|ウイスキー|ウィスキー|ブランデー|スピリッツ|(?:^|[、,\s])ジン(?:$|[、,\s(（])',
     'cooking_alcohol': r'料理酒|みりん|味醂|酒精|アルコール|洋酒|清酒|日本酒|赤ワイン|白ワイン|輸入ワイン|ワイン(?!ビネガー|酢)|\b(?:cooking sake|rice wine|mirin|ethanol|alcohol|wine)\b',
 }
 
