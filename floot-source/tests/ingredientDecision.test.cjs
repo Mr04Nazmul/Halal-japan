@@ -26,8 +26,8 @@ const checks=[
  ['豚骨スープ、小麦','haram_ingredient'],
  ['pork fat, rice','haram_ingredient'],
  ['lard, wheat flour','haram_ingredient'],
- ['ゼラチン、砂糖','needs_review'],
- ['gelatin, sugar','needs_review'],
+ ['ゼラチン、砂糖','haram_ingredient'],
+ ['gelatin, sugar','haram_ingredient'],
  ['本みりん、醤油','haram_ingredient'],
  ['料理酒、砂糖','haram_ingredient'],
  ['米、豚肉不使用','needs_review'],
@@ -78,7 +78,7 @@ test('origin uncertainty does not become a religious certificate',()=>{
 
 test('E441 gelatin E-code requires species evidence',()=>{
  const r=decide('砂糖、E441');
- assert.equal(r.verdict,'needs_review');
+ assert.equal(r.verdict,'haram_ingredient');
  assert.ok(r.findings.some(f=>f.ingredient.includes('E441')));
 });
 test('E120 carmine is uncertain rather than universal haram classification',()=>{
@@ -119,20 +119,22 @@ test('fish gelatin on complete label is ingredient-clear, never certified',()=>{
  assert.equal(decide('フィッシュゼラチン、砂糖',false,true).verdict,'ingredient_clear');
 });
 test('bovine gelatin still requires slaughter or certification evidence',()=>{
- assert.equal(decide('ゼラチン（牛由来）',false,true).verdict,'needs_review');
+ assert.equal(decide('ゼラチン（牛由来）',false,true).verdict,'haram_ingredient');
 });
 test('fish gelatin does not clear pork elsewhere in recipe',()=>{
  assert.equal(decide('ゼラチン（魚由来）、豚肉',false,true).verdict,'haram_ingredient');
 });
 test('qualified fish ingredient does not clear additional unknown gelatin',()=>{
- assert.equal(decide('魚由来ゼラチン、ゼラチン',false,true).verdict,'needs_review');
+ assert.equal(decide('魚由来ゼラチン、ゼラチン',false,true).verdict,'haram_ingredient');
 });
 test('exact manufacturer origin evidence resolves gelatin only',()=>{
  const evidence={origin:'fish',sourceUrl:'https://www.ethical-eeco.jp/products/detail/269',ingredientStatement:'ゼラチン（国内製造）'};
  assert.equal(decide(evidence.ingredientStatement,false,true,evidence).verdict,'ingredient_clear');
- assert.equal(decide(evidence.ingredientStatement,false,false,evidence).verdict,'needs_review');
- assert.equal(decide('ゼラチン、砂糖',false,true,evidence).verdict,'needs_review');
+ assert.equal(decide(evidence.ingredientStatement,false,false,evidence).verdict,'haram_ingredient');
+ assert.equal(decide('ゼラチン、砂糖',false,true,evidence).verdict,'haram_ingredient');
  assert.equal(decide('ゼラチン、香料',false,true,{...evidence,ingredientStatement:'ゼラチン、香料'}).verdict,'needs_review');
- assert.equal(decide(evidence.ingredientStatement,false,true,{...evidence,origin:'bovine'}).verdict,'needs_review');
+ assert.equal(decide(evidence.ingredientStatement,false,true,{...evidence,origin:'bovine'}).verdict,'haram_ingredient');
  assert.equal(decide(evidence.ingredientStatement,true,true,{...evidence,origin:'porcine'}).verdict,'haram_ingredient');
 });
+
+test('verified certificate is the gelatin policy exception',()=>{assert.equal(decide('gelatine, sugar',true,true).verdict,'certified');assert.equal(decide('E441, sugar',true,true).verdict,'certified');});

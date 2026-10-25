@@ -56,7 +56,7 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
 
  const terms:{label:string;pattern:RegExp;severity:'prohibited'|'uncertain';reason:string}[]=[
   {label:'Pork or pork-derived ingredient',pattern:/(?:豚肉|豚脂|豚骨|豚エキス|豚由来|ポーク|ラード|(?:^|[^a-z])(?:pork|porcine|lard)(?:$|[^a-z]))/,severity:'prohibited',reason:'Pork-derived ingredient identified in the declaration.'},
-  {label:'Gelatin / ゼラチン',pattern:/(?:ゼラチン|(?:^|[^a-z])gelatine?(?:$|[^a-z]))/,severity:'uncertain',reason:'Gelatin origin is not established for this declaration. Verify fish, bovine or porcine source; bovine origin also requires slaughter/certification evidence.'},
+  {label:'Gelatin / ゼラチン',pattern:/(?:ゼラチン|(?:^|[^a-z])gelatine?(?:$|[^a-z]))/,severity:certificateValid?'uncertain':'prohibited',reason:'HARAM under the app gelatin policy: gelatin requires explicit fish-source evidence or a verified product-specific halal certificate. Unspecified origin is not proof of pork.'},
   {label:'Alcoholic cooking wine',pattern:/(?:料理酒|本みりん|飲用酒|(?:^|[^a-z])(?:cooking sake|hon-mirin|rice wine)(?:$|[^a-z]))/,severity:'prohibited',reason:'Alcoholic cooking wine or hon-mirin is declared.'},
   {label:'Emulsifier origin',pattern:/(?:乳化剤|(?:^|[^a-z])(?:emulsifiers?|e[\s-]?47[12])(?:$|[^a-z0-9]))/,severity:'uncertain',reason:'Emulsifier origin is not confirmed as plant, microbial or halal-certified.'},
   {label:'Flavoring origin',pattern:/(?:香料|(?:^|[^a-z])(?:flavou?rings?|flavou?r agents?)(?:$|[^a-z]))/,severity:'uncertain',reason:'Flavoring carriers or extraction methods may require manufacturer confirmation.'},
@@ -73,8 +73,8 @@ export function ingredientDecision(input:string|null|undefined, certificateValid
  for(const code of findEcodeMentions(s)){
   if(!code.engineSeverity)continue;
   if(code.code==='E471'&&findings.some(f=>f.ingredient==='Emulsifier origin'))continue;
-  findings.push({ingredient:code.code+' '+code.name,severity:code.code==='E441'?'uncertain':code.engineSeverity,
-   reason:(code.code==='E441'?'E441 identifies gelatin, but does not identify its animal/fish origin. Source evidence is needed.':code.note)+' Reference: '+code.sourceUrl});
+  findings.push({ingredient:code.code+' '+code.name,severity:code.code==='E441'?(certificateValid?'uncertain':'prohibited'):code.engineSeverity,
+   reason:(code.code==='E441'?'HARAM under the app gelatin policy: E441 identifies gelatin; fish-source evidence or a verified product-specific halal certificate is required. This does not establish pork origin.':code.note)+' Reference: '+code.sourceUrl});
  }
  const prohibited=findings.filter(f=>f.severity==='prohibited');
  if(prohibited.length)return {verdict:'haram_ingredient',reasons:prohibited.map(f=>f.reason),confidence:'high',findings};

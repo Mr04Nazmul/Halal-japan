@@ -13,7 +13,7 @@ function load(file){
 const {gelatinOriginFoods:records}=load(path.join(root,'helpers/gelatinOriginFoods.ts'));
 const {postFoodLookup:lookup}=load(path.join(root,'endpoints/food-lookup_POST.schema.ts'));
 test('five distinct origin records, two known JANs',()=>{assert.equal(records.length,5);assert.equal(new Set(records.map(p=>p.sourceUrl)).size,5);assert.equal(records.filter(p=>p.code).length,2);});
-test('bovine JAN needs slaughter evidence',async()=>{const r=await lookup({query:'4901325301994'});assert.equal(r.verdict,'needs_review');assert.equal(r.certificate,null);assert.ok(r.manufacturerEvidence[0].type.includes('bovine'));});
+test('bovine JAN is blocked under app gelatin policy',async()=>{const r=await lookup({query:'4901325301994'});assert.equal(r.verdict,'haram_ingredient');assert.equal(r.certificate,null);assert.ok(r.manufacturerEvidence[0].type.includes('bovine'));});
 test('fish JAN is ingredient-clear without invented certificate',async()=>{const r=await lookup({query:'4562385320327'});assert.equal(r.verdict,'ingredient_clear');assert.equal(r.certificate,null);assert.ok(r.manufacturerEvidence[0].type.includes('fish'));});
 test('fish collagen jelly still needs additive checks and has no invented JAN',async()=>{const p=records.find(x=>x.ingredientForm==='collagen_peptide_with_gelatin_allergen');const r=await lookup({query:p.name});assert.equal(r.verdict,'needs_review');assert.equal(r.barcode,null);assert.ok(r.findings.some(f=>f.ingredient==='Flavoring origin'));});
 test('source evidence is visible in UI',()=>{const s=fs.readFileSync(path.join(root,'pages/_index.tsx'),'utf8');assert.ok(s.includes('Ingredient source evidence'));assert.ok(s.includes('result.manufacturerEvidence.map'));});
