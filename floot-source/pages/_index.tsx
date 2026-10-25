@@ -94,6 +94,7 @@ export default function Home(){
   <section className={styles.ingredientPanel} aria-label="Product ingredients">
    <div className={styles.ingredientHeading}><FileText size={20}/><h4>Ingredients <span>原材料名・添加物</span></h4></div>
    <p>{result.ingredients_text||'A verified full ingredient declaration is not yet linked to this barcode.'}</p>
+   {!result.ingredients_text?<Button variant="outline" onClick={()=>document.querySelector('#ingredient-photo-fallback')?.scrollIntoView({behavior:'smooth'})}><FileText size={18}/> Scan ingredient label · 原材料名</Button>:null}
    {result.findings?.length?<ul className={styles.findingList}>{result.findings.map((finding,i)=><li key={i} data-severity={finding.severity}><strong>{finding.ingredient}</strong><span>{finding.reason}</span></li>)}</ul>:null}
   </section>
   <div className={styles.detailGrid}>

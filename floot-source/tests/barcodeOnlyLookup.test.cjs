@@ -28,3 +28,18 @@ test('reported Calbee Pizza Potato JAN uses official positive pork evidence befo
  assert.ok(r.manufacturerEvidence.some(x=>x.url.startsWith('https://www.calbee.co.jp/')));
  assert.ok(!r.reasons.join(' ').includes('alcohol'));
 });
+test('retail fallback identifies exact barcode but never treats title as ingredients',async()=>{
+ const base=fixtures(null,false);const calls=[];
+ const r=await lookup(async input=>{const u=String(input);calls.push(u);if(u.includes('source=yahoo'))return json({source:'Yahoo! Shopping Japan',products:[{code:CODE,product_name:'Rice gelatin free snack',brands:'Example',ingredients_text:'砂糖',image_url:'https://example.org/a.jpg'}]});return base(input);})({query:CODE});
+ assert.equal(r.found,true);assert.equal(r.name,'Rice gelatin free snack');assert.equal(r.ingredients,null);assert.equal(r.verdict,'unknown');assert.equal(r.certificate,null);assert.ok(calls.some(u=>u.includes('source=upcitemdb')));
+});
+test('wrong retail barcode is rejected even with matching-looking title',async()=>{
+ const base=fixtures(null,false);
+ const r=await lookup(async input=>String(input).includes('source=yahoo')?json({products:[{code:'4901777193369',product_name:'Wrong food'}]}):base(input))({query:CODE});
+ assert.equal(r.found,false);assert.equal(r.verdict,'unknown');
+});
+test('UPC fallback survives unavailable Yahoo and community APIs',async()=>{
+ const base=fixtures(null,false);
+ const r=await lookup(async input=>{const u=String(input);if(u.includes('source=upcitemdb'))return json({source:'UPCitemdb',products:[{code:CODE,product_name:'Identified snack'}]});if(u.includes('source=yahoo')||u.includes('openfoodfacts.org/api'))throw Error('Offline');return base(input);})({query:CODE});
+ assert.equal(r.found,true);assert.equal(r.name,'Identified snack');assert.equal(r.verdict,'unknown');
+});

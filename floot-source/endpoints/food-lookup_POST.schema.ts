@@ -46,6 +46,27 @@ async function lookupSaved(query:string,isBarcode:boolean){
  return body.record||null;
 }
 
+// Retail descriptions establish identity only, never an ingredient declaration.
+async function lookupRetailBarcode(code:string):Promise<LookupResult|null>{
+ const results=await Promise.all(['yahoo','upcitemdb'].map(async source=>{
+  try{
+   const url=new URL(SUPA+'/functions/v1/halal-product-lookup');
+   url.searchParams.set('jan_code',code);url.searchParams.set('source',source);
+   const response=await fetch(url,{headers:{apikey:PUBLIC_KEY,Authorization:'Bearer '+CATALOG_ANON_JWT},signal:AbortSignal.timeout(9000)});
+   if(!response.ok)return null;
+   const body=await response.json();
+   const item=Array.isArray(body.products)?body.products.find((p:any)=>barcodeEquivalent(String(p.code||''),code)&&String(p.product_name_ja||p.product_name||'').trim()):null;
+   if(!item)return null;
+   return {found:true,name:String(item.product_name_ja||item.product_name),barcode:code,brand:item.brands||null,
+    image:/^https:\/\//i.test(item.image_url||'')?item.image_url:null,
+    ingredients:null,source:body.source||source,productUrl:/^https:\/\//i.test(item._sourceUrl||'')?item._sourceUrl:null,
+    ...ingredientDecision(null),manufacturerEvidence:[],
+    coverageNote:'Exact barcode identified through a retail product index. Title and photo are identity only; ingredients and halal status remain unverified. Scan the package ingredient label for assessment.'} as LookupResult;
+  }catch{return null;}
+ }));
+ return results.find(Boolean)||null;
+}
+
 async function lookupOfficialBarcode(code:string):Promise<LookupResult|null>{
  const u=new URL(SUPA+'/functions/v1/halal-product-lookup');
  u.searchParams.set('jan_code',code);u.searchParams.set('source','suntory');
@@ -367,14 +388,15 @@ async function lookupProductWithoutCertificate(body:z.infer<typeof schema>):Prom
   payload=await response.json();
  }catch{
   if(noIngredientFallback)return {...noIngredientFallback,coverageNote:(noIngredientFallback.coverageNote||'')+' Live ingredient lookup unavailable; check the current package label.'};
-  throw Error('Open Food Facts lookup unavailable. Please try again.');
+  const retail=isBarcode?await lookupRetailBarcode(query):null;
+  return retail||{found:false,verdict:'unknown',reasons:['Product sources are unavailable or have no exact barcode record. Retry or scan the ingredient label.']};
  }
  const item=isBarcode?(payload.status===1?payload.product:null):
  (payload.products||[]).filter((p:any)=>p.product_name||p.product_name_ja).sort((a:any,b:any)=>{
    const score=(p:any)=>Number((p.countries_tags||[]).includes('en:japan'))*5+Number(!!(p.ingredients_text_ja||p.ingredients_text))*3+Number(!!p.image_front_small_url);
    return score(b)-score(a);
  })[0];
- if(!item)return noIngredientFallback||{found:false,verdict:'unknown',reasons:['No matching public product record; do not assume halal.'],coverageNote:'This standalone GitHub Pages edition queries Open Food Facts; its coverage is incomplete.'};
+ if(!item)return noIngredientFallback||(isBarcode?await lookupRetailBarcode(query):null)||{found:false,verdict:'unknown',reasons:['No matching public product record; do not assume halal.'],coverageNote:'This standalone GitHub Pages edition queries Open Food Facts; its coverage is incomplete.'};
  if(isBarcode && !barcodeEquivalent(String(item.code||''),query))return noIngredientFallback||{found:false,verdict:'unknown',reasons:['Barcode did not exactly match returned product.']};
  const ingredients=item.ingredients_text_ja||item.ingredients_text||null;
  if(!ingredients && noIngredientFallback)return noIngredientFallback;
