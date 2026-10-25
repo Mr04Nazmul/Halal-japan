@@ -1,4 +1,5 @@
 import React,{useState,useEffect,useRef} from 'react';
+import PriceHistory from '../components/PriceHistory';
 import { BrowserMultiFormatReader, BrowserCodeReader } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import {ScanLine,Search,ShieldCheck,MapPin,Languages,Info,Camera, X,CheckCircle2,AlertTriangle,PackageSearch,Heart,User,BookmarkPlus,ArrowRight,ChevronRight,ScanBarcode,FileText,Compass,Leaf,Clock3,Keyboard,ArrowUpRight,Store} from 'lucide-react';
@@ -91,6 +92,7 @@ export default function Home(){
     <div className={styles.statusLarge} data-verdict={result.verdict}>{result.verdict==='haram_ingredient'?'HARAM · Flagged ingredient':result.verdict==='certified'&&result.certificate&&isCertificateDisplayCurrent(result.certificate)?'HALAL · Certified':result.verdict==='ingredient_clear'?'HALAL · Ingredient Check':result.verdict==='needs_review'&&result.findings?.length?'CHECK · Ingredient origin':result.verdict==='needs_review'?'CHECK · Full label':'UNKNOWN · More evidence needed'}</div>
    </div>
   </div>
+  <PriceHistory code={result.code}/>
   <section className={styles.ingredientPanel} aria-label="Product ingredients">
    <div className={styles.ingredientHeading}><FileText size={20}/><h4>Ingredients <span>原材料名・添加物</span></h4></div>
    <p>{result.ingredients_text||'A verified full ingredient declaration is not yet linked to this barcode.'}</p>
