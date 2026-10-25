@@ -20,7 +20,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test OFF Japanese-language and JAN candidate validation
-        run: python -m unittest discover -s tests -p 'test_off_japanese_candidates.py' -v
+        run: |
+          python -m unittest discover -s tests -p 'test_off_japanese_candidates.py' -v
+          python -m unittest discover -s tests -p 'test_japan_ingredient_policy.py' -v
+          python -m unittest discover -s tests -p 'test_japan_ingredient_food_filter.py' -v
       - name: Install live scanner dependencies
         working-directory: floot-source
         run: npm install --no-audit --no-fund

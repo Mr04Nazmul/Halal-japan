@@ -2,7 +2,7 @@
 import re
 import unicodedata
 
-RULE_VERSION = 'user-ingredients-2026-10-25-v2'
+RULE_VERSION = 'user-ingredients-2026-10-25-v3'
 TERMS = {
     'pork': r'豚肉|豚脂|豚骨|豚エキス|豚由来|ポーク|ラード|\b(?:pork|porcine|lard)\b',
     'gelatin': r'ゼラチン|\bgelatine?\b',
@@ -13,7 +13,7 @@ TERMS = {
     'lecithin': r'レシチン|\blecithin\b',
     'processed_fat': r'加工油脂|\bprocessed fats?\b',
     'hydrolyzed_protein': r'(?:たんぱく|たん白|タンパク|蛋白)加水分解物|\bhydroly[sz]ed protein\b',
-    'fermented_seasoning': r'発酵調味料|醗酵調味料|\bfermented seasoning\b',
+    'fermented_seasoning': r'発酵調味料|醗酵調味料|発酵調味液|醗酵調味液|\bfermented seasoning\b',
     'cooking_alcohol': r'料理酒|みりん|味醂|酒精|アルコール|洋酒|清酒|日本酒|赤ワイン|白ワイン|輸入ワイン|ワイン(?!ビネガー|酢)|\b(?:cooking sake|rice wine|mirin|ethanol|alcohol|wine)\b',
 }
 
@@ -23,6 +23,9 @@ def screen(ingredients, additives='', complete=True, product_name=''):
             'decision_basis':'user_configured_ingredient_rules','matched_terms':[]}
     if not complete or not text or text in {'不明','unknown','n/a','none'} or re.fullmatch(r'(?:無添加|豚肉不使用|ハラール|halal|organic)[\s、,。]*',text):
         return dict(result,rule_result='UNKNOWN',reason='complete_ingredients_required')
+    # A location pointer is not an ingredient declaration, even on an official page.
+    if re.fullmatch(r'(?:枠外|裏面|別紙|パッケージ).{0,35}(?:記載|参照)',text):
+        return dict(result,rule_result='UNKNOWN',reason='ingredient_label_location_only')
     text+=' '+unicodedata.normalize('NFKC',str(additives or '')).lower()
     # Remove only explicit absence claims; subsequent positive ingredients stay.
     text=re.sub(r'(?:豚肉|ポーク|ラード|ゼラチン|乳化剤|香料|アルコール|酒精)\s*(?:は|を)?\s*(?:不使用|無添加|含まれていません|含まない)', ' ', text)
@@ -37,7 +40,7 @@ def screen(ingredients, additives='', complete=True, product_name=''):
     # Product identity is essential: ingredients alone must not mark wine/beer HALAL.
     name=unicodedata.normalize('NFKC',str(product_name or '')).lower()
     if not re.search(r'ノンアルコール|ノンアル|アルコール0|アルコールゼロ',name):
-        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン',name)
+        alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン|(?:麦|芋)職人|鬼ころし|彩の香\s*(?:麦|芋)',name)
         if alcohol:hits.append({'rule':'alcoholic_product_name','text':alcohol.group(0)})
     return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
                 reason='matched_user_prohibited_terms' if hits else 'no_user_prohibited_term_in_displayed_ingredients')

@@ -33,6 +33,20 @@ class Rules(unittest.TestCase):
         self.assertEqual(screen('米、清酒')['rule_result'],'HARAM')
         self.assertEqual(screen('麦芽、ホップ',product_name='ノンアルコールビール')['rule_result'],'HALAL')
         self.assertEqual(screen('ぶどう酢',product_name='ワインビネガー')['rule_result'],'HALAL')
+    def test_official_seven_premium_regressions(self):
+        for name, ingredients in [
+            ('麦職人 1800ml','麦（オーストラリア産、国産）、麦麹'),
+            ('麦職人 900ml','麦、麦麹'),
+            ('芋職人 1800ml','さつまいも、米麹'),
+            ('芋職人 900ml','さつまいも、米麹'),
+        ]:
+            with self.subTest(name=name):
+                result=screen(ingredients,product_name=name)
+                self.assertEqual(result['rule_result'],'HARAM')
+                self.assertFalse(result['halal_certified'])
+        self.assertEqual(screen('枠外表面下部に記載')['rule_result'],'UNKNOWN')
+        self.assertEqual(screen('米、発酵調味液')['rule_result'],'HARAM')
+
     def test_clear_is_policy_only(self):
         r=screen('米(国産)、食塩')
         self.assertEqual(r['rule_result'],'HALAL')
