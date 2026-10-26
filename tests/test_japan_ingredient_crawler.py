@@ -119,6 +119,46 @@ class Extraction(unittest.TestCase):
    c.run([],2,1)
    self.assertEqual(visited,[navigation,product])
    c.db.close()
+ def test_pending_sitemap_outranks_old_navigation_backlog(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   nav='https://muso.co.jp/item/tag/older-list'
+   sitemap='https://muso.co.jp/product-sitemap.xml'
+   product='https://muso.co.jp/item/32882.html'
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(nav,),(sitemap,)])
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   def page(url):
+    visited.append(url)
+    if url==sitemap:return '<urlset><url><loc>'+product+'</loc></url></urlset>'
+    return HTML
+   c.request=page
+   c.run([],2,1)
+   self.assertEqual(visited,[sitemap,product])
+   self.assertEqual(c.count(),1)
+   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(nav,)).fetchone()[0],'pending')
+   c.db.close()
+
+ def test_new_sitemap_enqueued_mid_run_outranks_navigation(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   nav='https://muso.co.jp/item/tag/older-list'
+   seed='https://muso.co.jp/products/'
+   sitemap='https://muso.co.jp/product-sitemap.xml'
+   c.db.execute("INSERT INTO queue(url) VALUES(?)",(nav,))
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   def page(url):
+    visited.append(url)
+    if url==seed:return '<a href="'+sitemap+'">Site map</a>'
+    return '<urlset></urlset>'
+   c.request=page
+   c.run([seed],2,1)
+   self.assertEqual(visited,[seed,sitemap])
+   c.db.close()
+
  def test_extractor_upgrade_requeues_only_field_rejections_once(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
