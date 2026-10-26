@@ -58,8 +58,11 @@ def source(u):
  host=(urlsplit(u).hostname or '').lower()
  return next((d for d in SOURCES if host==d or host.endswith('.'+d)),None)
 def product_url(u):return bool((d:=source(u)) and re.search(SOURCES[d],u))
+def sitemap_url(u):
+ p=urlsplit(u).path.lower()
+ return bool(source(u) and 'sitemap' in p and p.endswith('.xml'))
 def allowed_link(u):
- if source(u) and 'sitemap' in urlsplit(u).path.lower() and urlsplit(u).path.endswith('.xml'):return True
+ if sitemap_url(u):return True
  return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|item(?:/category)?|products?(?:/|$)|jp/product|goods/|sweets/|business/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0
@@ -152,6 +155,9 @@ class Collector:
   if getattr(self,'product_priority_ready',False):
    self.db.executemany('INSERT OR IGNORE INTO product_priority(url) VALUES(?)',
     [(u,) for u in links if product_url(u)])
+  if getattr(self,'sitemap_priority_ready',False):
+   self.db.executemany('INSERT OR IGNORE INTO sitemap_priority(url) VALUES(?)',
+    [(u,) for u in links if sitemap_url(u)])
   self.db.commit()
  def request(self,url):
   url=canonical(url)
@@ -173,7 +179,7 @@ class Collector:
     if '<html' in raw.lower() or not re.search(r'^\s*(?:user-agent|sitemap)\s*:',raw,re.I|re.M):raise ValueError('invalid_robots_policy')
     rp.parse(raw.splitlines())
     for sm in re.findall(r'^Sitemap:\s*(https?://\S+)',raw,re.I|re.M):
-     if source(sm)==source(url):self.db.execute('INSERT OR IGNORE INTO queue(url) VALUES(?)',(sm,))
+     if source(sm)==source(url):self.enqueue([sm])
    except urllib.error.HTTPError as e:
     if e.code==404:rp.parse(['User-agent: *','Allow: /'])
     else:raise
@@ -224,15 +230,23 @@ class Collector:
   pending_products=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending'") if product_url(u)]
   self.db.executemany("INSERT OR IGNORE INTO product_priority(url) VALUES(?)",pending_products)
   self.product_priority_ready=True
+  # Robots-discovered sitemaps can expose thousands of product URLs in a
+  # single bounded request.  Process them before the stale navigation backlog.
+  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS sitemap_priority(url TEXT PRIMARY KEY)")
+  pending_sitemaps=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending' AND url LIKE '%sitemap%.xml%'") if sitemap_url(u)]
+  self.db.executemany("INSERT OR IGNORE INTO sitemap_priority(url) VALUES(?)",pending_sitemaps)
+  self.sitemap_priority_ready=True
   end=time.monotonic()+minutes*60;done=0
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
-    # First seeded URLs, then pending product URLs, then discovery pages.
+    # Product details first, then XML sitemaps, then other seeded and queued
+    # discovery pages.  Never spend a bounded batch on old navigation while
+    # a known official product or sitemap is ready.
     # The indexed TEMP tables avoid calling Python regexes for every queued
     # URL on every iteration, which matters for 100k+ pending URLs.
     item=None
-    for priority in ('seed_priority','product_priority'):
+    for priority in ('product_priority','sitemap_priority','seed_priority'):
      item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
      if item:break
     if not item:
