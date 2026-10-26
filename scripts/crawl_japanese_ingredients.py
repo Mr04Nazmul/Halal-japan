@@ -17,6 +17,7 @@ UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-10-17-v3'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
+ 'pokkasapporo-fb.jp':r'/products/(?:[^/]+/){2}[A-Za-z0-9]+\.html$',
  'itoen.jp':r'/products/\d+/?$',
  'ucc.co.jp':r'/product/(?:regular|instant|drink|coffee|gift|drip-pod)/[^?#]+\.html$',
  'sbfoods.co.jp':r'/products/detail/\d+\.html',
