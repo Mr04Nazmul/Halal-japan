@@ -81,7 +81,7 @@ class Extraction(unittest.TestCase):
    old='https://muso.co.jp/item/10022.html'
    c.db.execute("INSERT INTO queue(url) VALUES(?)",(old,));c.db.commit()
    visited=[]
-   c.request=lambda u: 'User-agent: *\\nAllow: /' if u.endswith('/robots.txt') else (visited.append(u) or HTML)
+   c.request=lambda u: 'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else (visited.append(u) or HTML)
    c.run([URL],1,1)
    self.assertEqual(visited[0],URL)
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(old,)).fetchone()[0],'pending')
