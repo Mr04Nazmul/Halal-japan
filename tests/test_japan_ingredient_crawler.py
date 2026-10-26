@@ -35,6 +35,17 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
    c.db.close()
+ def test_official_itoen_and_ucc_product_patterns(self):
+  from crawl_japanese_ingredients import allowed_link
+  self.assertTrue(product_url('https://www.itoen.jp/products/43679/'))
+  self.assertTrue(product_url('https://www.ucc.co.jp/product/instant/class-one/class-one-bin-170g.html'))
+  self.assertTrue(product_url('https://www.ucc.co.jp/product/drink/coffee/cold-brew/cold-brew-latte.html'))
+  self.assertFalse(product_url('https://www.itoen.jp/products/'))
+  self.assertFalse(product_url('https://www.ucc.co.jp/product/'))
+  self.assertFalse(product_url('https://www.ucc.co.jp/product/instant/'))
+  self.assertFalse(product_url('https://www.itoen.jp.evil.example/products/43679/'))
+  self.assertTrue(allowed_link('https://www.itoen.jp/products/'))
+  self.assertTrue(allowed_link('https://www.ucc.co.jp/product/'))
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):
