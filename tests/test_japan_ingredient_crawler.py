@@ -46,6 +46,20 @@ class Extraction(unittest.TestCase):
   self.assertFalse(product_url('https://www.itoen.jp.evil.example/products/43679/'))
   self.assertTrue(allowed_link('https://www.itoen.jp/products/'))
   self.assertTrue(allowed_link('https://www.ucc.co.jp/product/'))
+ def test_pokka_sapporo_official_product_and_catalog(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.pokkasapporo-fb.jp/products/water/water/WW50.html'
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link(url))
+  self.assertTrue(allowed_link('https://www.pokkasapporo-fb.jp/products/new.html'))
+  self.assertFalse(product_url('https://www.pokkasapporo-fb.jp/products/new.html'))
+  self.assertFalse(product_url('https://www.pokkasapporo-fb.jp.evil.example/products/water/water/WW50.html'))
+  html='<h1>Green Pack Water（195g）</h1><table><tr><th>JANコード</th><td>4902471103814</td></tr><tr><th>原材料</th><td>水（純水）</td></tr></table>'
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['jan'],'4902471103814')
+  self.assertEqual(record['ingredients_ja'],'水（純水）')
+  self.assertFalse(record['halal_certified'])
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):
