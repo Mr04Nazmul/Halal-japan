@@ -46,7 +46,7 @@ SOURCES={
  'nagatanien.co.jp':r'/product/detail/\d+',
  'tablemark.co.jp':r'/products/.*/detail/',
  'yamamori.co.jp':r'/business/[^/]+',
- 'kagome.co.jp':r'/foodservice/(?:dry|frozen|chilled)/\d+/',
+ 'kagome.co.jp':r'/foodservice/(?:dry|frozen|chilled)/\d+/?\Z',
 }
 LABELS={'原材料','原材料名','原材料名/添加物名','原材料(一括表示ラベル)'}
 GENERIC_NAMES={'商品情報','商品紹介','製品情報','商品一覧','商品ラインナップ','基本情報'}
