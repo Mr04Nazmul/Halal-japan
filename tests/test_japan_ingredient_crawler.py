@@ -60,6 +60,28 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['jan'],'4902471103814')
   self.assertEqual(record['ingredients_ja'],'水（純水）')
   self.assertFalse(record['halal_certified'])
+ def test_asahi_official_product_and_hyphenated_jan(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.asahiinryo.co.jp/products/milkybeverage/gungun_yogurun/2E2AA.html'
+  self.assertTrue(product_url(url))
+  self.assertTrue(product_url('https://www.asahiinryo.co.jp/products/others/koku_uma/'))
+  self.assertFalse(product_url('https://www.asahiinryo.co.jp/products/'))
+  self.assertFalse(product_url('https://www.asahiinryo.co.jp.evil.example/products/milkybeverage/gungun_yogurun/2E2AA.html'))
+  self.assertTrue(allowed_link('https://www.asahiinryo.co.jp/products/'))
+  html='''<h1>ぐんぐんヨグルン PET500ml</h1><table>
+  <tr><th>原材料名</th><td>果糖ぶどう糖液糖（国内製造）、脱脂粉乳、乳酸菌飲料、食塩／酸味料、香料</td></tr>
+  <tr><th>JANコード</th><td>49-01340-09964-7</td></tr></table>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['jan'],'4901340099647')
+  self.assertEqual(record['name_ja'],'ぐんぐんヨグルン PET500ml')
+  self.assertFalse(record['halal_certified'])
+  self.assertEqual(record['source_publisher'],'asahiinryo.co.jp')
+  bad=html.replace('49-01340-09964-7','49-01340-09964-0')
+  record,error=extract(bad,url)
+  self.assertIsNone(error)
+  self.assertIsNone(record['jan'])
+
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):
