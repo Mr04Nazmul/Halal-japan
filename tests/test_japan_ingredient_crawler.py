@@ -225,4 +225,22 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['source_publisher'],'kagome.co.jp')
   self.assertFalse(record['halal_certified'])
 
+ def test_agf_official_product_name_ingredients_and_jan(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://agf.ajinomoto.co.jp/product/detail/74230'
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link('https://agf.ajinomoto.co.jp/product/'))
+  self.assertFalse(product_url('https://agf.ajinomoto.co.jp/product/'))
+  self.assertFalse(product_url('https://agf.ajinomoto.co.jp.evil.example/product/detail/74230'))
+  html='''<h1>「森彦の時間®」 まろやか</h1>
+  <h2>「森彦の時間®」 まろやか１２０ｇ</h2>
+  <p>原材料名</p><p>コーヒー豆</p>
+  <p>JANコード</p><p>4901111554733</p>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'「森彦の時間®」 まろやか１２０ｇ')
+  self.assertEqual(record['jan'],'4901111554733')
+  self.assertEqual(record['ingredients_ja'],'コーヒー豆')
+  self.assertFalse(record['halal_certified'])
+
 if __name__=='__main__':unittest.main()

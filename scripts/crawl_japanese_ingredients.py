@@ -47,6 +47,7 @@ SOURCES={
  'tablemark.co.jp':r'/products/.*/detail/',
  'yamamori.co.jp':r'/business/[^/]+',
  'kagome.co.jp':r'/foodservice/(?:dry|frozen|chilled)/\d+/?\Z',
+ 'agf.ajinomoto.co.jp':r'/product/detail/\d+/?$',
 }
 LABELS={'原材料','原材料名','原材料名/添加物名','原材料(一括表示ラベル)'}
 GENERIC_NAMES={'商品情報','商品紹介','製品情報','商品一覧','商品ラインナップ','基本情報'}
@@ -111,6 +112,10 @@ def extract(html,url):
   original_title=soup.title.get_text(' ',strip=True) if soup.title else ''
   parts=[x.strip() for x in original_title.split('|')]
   if len(parts)>2:name=parts[2]
+ if source(url)=='agf.ajinomoto.co.jp':
+  # AGF H1 is a short brand title; the first product H2 has the full name.
+  product_heading=next((h.get_text(' ',strip=True) for h in soup.find_all('h2') if '商品詳細' not in h.get_text(' ',strip=True) and re.search(r'\d',h.get_text(' ',strip=True))),None)
+  if product_heading:name=product_heading
  name=re.sub(r'\s*の詳細情報$','',name).strip()
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if is_nonfood_name(name):return None,'non_human_food'
