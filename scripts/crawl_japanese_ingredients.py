@@ -46,6 +46,7 @@ SOURCES={
  'nagatanien.co.jp':r'/product/detail/\d+',
  'tablemark.co.jp':r'/products/.*/detail/',
  'yamamori.co.jp':r'/business/[^/]+',
+ 'kagome.co.jp':r'/foodservice/(?:dry|frozen|chilled)/\d+/?\Z',
 }
 LABELS={'原材料','原材料名','原材料名/添加物名','原材料(一括表示ラベル)'}
 GENERIC_NAMES={'商品情報','商品紹介','製品情報','商品一覧','商品ラインナップ','基本情報'}
@@ -65,7 +66,7 @@ def sitemap_url(u):
  return bool(source(u) and 'sitemap' in path and path.endswith('.xml'))
 def allowed_link(u):
  if sitemap_url(u):return True
- return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|item(?:/category)?|products?(?:/|$)|jp/product|goods/|sweets/|business/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
+ return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|item(?:/category)?|products?(?:/|$)|jp/product|goods/|sweets/|business/|foodservice/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0
 def clean_label(s):return unicodedata.normalize('NFKC',s).strip().strip('【】〖〗:：/／ ')
