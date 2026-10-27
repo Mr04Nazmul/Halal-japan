@@ -18,6 +18,7 @@ EXTRACTOR_VERSION='official-fields-2026-10-17-v3'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'pokkasapporo-fb.jp':r'/products/(?:[^/]+/){2}[A-Za-z0-9]+\.html$',
+ 'asahiinryo.co.jp':r'/products/(?:[^/]+/){2}(?:[A-Za-z0-9_-]+\.html)?$',
  'itoen.jp':r'/products/\d+/?$',
  'ucc.co.jp':r'/product/(?:regular|instant|drink|coffee|gift|drip-pod)/[^?#]+\.html$',
  'sbfoods.co.jp':r'/products/detail/\d+\.html',
@@ -116,7 +117,7 @@ def extract(html,url):
  for k,vs in fields.items():
   if re.fullmatch(r'JAN(?:コード|CODE)?|POSコード',k) or (source(url)=='kyoritsu-foods.co.jp' and k=='コード'):
    for v in vs:
-    codes.extend(c for c in re.findall(r'(?<!\d)\d{8,14}(?!\d)',v) if gtin(c))
+    codes.extend(c for match in re.findall(r'(?<!\d)(?:\d-?){7,13}\d(?!\d)',v) if (c:=re.sub(r'\D','',match)) and gtin(c))
  codes=list(dict.fromkeys(codes))
  additives=' '.join(dict.fromkeys(fields.get('添加物',[])))
  brand=next(iter(fields.get('メーカー名',[])),source(url))
