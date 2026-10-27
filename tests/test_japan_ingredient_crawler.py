@@ -115,6 +115,30 @@ class Extraction(unittest.TestCase):
    self.assertEqual(visited,[product])
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(navigation,)).fetchone()[0],'pending')
    c.db.close()
+ def test_official_sitemap_outranks_navigation_and_replenishes_product_queue(self):
+  from crawl_japanese_ingredients import allowed_link,sitemap_url
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   navigation='https://muso.co.jp/item/tag/old-list'
+   sitemap='https://muso.co.jp/sitemap-products.xml'
+   product='https://muso.co.jp/item/32882.html'
+   self.assertTrue(sitemap_url(sitemap))
+   self.assertTrue(allowed_link(sitemap))
+   self.assertFalse(sitemap_url('https://muso.co.jp.evil.example/sitemap.xml'))
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(sitemap,)])
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   def page(url):
+    visited.append(url)
+    if url==sitemap:return '<urlset><url><loc>'+product+'</loc></url></urlset>'
+    return HTML
+   c.request=page
+   c.run([],2,1)
+   self.assertEqual(visited,[sitemap,product])
+   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(navigation,)).fetchone()[0],'pending')
+   c.db.close()
+
  def test_discovered_product_is_prioritized_on_next_page(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
