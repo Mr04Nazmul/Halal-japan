@@ -117,7 +117,7 @@ def extract(html,url):
   # complete Japanese product name including pack size.
   product_heading=next((h.get_text(' ',strip=True) for h in soup.find_all('h2') if '商品詳細' not in h.get_text(' ',strip=True) and re.search(r'\d',h.get_text(' ',strip=True))),None)
   if product_heading:name=product_heading
- name=re.sub(r'\s*の詳細情報
+ name=re.sub(r'\s*の詳細情報$','',name).strip()
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
