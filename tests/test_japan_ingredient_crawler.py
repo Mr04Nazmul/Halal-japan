@@ -204,4 +204,25 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['rule_result'],'HARAM')
   self.assertFalse(record['halal_certified'])
 
+
+ def test_kagome_official_foodservice_products_and_ingredients(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.kagome.co.jp/foodservice/frozen/5615/'
+  self.assertTrue(product_url(url))
+  self.assertTrue(product_url('https://www.kagome.co.jp/foodservice/dry/3526/'))
+  self.assertTrue(allowed_link('https://www.kagome.co.jp/foodservice/'))
+  self.assertFalse(product_url('https://www.kagome.co.jp.evil.example/foodservice/frozen/5615/'))
+  self.assertFalse(product_url('https://www.kagome.co.jp/foodservice/frozen/'))
+  html='''<h1>赤・黄ピーマングリルのミックス</h1><dl>
+  <dt>商品名</dt><dd>赤・黄ピーマングリルのミックス</dd>
+  <dt>JANコード</dt><dd>4901306056158</dd>
+  <dt>原材料</dt><dd>グリル野菜（赤ピーマン、黄ピーマン）</dd>
+  </dl>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['jan'],'4901306056158')
+  self.assertEqual(record['ingredients_ja'],'グリル野菜（赤ピーマン、黄ピーマン）')
+  self.assertEqual(record['source_publisher'],'kagome.co.jp')
+  self.assertFalse(record['halal_certified'])
+
 if __name__=='__main__':unittest.main()
