@@ -5,8 +5,10 @@ that later appears as a crawler 'jan:<barcode>' identity. PostgREST's
 on_conflict=identity_key does not ignore the separate unique JAN index.
 """
 import json
+import re
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 
 
 def filter_existing_jan_conflicts(rows, base_url, key, opener=None):
@@ -70,10 +72,11 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
     base = base_url.rstrip("/") + "/rest/v1/jhc_crawler_ingredient_staging"
     existing = {}
     source_owners = {}
+    formula_owners = {}
     page_size = 1000
     offset = 0
     while True:
-        endpoint = (base + "?select=identity_key,source_url"
+        endpoint = (base + "?select=identity_key,source_url,product_name,ingredients_ja"
                     "&order=identity_key.asc&limit=" + str(page_size)
                     + "&offset=" + str(offset))
         req = urllib.request.Request(endpoint, headers=headers)
@@ -98,12 +101,22 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
             existing[ident] = source
             if source:
                 source_owners.setdefault(source, set()).add(ident)
+            # JAN-less crawls can rediscover the same formula under a different
+            # manufacturer product-page URL. Do not count those as new foods.
+            name = item.get("product_name")
+            ingredients = item.get("ingredients_ja")
+            if (source and isinstance(name, str) and name.strip()
+                    and isinstance(ingredients, str) and ingredients.strip()):
+                formula = (urlsplit(source).hostname,
+                           re.sub(r"\s+", "", name), ingredients.strip())
+                formula_owners.setdefault(formula, set()).add(ident)
         if len(found) < page_size:
             break
         offset += page_size
 
     safe, conflicts = [], []
     seen_sources = {}
+    seen_formulas = {}
     for row in rows:
         ident = row["identity_key"]
         source = row.get("source_url")
@@ -118,6 +131,23 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
         if any(owner != ident for owner in source_owners.get(source, ())):
             conflicts.append({"identity_key": ident, "source_url": source, "reason": "existing URL"})
             continue
+        # Only JAN-less/name identities are ambiguous: different valid JANs
+        # may legitimately represent different package sizes or variants.
+        if not row.get("jan_code") and not ident.startswith("jan:"):
+            name = row.get("product_name")
+            ingredients = row.get("ingredients_ja")
+            if isinstance(name, str) and name.strip() and isinstance(ingredients, str) and ingredients.strip():
+                formula = (urlsplit(source).hostname,
+                           re.sub(r"\s+", "", name), ingredients.strip())
+                if any(owner != ident for owner in formula_owners.get(formula, ())):
+                    conflicts.append({"identity_key": ident, "source_url": source,
+                                      "reason": "existing same-name same-ingredients"})
+                    continue
+                if formula in seen_formulas and seen_formulas[formula] != ident:
+                    conflicts.append({"identity_key": ident, "source_url": source,
+                                      "reason": "same-batch same-name same-ingredients"})
+                    continue
+                seen_formulas[formula] = ident
         seen_sources[source] = ident
         safe.append(row)
     return safe, conflicts
