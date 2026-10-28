@@ -102,6 +102,27 @@ class Extraction(unittest.TestCase):
   self.assertIsNone(error)
   self.assertIsNone(record['jan'])
 
+ def test_full_ingredient_label_outweighs_origin_material_rows(self):
+  # Nissin publishes the full declaration and a separate origin-of-materials
+  # table. The latter must not be treated as another competing ingredient list.
+  url='https://www.nissin.com/jp/product/items/11309/'
+  html='''<title>0秒チキンラーメン | 日清食品</title><h1>0秒チキンラーメン</h1>
+  <table><tr><th>JANコード</th><td>4902105112113</td></tr></table>
+  <section><h2>原材料名</h2><p>小麦粉（国内製造）、植物油脂、しょうゆ</p></section>
+  <h2>主な原材料の産地情報</h2>
+  <table><tr><th>原材料</th><td>小麦粉（小麦）</td></tr>
+  <tr><th>原材料</th><td>植物油脂（パーム）</td></tr></table>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['ingredients_ja'],'小麦粉（国内製造）、植物油脂、しょうゆ')
+  self.assertEqual(record['jan'],'4902105112113')
+  self.assertFalse(record['halal_certified'])
+  # Two different full ingredient declarations remain ambiguous: fail closed.
+  ambiguous=html.replace('</section>','<p>原材料名：豚肉、食塩</p></section>')
+  record,error=extract(ambiguous,url)
+  self.assertIsNone(record)
+  self.assertEqual(error,'missing_or_ambiguous_ingredients')
+
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):
