@@ -58,40 +58,56 @@ def filter_existing_jan_conflicts(rows, base_url, key, opener=None):
 
 
 def filter_existing_source_conflicts(rows, base_url, key, opener=None):
-    """Skip new identities whose official source URL is already in staging.
+    """Skip new identities whose source URL already belongs to another row.
 
-    A URL may first be imported under a URL/hash identity and later under
-    jan:<barcode>. Existing identities are left untouched; for *new* ones,
-    check source ownership before inserting. Failed lookups block the import.
+    Read the existing staging identity/source index in bounded, ordered pages.
+    The old 100-key PostgREST 'in' queries produced oversized URLs and could
+    fail before import. This also avoids one HTTP request per new source URL.
+    Any lookup error or malformed page fails closed without writing rows.
     """
-    from urllib.parse import quote
     opener = opener or urllib.request.urlopen
     headers = {"apikey": key, "Authorization": "Bearer " + key}
     base = base_url.rstrip("/") + "/rest/v1/jhc_crawler_ingredient_staging"
-    known = set()
-    keys = sorted({r["identity_key"] for r in rows})
-    for start in range(0, len(keys), 100):
-        batch = keys[start:start + 100]
-        ids = ",".join('"' + quote(k, safe="") + '"' for k in batch)
-        req = urllib.request.Request(
-            base + "?select=identity_key&identity_key=in.(" + ids + ")&limit=1000",
-            headers=headers)
+    existing = {}
+    source_owners = {}
+    page_size = 1000
+    offset = 0
+    while True:
+        endpoint = (base + "?select=identity_key,source_url"
+                    "&order=identity_key.asc&limit=" + str(page_size)
+                    + "&offset=" + str(offset))
+        req = urllib.request.Request(endpoint, headers=headers)
         try:
             with opener(req, timeout=30) as response:
                 found = json.loads(response.read())
         except (urllib.error.URLError, ValueError, OSError) as exc:
-            raise RuntimeError("Source dedup identity lookup failed; refusing unsafe import") from exc
-        if not isinstance(found, list) or any(
-            not isinstance(x, dict) or x.get("identity_key") not in batch for x in found
-        ):
-            raise RuntimeError("Source dedup identity lookup returned unexpected rows")
-        known.update(x["identity_key"] for x in found)
+            raise RuntimeError("Source dedup staging index lookup failed; refusing unsafe import") from exc
+        if not isinstance(found, list) or len(found) > page_size:
+            raise RuntimeError("Source dedup staging index returned malformed page")
+        for item in found:
+            if (not isinstance(item, dict)
+                    or not isinstance(item.get("identity_key"), str)
+                    or not item["identity_key"]
+                    or (item.get("source_url") is not None
+                        and not isinstance(item["source_url"], str))):
+                raise RuntimeError("Source dedup staging index returned malformed row")
+            ident = item["identity_key"]
+            if ident in existing:
+                raise RuntimeError("Source dedup staging index contains duplicate identity")
+            source = item.get("source_url")
+            existing[ident] = source
+            if source:
+                source_owners.setdefault(source, set()).add(ident)
+        if len(found) < page_size:
+            break
+        offset += page_size
+
     safe, conflicts = [], []
     seen_sources = {}
     for row in rows:
         ident = row["identity_key"]
         source = row.get("source_url")
-        if ident in known:
+        if ident in existing:
             safe.append(row)
             continue
         if not isinstance(source, str) or not source.startswith("https://"):
@@ -99,20 +115,7 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
         if source in seen_sources and seen_sources[source] != ident:
             conflicts.append({"identity_key": ident, "source_url": source, "reason": "same-batch URL"})
             continue
-        req = urllib.request.Request(
-            base + "?select=identity_key&source_url=eq." + quote(source, safe="") + "&limit=2",
-            headers=headers)
-        try:
-            with opener(req, timeout=30) as response:
-                found = json.loads(response.read())
-        except (urllib.error.URLError, ValueError, OSError) as exc:
-            raise RuntimeError("Source dedup URL lookup failed; refusing unsafe import") from exc
-        if not isinstance(found, list) or any(
-            not isinstance(x, dict) or not isinstance(x.get("identity_key"), str)
-            for x in found
-        ):
-            raise RuntimeError("Source dedup URL lookup returned unexpected rows")
-        if any(x["identity_key"] != ident for x in found):
+        if any(owner != ident for owner in source_owners.get(source, ())):
             conflicts.append({"identity_key": ident, "source_url": source, "reason": "existing URL"})
             continue
         seen_sources[source] = ident
