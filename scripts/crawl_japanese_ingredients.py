@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-10-28-v4'
+EXTRACTOR_VERSION='official-fields-2026-10-28-v5'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'pokkasapporo-fb.jp':r'/products/(?:[^/]+/){2}[A-Za-z0-9]+\.html$',
@@ -96,7 +96,13 @@ def extract(html,url):
   if nxt is None:
    nxt=el.find_next(lambda tag: tag.name in {'p','dd','td','li'} and clean_label(tag.get_text(' ',strip=True)) not in LABELS)
   if nxt is not None:fields.setdefault(label,[]).append(nxt.get_text(' ',strip=True))
- values=[v for k,vs in fields.items() if k in LABELS for v in vs]
+ # A labelled full declaration (原材料名) takes precedence over generic
+ # 原材料 rows in provenance/origin tables.  Combining those unrelated fields
+ # wrongly made valid Nissin product pages appear ambiguous.  Still reject
+ # conflicting values within the same declaration tier; never guess a recipe.
+ declared_labels=('原材料名','原材料名/添加物名','原材料(一括表示ラベル)')
+ declared=[v for k in declared_labels for v in fields.get(k,[])]
+ values=declared if declared else fields.get('原材料',[])
  values={normalized(v):v for v in values if 1<len(v)<12000 and re.search(r'[ぁ-んァ-ヶ一-龯]',v)}
  if len(values)!=1:return None,'missing_or_ambiguous_ingredients'
  ingredients=next(iter(values.values()))
