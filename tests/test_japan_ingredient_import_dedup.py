@@ -66,20 +66,18 @@ class SourceUrlCollisionTests(unittest.TestCase):
         calls = []
         def opener(req, timeout):
             calls.append(req.full_url)
-            if "identity_key=in." in req.full_url:
-                return io.BytesIO(b"[]")
-            self.assertIn("source_url=eq.", req.full_url)
-            return io.BytesIO(b'[{"identity_key":"url:existing-meiji"}]')
+            self.assertIn("select=identity_key,source_url", req.full_url)
+            self.assertNotIn("identity_key=in.", req.full_url)
+            return io.BytesIO(b'[{"identity_key":"url:existing-meiji","source_url":"https://www.meiji.co.jp/products/yogurt/4902705133099.html"}]')
         safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
         self.assertEqual(safe, [])
         self.assertEqual(len(conflicts), 1)
-        self.assertEqual(len(calls), 2)
+        self.assertEqual(len(calls), 1)
 
-    def test_existing_identity_is_idempotent_without_url_fetch(self):
+    def test_existing_identity_is_idempotent(self):
         row = {"identity_key": "jan:123", "source_url": "https://example.org/a"}
         def opener(req, timeout):
-            self.assertIn("identity_key=in.", req.full_url)
-            return io.BytesIO(b'[{"identity_key":"jan:123"}]')
+            return io.BytesIO(b'[{"identity_key":"jan:123","source_url":"https://example.org/a"}]')
         self.assertEqual(filter_existing_source_conflicts([row], "https://example", "test", opener),
                          ([row], []))
 
@@ -94,14 +92,37 @@ class SourceUrlCollisionTests(unittest.TestCase):
         self.assertEqual(len(safe), 1)
         self.assertEqual(len(conflicts), 1)
 
-    def test_failed_url_lookup_blocks_import(self):
-        row = {"identity_key": "jan:123", "source_url": "https://example.org/product"}
+    def test_failed_lookup_blocks_import(self):
         def opener(req, timeout):
-            if "identity_key=in." in req.full_url:
-                return io.BytesIO(b"[]")
             raise urllib.error.URLError("unavailable")
         with self.assertRaisesRegex(RuntimeError, "refusing unsafe import"):
-            filter_existing_source_conflicts([row], "https://example", "test", opener)
+            filter_existing_source_conflicts(
+                [{"identity_key": "jan:123", "source_url": "https://example.org/product"}],
+                "https://example", "test", opener)
+
+    def test_paged_index_detects_conflict_on_second_page(self):
+        calls = []
+        def opener(req, timeout):
+            calls.append(req.full_url)
+            if "offset=0" in req.full_url:
+                return io.BytesIO(json.dumps([
+                    {"identity_key": f"old:{i:04d}", "source_url": f"https://example.org/{i}"}
+                    for i in range(1000)]).encode())
+            self.assertIn("offset=1000", req.full_url)
+            return io.BytesIO(b'[{"identity_key":"old:last","source_url":"https://example.org/collision"}]')
+        rows = [{"identity_key": "jan:new", "source_url": "https://example.org/collision"}]
+        safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
+        self.assertEqual(safe, [])
+        self.assertEqual(len(conflicts), 1)
+        self.assertEqual(len(calls), 2)
+
+    def test_malformed_index_fails_closed(self):
+        def opener(req, timeout):
+            return io.BytesIO(b'[{"source_url":"https://example.org/a"}]')
+        with self.assertRaisesRegex(RuntimeError, "malformed row"):
+            filter_existing_source_conflicts(
+                [{"identity_key": "jan:new", "source_url": "https://example.org/a"}],
+                "https://example", "test", opener)
 
 
 if __name__ == "__main__":
