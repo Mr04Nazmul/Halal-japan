@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/off-japan-ingredients.yml'
+      - 'scripts/import_off_japan_ingredients.py'
+      - 'tests/test_off_japan_ingredient_retry.py'
   workflow_dispatch:
   schedule:
     - cron: '41 * * * *'
@@ -18,6 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Test bounded OFF retries and barcode gate
+        run: python -m unittest discover -s tests -p 'test_off_japan_ingredient_retry.py' -v
       - name: Fetch Japan ingredient evidence with attribution
         run: python scripts/import_off_japan_ingredients.py --pages 5 --page-size 100
       - uses: actions/upload-artifact@v4
