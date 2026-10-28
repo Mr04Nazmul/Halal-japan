@@ -124,11 +124,10 @@ def extract(html,url):
   if re.fullmatch(r'JAN(?:コード|CODE)?|POSコード',k) or (source(url)=='kyoritsu-foods.co.jp' and k=='コード'):
    for v in vs:
     codes.extend(c for match in re.findall(r'(?<!\d)(?:\d-?){7,13}\d(?!\d)',v) if (c:=re.sub(r'\D','',match)) and gtin(c))
- # The official Kyoritsu shop uses a free-standing JAN label/value pair,
- # rather than a table cell. Accept only one checksum-valid code adjacent
- # to that exact label; do not infer a barcode from a product identifier.
+ # The official Kyoritsu shop displays JAN next to a free-standing label.
+ # Use only an adjacent, checksum-valid JAN-13; never infer it from a URL.
  if urlsplit(url).hostname=='shop.kyoritsu-foods.co.jp' and not codes:
-  for raw_code in re.findall(r'JANコード\\s*([0-9]{13})(?![0-9])',soup.get_text(' ',strip=True)):
+  for raw_code in re.findall(r'JANコード\s*([0-9]{13})(?![0-9])',soup.get_text(' ',strip=True)):
    if gtin(raw_code):codes.append(raw_code)
  codes=list(dict.fromkeys(codes))
  additives=' '.join(dict.fromkeys(fields.get('添加物',[])))
@@ -302,8 +301,7 @@ if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1500);p.add_argument('--minutes',type=float,default=35);p.add_argument('--checkpoint-only',action='store_true')
  a=p.parse_args();c=Collector(a.state,a.target)
  if a.checkpoint_only:c.checkpoint()
- else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes)
-,
+ else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes),
  'muso.co.jp':r'/item/\d+\.html',
  'ohsawa-japan.co.jp':r'actmode=ItemDetail.*iid=\d+|iid=\d+.*actmode=ItemDetail',
  'sokensha.co.jp':r'/products/product_detail/\d+',
@@ -577,8 +575,7 @@ if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1500);p.add_argument('--minutes',type=float,default=35);p.add_argument('--checkpoint-only',action='store_true')
  a=p.parse_args();c=Collector(a.state,a.target)
  if a.checkpoint_only:c.checkpoint()
- else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes)
-,raw,re.S)
+ else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes),raw,re.S)
   if combined:
    fields.setdefault(combined.group(1),[]).append(combined.group(2).strip())
    continue
@@ -792,8 +789,7 @@ if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1500);p.add_argument('--minutes',type=float,default=35);p.add_argument('--checkpoint-only',action='store_true')
  a=p.parse_args();c=Collector(a.state,a.target)
  if a.checkpoint_only:c.checkpoint()
- else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes)
-,
+ else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes),
  'muso.co.jp':r'/item/\d+\.html',
  'ohsawa-japan.co.jp':r'actmode=ItemDetail.*iid=\d+|iid=\d+.*actmode=ItemDetail',
  'sokensha.co.jp':r'/products/product_detail/\d+',
