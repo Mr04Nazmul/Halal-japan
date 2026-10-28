@@ -11,10 +11,10 @@ from urllib.parse import urlsplit,urlunsplit,urljoin,parse_qsl,urlencode,quote
 from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
-from japan_ingredient_food_filter import is_nonfood_name
+from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-10-28-v5'
+EXTRACTOR_VERSION='official-fields-2026-10-28-v6'
 SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'pokkasapporo-fb.jp':r'/products/(?:[^/]+/){2}[A-Za-z0-9]+\.html$',
@@ -106,6 +106,7 @@ def extract(html,url):
  values={normalized(v):v for v in values if 1<len(v)<12000 and re.search(r'[ぁ-んァ-ヶ一-龯]',v)}
  if len(values)!=1:return None,'missing_or_ambiguous_ingredients'
  ingredients=next(iter(values.values()))
+ if is_nonfood_ingredient_text(ingredients):return None,'non_ingredient_text'
  if re.match(r'^\s*(?:添加物|添加物名)\s*[:：]',ingredients):return None,'additives_only_incomplete_ingredients'
  if re.search(r'原材料名が入ります|原材料名欄では|アレルゲン情報|栄養成分表示|https?://|\ufffd',ingredients):return None,'non_ingredient_text'
  # Some official product pages render an empty decorative H1 before the
@@ -167,6 +168,18 @@ class Collector:
    # Revisit only pages rejected by older field extraction.  Network failures,
    # robots decisions and accepted records are not reset.
    self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity') OR error LIKE 'UnicodeEncodeError:%'")
+   # Revisit invalid legacy accepted records without altering prior artifacts.
+   invalid=[]
+   for ident,payload in self.db.execute('SELECT id,payload FROM products'):
+    try:record=json.loads(payload)
+    except (TypeError,ValueError):continue
+    if is_nonfood_ingredient_text(record.get('ingredients_ja')):
+     invalid.append((ident,record.get('source_url')))
+   for ident,url in invalid:
+    self.db.execute('DELETE FROM products WHERE id=?',(ident,))
+    if url:
+     self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE url=?",(url,))
+   if invalid:print(f"Quarantined {len(invalid)} invalid legacy checkpoint records",flush=True)
    self.db.execute("INSERT OR REPLACE INTO metadata VALUES('extractor_version',?)",(EXTRACTOR_VERSION,))
    self.db.commit()
   self.robots={};self.last={}
