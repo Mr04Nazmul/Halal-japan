@@ -56,6 +56,9 @@ def fetch_products(url, *, opener=None, sleeper=None, attempts=3):
             retry_after = (exc.headers.get("Retry-After") or "").strip() if exc.headers else ""
             delay = 3 * (2 ** attempt)
             if retry_after.isdigit():
+                # Respect upstream rate limits: do not retry if wait exceeds budget.
+                if int(retry_after) > 30:
+                    raise
                 delay = max(delay, int(retry_after))
             delay = min(30, delay)
             print(f"OFF HTTP {exc.code}; retry {attempt + 2}/{attempts} in {delay}s", flush=True)
