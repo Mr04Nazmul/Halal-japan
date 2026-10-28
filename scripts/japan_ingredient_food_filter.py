@@ -4,6 +4,7 @@ Only definite household, cosmetic, pet-care and hygiene terms are excluded;
 uncertain products remain subject to human review.
 """
 import re
+import unicodedata
 
 NONFOOD_NAME=re.compile(
     r"(?:ナプキン|スカルプリッチ|ペット(?:用|フード)|ドッグフード|キャットフード|犬用|猫用|洗剤|シャンプー|化粧|石けん|石鹸|石鹼|せっけん|"
@@ -13,3 +14,13 @@ NONFOOD_NAME=re.compile(
 
 def is_nonfood_name(name):
     return isinstance(name,str) and bool(NONFOOD_NAME.search(name))
+
+# An origin heading or packaging polymer is not a food ingredient declaration.
+# Exact normalized matching avoids rejecting legitimate multi-item recipes.
+INVALID_INGREDIENT_TEXT = frozenset({'主な原材料の産地', 'ポリエチレン'})
+
+def is_nonfood_ingredient_text(value):
+    if not isinstance(value,str):
+        return False
+    normalized = ''.join(unicodedata.normalize('NFKC',value).split())
+    return normalized in INVALID_INGREDIENT_TEXT
