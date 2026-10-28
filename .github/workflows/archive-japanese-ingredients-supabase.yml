@@ -1,6 +1,9 @@
 name: Archive Japanese Ingredients to Supabase
 on:
   workflow_dispatch:
+  # Fallback for delayed/missed workflow_run notifications; imports are idempotent.
+  schedule:
+    - cron: '42 * * * *'
   push:
     branches: [main]
     paths:
