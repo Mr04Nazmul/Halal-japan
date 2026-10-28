@@ -29,7 +29,7 @@ class OpenFoodFactsRetryTests(unittest.TestCase):
         self.assertEqual(len(calls), 2)
         self.assertEqual(sleeps, [3])
 
-    def test_retry_after_is_capped(self):
+    def test_long_retry_after_stops_to_respect_rate_limit(self):
         calls = []
 
         def opener(request, timeout):
@@ -40,9 +40,11 @@ class OpenFoodFactsRetryTests(unittest.TestCase):
             return io.BytesIO(b'{"products":[]}')
 
         sleeps = []
-        self.assertEqual(collector.fetch_products("https://world.openfoodfacts.org/test",
-                                                  opener=opener, sleeper=sleeps.append), [])
-        self.assertEqual(sleeps, [30])
+        with self.assertRaises(urllib.error.HTTPError):
+            collector.fetch_products("https://world.openfoodfacts.org/test",
+                                     opener=opener, sleeper=sleeps.append)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(sleeps, [])
 
     def test_401_is_not_retried(self):
         calls = []
