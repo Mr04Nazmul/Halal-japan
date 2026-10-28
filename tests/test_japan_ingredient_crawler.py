@@ -82,6 +82,26 @@ class Extraction(unittest.TestCase):
   self.assertIsNone(error)
   self.assertIsNone(record['jan'])
 
+ def test_nissin_official_product_with_blank_decorative_h1(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.nissin.com/jp/product/items/11309/'
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link(url))
+  self.assertFalse(product_url('https://www.nissin.com.evil.example/jp/product/items/11309/'))
+  html='''<title>0秒チキンラーメン | 日清食品グループ</title>
+  <h1> </h1><h1>0秒チキンラーメン</h1>
+  <table><tr><th>JANコード</th><td>4902105112113</td></tr></table>
+  <section><h2>原材料名</h2><p>小麦粉（国内製造）、植物油脂、しょうゆ</p></section>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'0秒チキンラーメン')
+  self.assertEqual(record['jan'],'4902105112113')
+  self.assertEqual(record['ingredients_ja'],'小麦粉（国内製造）、植物油脂、しょうゆ')
+  self.assertFalse(record['halal_certified'])
+  record,error=extract(html.replace('4902105112113','invalid'),url)
+  self.assertIsNone(error)
+  self.assertIsNone(record['jan'])
+
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):
