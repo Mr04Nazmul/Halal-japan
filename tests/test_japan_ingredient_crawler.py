@@ -6,6 +6,25 @@ from crawl_japanese_ingredients import Collector,extract,product_url,canonical
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
 class Extraction(unittest.TestCase):
+ def test_reject_origin_heading_and_packaging_polymer(self):
+  for value in ('主な原材料の産地','ポリエチレン'):
+   with self.subTest(value=value):
+    r,e=extract(HTML.replace('米、食塩',value),URL)
+    self.assertIsNone(r)
+    self.assertEqual(e,'non_ingredient_text')
+ def test_quarantine_legacy_checkpoint_on_upgrade(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   url='https://housefoods.jp/products/catalog/cd_1,082675,spice2,youfu,all.html'
+   c.db.execute("INSERT INTO queue(url,status) VALUES(?,?)",(url,'done'))
+   record={'ingredients_ja':'主な原材料の産地','source_url':url}
+   c.db.execute("INSERT INTO products(id,formula,payload) VALUES(?,?,?)",('old:placeholder','x',json.dumps(record)))
+   c.db.execute("UPDATE metadata SET value='old-extractor' WHERE key='extractor_version'")
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.count(),0)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'pending')
+   c.db.close()
  def test_exact_ingredient_field_and_explicit_jan(self):
   r,e=extract(HTML,URL)
   self.assertIsNone(e);self.assertEqual(r['ingredients_ja'],'米、食塩');self.assertEqual(r['jan'],'4973728910141')
