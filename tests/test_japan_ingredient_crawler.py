@@ -200,7 +200,7 @@ class Extraction(unittest.TestCase):
   record,error=extract(html,url)
   self.assertIsNone(error)
   self.assertEqual(record['jan'],'4901325404770')
-  self.assertEqual(record['ingredients_ja'],'ピスタチオ（アメリカ）')
+  self.assertEqual(record['ingredients_ja'],'ピスタチオ(アメリカ)')
   self.assertFalse(record['halal_certified'])
   self.assertFalse(product_url('https://shop.kyoritsu-foods.co.jp.evil.example/item-detail/1946407'))
   bad=html.replace('4901325404770','4901325404771')
