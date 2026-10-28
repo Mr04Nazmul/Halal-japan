@@ -22,7 +22,7 @@ SOURCES={
  'itoen.jp':r'/products/\d+/?$',
  'ucc.co.jp':r'/product/(?:regular|instant|drink|coffee|gift|drip-pod)/[^?#]+\.html$',
  'sbfoods.co.jp':r'/products/detail/\d+\.html',
- 'kyoritsu-foods.co.jp':r'/product/\d+/',
+ 'kyoritsu-foods.co.jp':r'(?:/product/\d+/|/item-detail/\d+)$',
  'muso.co.jp':r'/item/\d+\.html',
  'ohsawa-japan.co.jp':r'actmode=ItemDetail.*iid=\d+|iid=\d+.*actmode=ItemDetail',
  'sokensha.co.jp':r'/products/product_detail/\d+',
@@ -82,7 +82,7 @@ def extract(html,url):
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
  for el in soup.find_all(['h2','h3','h4','strong','b','p']):
   raw=unicodedata.normalize('NFKC',el.get_text(' ',strip=True))
-  combined=re.match(r'^(原材料名/添加物名|原材料名|原材料|原材料\(一括表示ラベル\))\s*[/／:：]\s*(.+)$',raw,re.S)
+  combined=re.match(r'^[●•\s]*(原材料名/添加物名|原材料名|原材料|原材料\(一括表示ラベル\))\s*(?:[/／:：]|…|\.\.\.)\s*(.+)$',raw,re.S)
   if combined:
    fields.setdefault(combined.group(1),[]).append(combined.group(2).strip())
    continue
@@ -124,6 +124,11 @@ def extract(html,url):
   if re.fullmatch(r'JAN(?:コード|CODE)?|POSコード',k) or (source(url)=='kyoritsu-foods.co.jp' and k=='コード'):
    for v in vs:
     codes.extend(c for match in re.findall(r'(?<!\d)(?:\d-?){7,13}\d(?!\d)',v) if (c:=re.sub(r'\D','',match)) and gtin(c))
+ # The official Kyoritsu shop displays JAN next to a free-standing label.
+ # Use only an adjacent, checksum-valid JAN-13; never infer it from a URL.
+ if urlsplit(url).hostname=='shop.kyoritsu-foods.co.jp' and not codes:
+  for raw_code in re.findall(r'JANコード\s*([0-9]{13})(?![0-9])',soup.get_text(' ',strip=True)):
+   if gtin(raw_code):codes.append(raw_code)
  codes=list(dict.fromkeys(codes))
  additives=' '.join(dict.fromkeys(fields.get('添加物',[])))
  brand=next(iter(fields.get('メーカー名',[])),source(url))

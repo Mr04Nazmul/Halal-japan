@@ -190,6 +190,24 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status FROM queue').fetchone()[0],'done')
 
+ def test_kyoritsu_shop_official_single_product_ingredients_and_jan(self):
+  url='https://shop.kyoritsu-foods.co.jp/item-detail/1946407'
+  self.assertTrue(product_url(url))
+  html='''<title>素焼きピスタチオ | 共立食品ショップ</title>
+  <h1>【1個】素焼きピスタチオ 500G</h1>
+  <div>JANコード</div><div>4901325404770</div>
+  <p>●原材料名…ピスタチオ（アメリカ）</p>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['jan'],'4901325404770')
+  self.assertEqual(record['ingredients_ja'],'ピスタチオ(アメリカ)')
+  self.assertFalse(record['halal_certified'])
+  self.assertFalse(product_url('https://shop.kyoritsu-foods.co.jp.evil.example/item-detail/1946407'))
+  bad=html.replace('4901325404770','4901325404771')
+  record,error=extract(bad,url)
+  self.assertIsNone(error)
+  self.assertIsNone(record['jan'])
+
  def test_kyoritsu_official_product_code_and_pork_gelatin(self):
   url='https://www.kyoritsu-foods.co.jp/product/275/'
   html='''<h1>ゼラチンリーフ</h1><table>
