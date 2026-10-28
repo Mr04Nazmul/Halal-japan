@@ -118,3 +118,4 @@ jobs:
         run: cat crawler-state/summary.json >> "$GITHUB_STEP_SUMMARY"
 
 # Manual batch wake: 2026-10-17T21:53+09:00 (resume existing checkpoint; keep 100000 target)
+# Manual batch wake: 2026-10-28T21:17+09:00 (resume latest validated checkpoint after importer fix)
