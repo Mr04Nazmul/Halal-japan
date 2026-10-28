@@ -17,7 +17,7 @@ assert isinstance(items,list), "Expected cumulative array of ingredient products
 from japan_ingredient_barcodes import jan_valid
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text
 from japan_ingredient_policy import screen
-from japan_ingredient_import_dedup import filter_existing_jan_conflicts
+from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts
 rows=[]
 seen=set()
 rejections={}
@@ -74,25 +74,19 @@ for p in items:
                   "verification_status":"official_ingredient_field_captured_pending_human_review",
                   "research_only":True,"packaging_verified":False},
         snapshot_hash=p.get("source_html_sha256"),collected_at=p.get("retrieved_at")))
-# JAN-8 records may already have been researched under a URL-based identity.
-# Check source URL before inserting a new JAN identity to avoid duplicating those
-# earlier source-verified records. Fail closed on lookup errors.
-unique_rows=[]
-for row in rows:
-    jan=row["evidence"].get("original_barcode")
-    if jan and len(jan)==8:
-        lookup=url+"/rest/v1/jhc_crawler_ingredient_staging?select=identity_key&source_url=eq."+quote(row["source_url"],safe="")+"&limit=1"
-        req=urllib.request.Request(lookup,headers={"apikey":key,"Authorization":"Bearer "+key})
-        try:
-            with urllib.request.urlopen(req,timeout=30) as response:
-                existing=json.loads(response.read())
-        except (urllib.error.URLError,ValueError) as e:
-            sys.exit(f"JAN-8 source deduplication lookup failed; refusing unsafe import: {type(e).__name__}")
-        if existing and existing[0].get("identity_key")!=row["identity_key"]:
-            reject("existing source URL (JAN-8)")
-            continue
-    unique_rows.append(row)
-rows=unique_rows
+# A manufacturer URL may already exist under a URL/hash identity even when
+# this checkpoint later supplies a JAN-8 or JAN-13. Check only *new*
+# identities to avoid thousands of unnecessary per-URL requests on reruns.
+# Fail closed: do not overwrite or silently double-count an existing source.
+try:
+    rows, source_conflicts = filter_existing_source_conflicts(rows, url, key)
+except RuntimeError as exc:
+    sys.exit(str(exc))
+if source_conflicts:
+    print(f"Skipped {len(source_conflicts)} candidate identities with existing source URLs; examples: {source_conflicts[:5]}", flush=True)
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
+            report.write(f"Existing source URL collisions safely skipped: {len(source_conflicts)}.\n")
 # Preserve valid rows while quarantining and counting invalid records.
 # If more than 5% are rejected, fail rather than silently importing corrupt batches.
 rejected=len(items)-len(rows)
