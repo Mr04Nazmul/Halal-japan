@@ -55,3 +55,66 @@ def filter_existing_jan_conflicts(rows, base_url, key, opener=None):
         else:
             safe.append(row)
     return safe, conflicts
+
+
+def filter_existing_source_conflicts(rows, base_url, key, opener=None):
+    """Skip new identities whose official source URL is already in staging.
+
+    A URL may first be imported under a URL/hash identity and later under
+    jan:<barcode>. Existing identities are left untouched; for *new* ones,
+    check source ownership before inserting. Failed lookups block the import.
+    """
+    from urllib.parse import quote
+    opener = opener or urllib.request.urlopen
+    headers = {"apikey": key, "Authorization": "Bearer " + key}
+    base = base_url.rstrip("/") + "/rest/v1/jhc_crawler_ingredient_staging"
+    known = set()
+    keys = sorted({r["identity_key"] for r in rows})
+    for start in range(0, len(keys), 100):
+        batch = keys[start:start + 100]
+        ids = ",".join('"' + quote(k, safe="") + '"' for k in batch)
+        req = urllib.request.Request(
+            base + "?select=identity_key&identity_key=in.(" + ids + ")&limit=1000",
+            headers=headers)
+        try:
+            with opener(req, timeout=30) as response:
+                found = json.loads(response.read())
+        except (urllib.error.URLError, ValueError, OSError) as exc:
+            raise RuntimeError("Source dedup identity lookup failed; refusing unsafe import") from exc
+        if not isinstance(found, list) or any(
+            not isinstance(x, dict) or x.get("identity_key") not in batch for x in found
+        ):
+            raise RuntimeError("Source dedup identity lookup returned unexpected rows")
+        known.update(x["identity_key"] for x in found)
+    safe, conflicts = [], []
+    seen_sources = {}
+    for row in rows:
+        ident = row["identity_key"]
+        source = row.get("source_url")
+        if ident in known:
+            safe.append(row)
+            continue
+        if not isinstance(source, str) or not source.startswith("https://"):
+            raise RuntimeError("Source dedup requires a valid HTTPS source URL")
+        if source in seen_sources and seen_sources[source] != ident:
+            conflicts.append({"identity_key": ident, "source_url": source, "reason": "same-batch URL"})
+            continue
+        req = urllib.request.Request(
+            base + "?select=identity_key&source_url=eq." + quote(source, safe="") + "&limit=2",
+            headers=headers)
+        try:
+            with opener(req, timeout=30) as response:
+                found = json.loads(response.read())
+        except (urllib.error.URLError, ValueError, OSError) as exc:
+            raise RuntimeError("Source dedup URL lookup failed; refusing unsafe import") from exc
+        if not isinstance(found, list) or any(
+            not isinstance(x, dict) or not isinstance(x.get("identity_key"), str)
+            for x in found
+        ):
+            raise RuntimeError("Source dedup URL lookup returned unexpected rows")
+        if any(x["identity_key"] != ident for x in found):
+            conflicts.append({"identity_key": ident, "source_url": source, "reason": "existing URL"})
+            continue
+        seen_sources[source] = ident
+        safe.append(row)
+    return safe, conflicts
