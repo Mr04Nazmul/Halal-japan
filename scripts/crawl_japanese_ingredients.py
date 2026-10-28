@@ -102,8 +102,12 @@ def extract(html,url):
  ingredients=next(iter(values.values()))
  if re.match(r'^\s*(?:添加物|添加物名)\s*[:：]',ingredients):return None,'additives_only_incomplete_ingredients'
  if re.search(r'原材料名が入ります|原材料名欄では|アレルゲン情報|栄養成分表示|https?://|\ufffd',ingredients):return None,'non_ingredient_text'
- title=soup.find('h1')
+ # Some official product pages render an empty decorative H1 before the
+ # actual product title. Ignore blank headings rather than rejecting valid food.
+ title=next((h for h in soup.find_all('h1') if h.get_text(' ',strip=True)),None)
  name=next(iter(fields.get('商品名',[])),title.get_text(' ',strip=True) if title else '')
+ if not name and soup.title:
+  name=re.split(r'[|｜]',soup.title.get_text(' ',strip=True),maxsplit=1)[0].strip()
  if clean_label(name) in GENERIC_NAMES and soup.title:
   # Some official product pages use a generic H1 such as 商品情報 while the
   # product identity is the first, unambiguous segment of the HTML title.
