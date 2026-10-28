@@ -125,5 +125,64 @@ class SourceUrlCollisionTests(unittest.TestCase):
                 "https://example", "test", opener)
 
 
+    def test_same_name_same_formula_new_url_without_jan_is_skipped(self):
+        rows = [{"identity_key": "name:example.org|product", "jan_code": None,
+                 "product_name": "明星 評判屋 わんたん塩ラーメン",
+                 "ingredients_ja": "小麦粉、食塩",
+                 "source_url": "https://example.org/products/new"}]
+        def opener(req, timeout):
+            self.assertIn("product_name,ingredients_ja", req.full_url)
+            return io.BytesIO(json.dumps([{
+                "identity_key": "jan:4902881433792",
+                "source_url": "https://example.org/products/old",
+                "product_name": "明星評判屋わんたん塩ラーメン",
+                "ingredients_ja": "小麦粉、食塩"
+            }], ensure_ascii=False).encode())
+        safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
+        self.assertEqual(safe, [])
+        self.assertEqual(conflicts[0]["reason"], "existing same-name same-ingredients")
+
+    def test_same_name_changed_formula_remains_candidate(self):
+        rows = [{"identity_key": "name:example.org|product", "jan_code": None,
+                 "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩",
+                 "source_url": "https://example.org/products/new"}]
+        def opener(req, timeout):
+            return io.BytesIO(json.dumps([{
+                "identity_key": "jan:old", "source_url": "https://example.org/products/old",
+                "product_name": "同じ商品", "ingredients_ja": "小麦粉、砂糖"
+            }], ensure_ascii=False).encode())
+        safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
+        self.assertEqual(safe, rows)
+        self.assertEqual(conflicts, [])
+
+    def test_different_jan_preserves_distinct_packaging(self):
+        rows = [{"identity_key": "jan:4900000000001", "jan_code": "4900000000001",
+                 "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩",
+                 "source_url": "https://example.org/products/new"}]
+        def opener(req, timeout):
+            return io.BytesIO(json.dumps([{
+                "identity_key": "jan:4900000000002",
+                "source_url": "https://example.org/products/old",
+                "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩"
+            }], ensure_ascii=False).encode())
+        safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
+        self.assertEqual(safe, rows)
+        self.assertEqual(conflicts, [])
+
+    def test_same_batch_janless_formula_collision(self):
+        rows = [
+            {"identity_key": "name:one", "jan_code": None, "product_name": "同じ商品",
+             "ingredients_ja": "小麦粉、塩", "source_url": "https://example.org/one"},
+            {"identity_key": "name:two", "jan_code": None, "product_name": "同じ商品",
+             "ingredients_ja": "小麦粉、塩", "source_url": "https://example.org/two"}
+        ]
+        def opener(req, timeout):
+            return io.BytesIO(b"[]")
+        safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
+        self.assertEqual(len(safe), 1)
+        self.assertEqual(conflicts[0]["reason"], "same-batch same-name same-ingredients")
+
+
+
 if __name__ == "__main__":
     unittest.main()
