@@ -54,7 +54,7 @@ jobs:
       - name: Test fail-closed JAN-13 staging collision deduplication
         if: steps.secrets.outputs.ready == 'true'
         run: python -m unittest discover -s tests -p 'test_japan_ingredient_import_dedup.py' -v
-      - name: Restore highest verified cumulative checkpoint
+      - name: Restore latest validated cumulative checkpoint
         if: steps.secrets.outputs.ready == 'true'
         shell: bash
         run: |
@@ -85,9 +85,13 @@ jobs:
                       valid.append((count,p,summ))
               except Exception as e:print("Rejected checkpoint",p.name,type(e).__name__)
           if not valid:raise SystemExit("No valid cumulative checkpoint; refusing import")
-          count,p,summ=max(valid,key=lambda x:x[0])
+          # Prefer the newest validated artifact, not the largest historical
+          # count: extractor safety fixes deliberately quarantine bad records.
+          # Artifact IDs increase with creation time and are already filtered
+          # to nonexpired main-branch checkpoints above.
+          count,p,summ=max(valid,key=lambda x:int(x[1].name))
           shutil.copyfile(p/"products.json","verified-products.json")
-          print("Selected artifact",p.name,"eligible products",count,"explicit JAN",summ["with_explicit_jan"])
+          print("Selected latest valid artifact",p.name,"eligible products",count,"extractor",summ.get("extractor_version"),"explicit JAN",summ["with_explicit_jan"])
           PY
       - name: Idempotent staging import
         if: steps.secrets.outputs.ready == 'true'

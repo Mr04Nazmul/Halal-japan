@@ -74,14 +74,16 @@ jobs:
           print(expected)
           PY
             ) || continue
-            if [ "$count" -gt "$best_count" ]; then
-              best_count="$count"
-              best_run="$previous"
-            fi
+            # The newest *valid* checkpoint is authoritative. A safety fix may
+            # intentionally remove invalid products, so max(count) can restore
+            # stale data and replay the same queue indefinitely.
+            best_count="$count"
+            best_run="$previous"
+            break
           done
           if [ -n "$best_run" ]; then
             cp -a "crawler-candidates/$best_run/." crawler-state/
-            echo "Restored highest cumulative checkpoint: $best_count products from run $best_run"
+            echo "Restored latest valid checkpoint: $best_count products from run $best_run"
           else
             echo 'First hosted run: previous 721-record chat checkpoint is separate; revalidate official sources without adding unimported counts.'
           fi
