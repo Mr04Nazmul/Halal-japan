@@ -283,9 +283,18 @@ class Collector:
      item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
      if item:break
     if not item:
-     item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
+     # A large backlog of navigation links from one manufacturer can starve
+     # discovery on other official hosts. Rotate hosts only in this fallback:
+     # seeded products, pending products and sitemaps still take precedence.
+     previous_host=getattr(self,'last_navigation_host',None)
+     if previous_host:
+      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
+     if not item:
+      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
     if not item:break
     url,attempts=item;reason=None
+    if not product_url(url) and not sitemap_url(url):
+     self.last_navigation_host=urlsplit(url).netloc
     try:
      if not self.permitted(url):reason='robots_disallowed'
      else:
