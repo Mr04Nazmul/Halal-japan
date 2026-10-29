@@ -169,6 +169,23 @@ class SourceUrlCollisionTests(unittest.TestCase):
         self.assertEqual(safe, rows)
         self.assertEqual(conflicts, [])
 
+    def test_same_batch_janless_and_jan_prefers_jan_in_any_order(self):
+        janless = {"identity_key": "name:example.org|no-jan", "jan_code": None,
+                   "product_name": "明星 チャルメラカップ バリカタ麺豚骨",
+                   "ingredients_ja": "小麦粉、食塩",
+                   "source_url": "https://example.org/products/old"}
+        with_jan = {"identity_key": "jan:4902881456197", "jan_code": "4902881456197",
+                    "product_name": "明星 チャルメラカップ バリカタ麺豚骨",
+                    "ingredients_ja": "小麦粉、食塩",
+                    "source_url": "https://example.org/products/new"}
+        def opener(req, timeout):
+            return io.BytesIO(b"[]")
+        for batch in ([janless, with_jan], [with_jan, janless]):
+            safe, conflicts = filter_existing_source_conflicts(batch, "https://example", "test", opener)
+            self.assertEqual(safe, [with_jan])
+            self.assertEqual(len(conflicts), 1)
+            self.assertEqual(conflicts[0]["reason"], "same-batch JAN-backed formula")
+
     def test_same_batch_janless_formula_collision(self):
         rows = [
             {"identity_key": "name:one", "jan_code": None, "product_name": "同じ商品",
