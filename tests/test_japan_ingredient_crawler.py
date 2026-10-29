@@ -42,6 +42,13 @@ class Extraction(unittest.TestCase):
   self.assertIsNone(extract(HTML+'<dl><dt>原材料</dt><dd>豚肉</dd></dl>',URL)[0])
   r,_=extract(HTML.replace('<tr><th>JANCODE</th><td>4973728910141</td></tr>',''),URL)
   self.assertIsNone(r['jan'])
+ def test_topvalu_official_category_pagination_keeps_required_query(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.topvalu.net/items/list/100575100/?direction=desc&page=2&sort=Products.release_datetime'
+  self.assertTrue(allowed_link(url))
+  self.assertEqual(canonical(url),url)
+  self.assertEqual(canonical('https://www.topvalu.net/items/detail/4549414696004/?sort=Products.release_datetime'),
+   'https://www.topvalu.net/items/detail/4549414696004/')
  def test_unicode_path_is_percent_encoded_before_request(self):
   self.assertEqual(canonical('https://muso.co.jp/item/tag/新商品'),
    'https://muso.co.jp/item/tag/%E6%96%B0%E5%95%86%E5%93%81')

@@ -54,7 +54,13 @@ GENERIC_NAMES={'商品情報','商品紹介','製品情報','商品一覧','商�
 def normalized(s):return ''.join(unicodedata.normalize('NFKC',s).split())
 def canonical(u):
  p=urlsplit(u)
- q=sorted((k,v) for k,v in parse_qsl(p.query) if k in {'id','iid','actmode','p','page'})
+ # Keep TOPVALU's actual catalogue pagination parameters: dropping sort and
+ # direction can turn valid page=2 links into inaccessible pages, starving
+ # official product discovery. Other hosts retain the strict query allowlist.
+ allowed={'id','iid','actmode','p','page'}
+ if (p.hostname or '').lower() in {'topvalu.net','www.topvalu.net'} and re.fullmatch(r'/items/(?:list|category)/\d+/?',p.path):
+  allowed.update({'direction','sort'})
+ q=sorted((k,v) for k,v in parse_qsl(p.query) if k in allowed)
  path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
  return urlunsplit(('https',p.netloc.lower(),path.replace('/index.php/','/'),urlencode(q),''))
 
