@@ -126,7 +126,7 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
                 and isinstance(name, str) and name.strip()
                 and isinstance(ingredients, str) and ingredients.strip()):
             batch_jan_formulas.add((urlsplit(src).hostname,
-                                    re.sub(r"\\s+", "", name), ingredients.strip()))
+                                    re.sub(r"\s+", "", name), ingredients.strip()))
 
     safe, conflicts = [], []
     seen_sources = {}
