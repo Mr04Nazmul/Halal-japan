@@ -48,6 +48,29 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             self.assertEqual(summary["current_run"]["page_outcomes"],
                              {"discovery_navigation_page": 1})
 
+    def test_navigation_fallback_rotates_official_hosts_without_skipping_pages(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            urls = [
+                "https://www.sbfoods.co.jp/products/",
+                "https://www.sbfoods.co.jp/products/category/",
+                "https://www.myojofoods.co.jp/products/",
+                "https://www.myojofoods.co.jp/products/list/",
+            ]
+            collector.enqueue(urls)
+            collector.permitted = lambda url: True
+            collector.request = lambda url: "<html><body><h1>Product catalogue</h1></body></html>"
+            collector.run([], max_pages=4, minutes=1)
+            processed = [row[0] for row in collector.db.execute(
+                "SELECT url FROM observations ORDER BY rowid"
+            )]
+            self.assertEqual(processed, [urls[0], urls[2], urls[1], urls[3]])
+            summary = json.loads((Path(directory) / "summary.json").read_text())
+            self.assertEqual(summary["current_run"]["pages_processed"], 4)
+            self.assertEqual(summary["current_run"]["new_accepted"], 0)
+            self.assertEqual(summary["current_run"]["page_outcomes"],
+                             {"discovery_navigation_page": 4})
+
     def test_finalizer_preserves_last_run_metrics(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
