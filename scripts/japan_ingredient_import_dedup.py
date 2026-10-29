@@ -114,6 +114,20 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
             break
         offset += page_size
 
+    # A JAN-less page and a JAN-backed page can describe the identical
+    # manufacturer formula under different URLs in the SAME checkpoint.
+    # Prefer the JAN-backed identity regardless of input order. Distinct
+    # valid JANs remain separate package identities.
+    batch_jan_formulas = set()
+    for row in rows:
+        src, name, ingredients = (row.get("source_url"), row.get("product_name"),
+                                  row.get("ingredients_ja"))
+        if (row.get("jan_code") and isinstance(src, str)
+                and isinstance(name, str) and name.strip()
+                and isinstance(ingredients, str) and ingredients.strip()):
+            batch_jan_formulas.add((urlsplit(src).hostname,
+                                    re.sub(r"\s+", "", name), ingredients.strip()))
+
     safe, conflicts = [], []
     seen_sources = {}
     seen_formulas = {}
@@ -139,6 +153,10 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
             if isinstance(name, str) and name.strip() and isinstance(ingredients, str) and ingredients.strip():
                 formula = (urlsplit(source).hostname,
                            re.sub(r"\s+", "", name), ingredients.strip())
+                if formula in batch_jan_formulas:
+                    conflicts.append({"identity_key": ident, "source_url": source,
+                                      "reason": "same-batch JAN-backed formula"})
+                    continue
                 if any(owner != ident for owner in formula_owners.get(formula, ())):
                     conflicts.append({"identity_key": ident, "source_url": source,
                                       "reason": "existing same-name same-ingredients"})
