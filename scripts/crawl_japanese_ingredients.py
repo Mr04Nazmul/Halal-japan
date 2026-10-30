@@ -262,7 +262,7 @@ class Collector:
   # Refresh official catalogue entry points once per persistent checkpoint.
   # Product links discovered there enter the priority queue, ahead of the
   # large legacy navigation backlog. Respect robots.txt and host pacing.
-  seeds=list(dict.fromkeys([*seeds,'https://www.topvalu.net/items/','https://www.kewpie.co.jp/products/']))
+  seeds=list(dict.fromkeys(seeds))
   self.run_started_at=datetime.now(timezone.utc).isoformat()
   self.run_start_count=self.count()
   self.enqueue(seeds)
