@@ -266,6 +266,22 @@ class Collector:
   self.run_started_at=datetime.now(timezone.utc).isoformat()
   self.run_start_count=self.count()
   self.enqueue(seeds)
+  # Revisit a bounded number of previously successful catalogue entry points
+  # on each run. Without this, the persistent queue marks every seed as done
+  # forever, so new products are never discovered from updated catalogues.
+  # Never retry rejected/robots-blocked pages or completed product records.
+  refreshed_by_host={}
+  for raw in seeds:
+   url=canonical(raw)
+   if product_url(url) or sitemap_url(url):continue
+   parsed=urlsplit(url)
+   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|product/?)',parsed.path):continue
+   host=parsed.netloc
+   limit=8 if source(url)=='topvalu.net' else 1
+   if refreshed_by_host.get(host,0)>=limit:continue
+   updated=self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0 WHERE url=? AND status='done' AND error IS NULL",(url,))
+   if updated.rowcount:refreshed_by_host[host]=refreshed_by_host.get(host,0)+1
+  self.db.commit()
   # Seeded official product URLs must not starve behind an ever-growing discovery queue.
   # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_priority(url TEXT PRIMARY KEY)")
