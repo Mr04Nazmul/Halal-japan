@@ -354,6 +354,7 @@ class Extraction(unittest.TestCase):
   self.assertTrue(product_url(morinaga))
   self.assertTrue(allowed_link(suntory))
   self.assertTrue(allowed_link(morinaga))
+  self.assertTrue(allowed_link('https://www.morinaga.co.jp/products/new.php'))
   self.assertFalse(product_url('https://products.suntory.co.jp.evil.example/d/4901777452909/'))
   self.assertFalse(product_url('https://www.morinaga.co.jp.evil.example/products/detail.php?id=PRD2026-09-0007'))
   self.assertFalse(product_url('https://products.suntory.co.jp/d/not-a-jan/'))
