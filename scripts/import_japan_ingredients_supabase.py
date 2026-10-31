@@ -46,7 +46,7 @@ for p in items:
         reject("additives-only incomplete ingredients");continue
     if p.get("ingredient_field_status")!="complete_displayed_field":
         reject("incomplete ingredient field");continue
-    if rule not in ("HALAL","HARAM"):
+    if rule not in ("HALAL","HARAM","UNKNOWN"):
         reject("unreviewed rules result");continue
     if p.get("halal_certified") is not False:
         reject("unclear certification flag");continue
@@ -60,8 +60,9 @@ for p in items:
     # Re-screen old crawler checkpoints using the current policy before import.
     # Product-name alcohol risks were previously mislabeled HALAL.
     decision=screen(ingredient,p.get("additives_ja") or "",product_name=name)
-    if decision["rule_result"]=="UNKNOWN":
-        reject("current policy requires review");continue
+    # UNKNOWN means halal suitability needs review, not that the official
+    # ingredient declaration is incomplete. Archive complete fields safely.
+    # Keep halal_certified=False and the research-only review marker.
     rule=decision["rule_result"]
     seen.add(ident)
     rows.append(dict(identity_key=ident,jan_code=str(jan) if jan and len(str(jan))==13 else None,
