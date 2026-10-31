@@ -46,7 +46,7 @@ def screen(ingredients, additives='', complete=True, product_name=''):
     # Sake lees may carry residual alcohol; a complete ingredient declaration
     # is not enough to certify suitability. Do not auto-mark these as HALAL.
     # Explicitly prohibited ingredients still retain their existing rule hits.
-    if not hits and (m:=re.search(r'酒粕|酒かす|\\bsake lees\\b',text)):
+    if not hits and (m:=re.search(r'酒粕|酒かす|\bsake lees\b',text)):
         return dict(result,rule_result='UNKNOWN',
                     matched_terms=[{'rule':'sake_lees_requires_review','text':m.group(0)}],
                     reason='sake_lees_requires_residual_alcohol_review')
