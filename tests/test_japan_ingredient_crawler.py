@@ -346,4 +346,34 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['ingredients_ja'],'コーヒー豆')
   self.assertFalse(record['halal_certified'])
 
+ def test_suntory_and_morinaga_official_product_discovery(self):
+  from crawl_japanese_ingredients import allowed_link
+  suntory='https://products.suntory.co.jp/d/4901777452909/'
+  morinaga='https://www.morinaga.co.jp/products/detail.php?id=PRD2026-09-0007'
+  self.assertTrue(product_url(suntory))
+  self.assertTrue(product_url(morinaga))
+  self.assertTrue(allowed_link(suntory))
+  self.assertTrue(allowed_link(morinaga))
+  self.assertFalse(product_url('https://products.suntory.co.jp.evil.example/d/4901777452909/'))
+  self.assertFalse(product_url('https://www.morinaga.co.jp.evil.example/products/detail.php?id=PRD2026-09-0007'))
+  self.assertFalse(product_url('https://products.suntory.co.jp/d/not-a-jan/'))
+  self.assertFalse(product_url('https://www.morinaga.co.jp/products/'))
+  suntory_html='''<title>クラフトボス | サントリー</title><h2>クラフトボス 世界のＴＥＡ アップルティー 500mlペット</h2>
+  <dl><dt>JANコード</dt><dd>4901777452909</dd>
+  <dt>原材料</dt><dd>紅茶、果汁（りんご）／香料</dd></dl>'''
+  record,error=extract(suntory_html,suntory)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'クラフトボス 世界のＴＥＡ アップルティー 500mlペット')
+  self.assertEqual(record['jan'],'4901777452909')
+  self.assertEqual(record['ingredients_ja'],'紅茶、果汁（りんご）／香料')
+  self.assertFalse(record['halal_certified'])
+  morinaga_html='''<h1>チョコレート 半熟ダースミルクショコラ</h1>
+  <h2>原材料</h2><p>砂糖、小麦粉、洋酒／乳化剤</p>
+  <h2>JANコード</h2><p>4902888277306</p>'''
+  record,error=extract(morinaga_html,morinaga)
+  self.assertIsNone(error)
+  self.assertEqual(record['jan'],'4902888277306')
+  self.assertEqual(record['rule_result'],'HARAM')
+  self.assertFalse(record['halal_certified'])
+
 if __name__=='__main__':unittest.main()
