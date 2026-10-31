@@ -48,6 +48,26 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             self.assertEqual(summary["current_run"]["page_outcomes"],
                              {"discovery_navigation_page": 1})
 
+    def test_queued_product_precedes_seed_navigation(self):
+        # A large seed list must never starve unprocessed official product pages.
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            product = "https://www.sbfoods.co.jp/products/detail/123.html"
+            catalogue = "https://www.sbfoods.co.jp/products/"
+            collector.enqueue([product])
+            collector.permitted = lambda url: True
+            collector.request = lambda url: (
+                "<html><h1>テストスパイス</h1>"
+                "<dl><dt>原材料名</dt><dd>食塩、こしょう</dd></dl></html>"
+            )
+            collector.run([catalogue], max_pages=1, minutes=1)
+            observed = collector.db.execute(
+                "SELECT url,reason FROM observations ORDER BY rowid LIMIT 1"
+            ).fetchone()
+            self.assertEqual(observed, (product, "accepted_new_product"))
+            summary = json.loads((Path(directory) / "summary.json").read_text())
+            self.assertEqual(summary["current_run"]["new_accepted"], 1)
+
     def test_navigation_fallback_rotates_official_hosts_without_skipping_pages(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)

@@ -245,6 +245,7 @@ class Collector:
     'started_at':self.run_started_at,
     'pages_processed':self.db.execute('SELECT count(*) FROM observations WHERE at>=?',(self.run_started_at,)).fetchone()[0],
     'new_accepted':len(rows)-self.run_start_count,
+    'initial_pending_product_pages':getattr(self,'initial_pending_product_pages',None),
     'top_rejection_reasons':dict(counts),
     'page_outcomes':dict(outcomes)}
   elif (self.path/'summary.json').exists():
@@ -286,10 +287,16 @@ class Collector:
   # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_priority(url TEXT PRIMARY KEY)")
   self.db.executemany("INSERT OR IGNORE INTO seed_priority(url) VALUES(?)",[(canonical(u),) for u in seeds if allowed_link(u)])
+  # Newly supplied product seeds outrank older pending product URLs, but
+  # navigation seeds must not starve any queued product URLs.
+  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_product_priority(url TEXT PRIMARY KEY)")
+  self.db.executemany("INSERT OR IGNORE INTO seed_product_priority(url) VALUES(?)",
+   [(canonical(u),) for u in seeds if product_url(u)])
   # Prioritize all supported official product URL patterns, not just /detail/
   # and /item/. TEMP state keeps the persisted checkpoint schema unchanged.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS product_priority(url TEXT PRIMARY KEY)")
   pending_products=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending'") if product_url(u)]
+  self.initial_pending_product_pages=len(pending_products)
   self.db.executemany("INSERT OR IGNORE INTO product_priority(url) VALUES(?)",pending_products)
   # Robots-advertised sitemaps can reveal thousands of direct product URLs.
   # Process them before the long navigation backlog, without trusting off-site XML.
@@ -301,12 +308,14 @@ class Collector:
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
-    # First seeded URLs, then pending product URLs, then official sitemaps,
-    # and only then navigation pages. Sitemaps can replenish product URLs.
+    # Process new product seeds, all queued product pages, then sitemaps
+    # before seeded catalogue navigation. Previously seed navigation could
+    # consume the entire 35-minute budget despite queued product URLs.
+    # Keep the rotating navigation fallback for older catalogue pages.
     # The indexed TEMP tables avoid calling Python regexes for every queued
     # URL on every iteration, which matters for 100k+ pending URLs.
     item=None
-    for priority in ('seed_priority','product_priority','sitemap_priority'):
+    for priority in ('seed_product_priority','product_priority','sitemap_priority','seed_priority'):
      item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
      if item:break
     if not item:
