@@ -24,3 +24,14 @@ def is_nonfood_ingredient_text(value):
         return False
     normalized = ''.join(unicodedata.normalize('NFKC',value).split())
     return normalized in INVALID_INGREDIENT_TEXT
+
+# Do not treat HTML fragments or undecoded entities as a verified ingredient
+# declaration. Preserve the source snapshot and send the page for review.
+# Normal text containing an ampersand is not automatically rejected.
+UNRESOLVED_HTML_ARTIFACT = re.compile(
+    r"<\s*/?\s*(?:br|p|div|span|li)\b|&(?:#(?:x[0-9a-f]{2,7}|[0-9]{2,7})|lt|gt|amp|nbsp);",
+    re.IGNORECASE,
+)
+
+def has_unresolved_html_artifacts(value):
+    return isinstance(value, str) and bool(UNRESOLVED_HTML_ARTIFACT.search(value))

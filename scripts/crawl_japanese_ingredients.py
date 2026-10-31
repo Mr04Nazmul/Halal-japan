@@ -11,7 +11,7 @@ from urllib.parse import urlsplit,urlunsplit,urljoin,parse_qsl,urlencode,quote
 from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
-from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text
+from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-10-28-v6'
@@ -129,6 +129,7 @@ def extract(html,url):
  if len(values)!=1:return None,'missing_or_ambiguous_ingredients'
  ingredients=next(iter(values.values()))
  if is_nonfood_ingredient_text(ingredients):return None,'non_ingredient_text'
+ if has_unresolved_html_artifacts(ingredients):return None,'unresolved_html_in_ingredient_field'
  if re.match(r'^\s*(?:添加物|添加物名)\s*[:：]',ingredients):return None,'additives_only_incomplete_ingredients'
  if re.search(r'原材料名が入ります|原材料名欄では|アレルゲン情報|栄養成分表示|https?://|\ufffd',ingredients):return None,'non_ingredient_text'
  # Some official product pages render an empty decorative H1 before the
