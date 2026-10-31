@@ -201,6 +201,7 @@ class Extraction(unittest.TestCase):
   listing='https://www.dydo.co.jp/products/list/?rt_bn_product_list_skip=12&rt_bn_product_list_all_skip='
   self.assertTrue(allowed_link(listing))
   self.assertIn('rt_bn_product_list_skip=12',canonical(listing))
+  self.assertIn('rt_bn_product_list_all_skip=',canonical(listing))
   self.assertNotIn('tracking=',canonical(listing+'&tracking=ignore'))
   self.assertFalse(product_url('https://www.dydo.co.jp/products/'))
   self.assertFalse(product_url('https://www.dydo.co.jp.evil.example/products/detail/1231/'))
