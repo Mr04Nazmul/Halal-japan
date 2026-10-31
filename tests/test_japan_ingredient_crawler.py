@@ -25,6 +25,30 @@ class Extraction(unittest.TestCase):
    self.assertEqual(c.count(),0)
    self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'pending')
    c.db.close()
+ def test_complete_sake_lees_ingredients_are_captured_for_review(self):
+  html=HTML.replace('米、食塩','米、酒かす、食塩')
+  record,error=extract(html,URL)
+  self.assertIsNone(error)
+  self.assertEqual(record['ingredients_ja'],'米、酒かす、食塩')
+  self.assertEqual(record['rule_result'],'UNKNOWN')
+  self.assertFalse(record['halal_certified'])
+  self.assertEqual(record['ingredient_field_status'],'complete_displayed_field')
+  self.assertEqual(record['jan'],'4973728910141')
+ def test_old_unknown_rejection_requeued_only_after_extractor_upgrade(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   url='https://muso.co.jp/item/32882.html'
+   blocked='https://muso.co.jp/item/32883.html'
+   c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",
+    (url,'done',3,'incomplete_ingredient_declaration'))
+   c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",
+    (blocked,'done',3,'robots_disallowed'))
+   c.db.execute("UPDATE metadata SET value='old-extractor' WHERE key='extractor_version'")
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute("SELECT status,attempts,error FROM queue WHERE url=?",(url,)).fetchone(),('pending',0,None))
+   self.assertEqual(c.db.execute("SELECT status,error FROM queue WHERE url=?",(blocked,)).fetchone(),('done','robots_disallowed'))
+   c.db.close()
  def test_exact_ingredient_field_and_explicit_jan(self):
   r,e=extract(HTML,URL)
   self.assertIsNone(e);self.assertEqual(r['ingredients_ja'],'米、食塩');self.assertEqual(r['jan'],'4973728910141')
