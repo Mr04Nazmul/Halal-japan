@@ -286,6 +286,11 @@ class Collector:
   # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_priority(url TEXT PRIMARY KEY)")
   self.db.executemany("INSERT OR IGNORE INTO seed_priority(url) VALUES(?)",[(canonical(u),) for u in seeds if allowed_link(u)])
+  # Newly supplied product seeds outrank older pending product URLs, but
+  # navigation seeds must not starve any queued product URLs.
+  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_product_priority(url TEXT PRIMARY KEY)")
+  self.db.executemany("INSERT OR IGNORE INTO seed_product_priority(url) VALUES(?)",
+   [(canonical(u),) for u in seeds if product_url(u)])
   # Prioritize all supported official product URL patterns, not just /detail/
   # and /item/. TEMP state keeps the persisted checkpoint schema unchanged.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS product_priority(url TEXT PRIMARY KEY)")
@@ -301,15 +306,14 @@ class Collector:
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
-    # Always process pending official product pages before seed catalogue
-    # navigation. A large seed list previously consumed the entire 35-minute
-    # budget on navigation despite having queued product URLs.
-    # Then process official sitemaps and seed catalogue pages to replenish
-    # product URLs; finally use the rotating navigation fallback.
+    # Process new product seeds, all queued product pages, then sitemaps
+    # before seeded catalogue navigation. Previously seed navigation could
+    # consume the entire 35-minute budget despite queued product URLs.
+    # Keep the rotating navigation fallback for older catalogue pages.
     # The indexed TEMP tables avoid calling Python regexes for every queued
     # URL on every iteration, which matters for 100k+ pending URLs.
     item=None
-    for priority in ('product_priority','sitemap_priority','seed_priority'):
+    for priority in ('seed_product_priority','product_priority','sitemap_priority','seed_priority'):
      item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
      if item:break
     if not item:
