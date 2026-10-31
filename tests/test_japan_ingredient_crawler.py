@@ -197,6 +197,12 @@ class Extraction(unittest.TestCase):
   url='https://www.dydo.co.jp/products/detail/1231/'
   self.assertTrue(product_url(url))
   self.assertTrue(allowed_link('https://www.dydo.co.jp/products/'))
+  self.assertTrue(allowed_link('https://www.dydo.co.jp/products/list/'))
+  listing='https://www.dydo.co.jp/products/list/?rt_bn_product_list_skip=12&rt_bn_product_list_all_skip='
+  self.assertTrue(allowed_link(listing))
+  self.assertIn('rt_bn_product_list_skip=12',canonical(listing))
+  self.assertIn('rt_bn_product_list_all_skip=',canonical(listing))
+  self.assertNotIn('tracking=',canonical(listing+'&tracking=ignore'))
   self.assertFalse(product_url('https://www.dydo.co.jp/products/'))
   self.assertFalse(product_url('https://www.dydo.co.jp.evil.example/products/detail/1231/'))
   html='''<title>ミウ スポーツチャージ｜商品情報｜ダイドードリンコ</title>
