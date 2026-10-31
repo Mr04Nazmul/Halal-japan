@@ -67,6 +67,16 @@ class Rules(unittest.TestCase):
         self.assertEqual(screen('食塩、ジンジャーパウダー')['rule_result'],'HALAL')
         self.assertEqual(screen('水、バージンパルプ')['rule_result'],'HALAL')
 
+    def test_sake_lees_requires_review_even_with_complete_ingredients(self):
+        for ingredients in ('砂糖、酒かす、米こうじ、食塩',
+                            '酒粕（米、米こうじ）、米粉、天日塩',
+                            '米、sake lees、食塩'):
+            with self.subTest(ingredients=ingredients):
+                result=screen(ingredients)
+                self.assertEqual(result['rule_result'],'UNKNOWN')
+                self.assertFalse(result['halal_certified'])
+        self.assertEqual(screen('酒粕、豚肉')['rule_result'],'HARAM')
+
     def test_clear_is_policy_only(self):
         r=screen('米(国産)、食塩')
         self.assertEqual(r['rule_result'],'HALAL')

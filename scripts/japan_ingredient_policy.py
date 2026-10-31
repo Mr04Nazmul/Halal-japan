@@ -43,5 +43,12 @@ def screen(ingredients, additives='', complete=True, product_name=''):
     if not re.search(r'ノンアルコール|ノンアル|アルコール0|アルコールゼロ',name):
         alcohol=re.search(r'ウイスキー|ウィスキー|焼酎|ビール|清酒|日本酒|ワイン(?!ビネガー|酢)|ソーヴィニヨン|シャンパン|whisk(?:y|ey)|ロンドンドライジン|芳醇(?:芋|麦)|(?:麦|芋)職人|鬼ころし|彩の香\s*(?:麦|芋)',name)
         if alcohol:hits.append({'rule':'alcoholic_product_name','text':alcohol.group(0)})
+    # Sake lees may carry residual alcohol; a complete ingredient declaration
+    # is not enough to certify suitability. Do not auto-mark these as HALAL.
+    # Explicitly prohibited ingredients still retain their existing rule hits.
+    if not hits and (m:=re.search(r'酒粕|酒かす|\bsake lees\b',text)):
+        return dict(result,rule_result='UNKNOWN',
+                    matched_terms=[{'rule':'sake_lees_requires_review','text':m.group(0)}],
+                    reason='sake_lees_requires_residual_alcohol_review')
     return dict(result,rule_result='HARAM' if hits else 'HALAL',matched_terms=hits,
                 reason='matched_user_prohibited_terms' if hits else 'no_user_prohibited_term_in_displayed_ingredients')
