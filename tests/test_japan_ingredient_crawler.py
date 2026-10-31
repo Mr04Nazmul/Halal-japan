@@ -192,6 +192,24 @@ class Extraction(unittest.TestCase):
   self.assertIsNone(record)
   self.assertEqual(error,'missing_or_ambiguous_ingredients')
 
+ def test_dydo_official_product_pattern_and_label(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.dydo.co.jp/products/detail/1231/'
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link('https://www.dydo.co.jp/products/'))
+  self.assertFalse(product_url('https://www.dydo.co.jp/products/'))
+  self.assertFalse(product_url('https://www.dydo.co.jp.evil.example/products/detail/1231/'))
+  html='''<title>ミウ スポーツチャージ｜商品情報｜ダイドードリンコ</title>
+  <h1>ミウ スポーツチャージ</h1><table>
+  <tr><th>原材料</th><td>糖類(砂糖(国内製造)、果糖ぶどう糖液糖)、食塩／酸味料、粗製海水塩化マグネシウム、甘味料（アセスルファムK、スクラロース）、香料、酸化防止剤(ビタミンC)</td></tr>
+  </table>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'ミウ スポーツチャージ')
+  self.assertIsNone(record['jan'])
+  self.assertEqual(record['source_publisher'],'dydo.co.jp')
+  self.assertFalse(record['halal_certified'])
+
  def test_no_host_spoofing(self):
   self.assertFalse(product_url('https://muso.co.jp.evil.example/item/32882.html'))
  def test_wrapped_heading_and_trailing_slash_label(self):
