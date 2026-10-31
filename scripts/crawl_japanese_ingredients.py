@@ -282,7 +282,7 @@ class Collector:
    url=canonical(raw)
    if product_url(url) or sitemap_url(url):continue
    parsed=urlsplit(url)
-   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|product/?)',parsed.path):continue
+   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/new\.php|product/?)',parsed.path):continue
    host=parsed.netloc
    limit=8 if source(url)=='topvalu.net' else 1
    if refreshed_by_host.get(host,0)>=limit:continue
