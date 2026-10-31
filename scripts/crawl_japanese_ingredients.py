@@ -16,6 +16,8 @@ from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_t
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-10-28-v6'
 SOURCES={
+ 'suntory.co.jp':r'/d/\d{13}/?$',
+ 'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
  'topvalu.net':r'/items/detail/\d{13}',
  'kewpie.co.jp':r'/products/detail/\d{13}/?$',
  'pokkasapporo-fb.jp':r'/products/(?:[^/]+/){2}[A-Za-z0-9]+\.html$',
@@ -130,6 +132,10 @@ def extract(html,url):
   original_title=soup.title.get_text(' ',strip=True) if soup.title else ''
   parts=[x.strip() for x in original_title.split('|')]
   if len(parts)>2:name=parts[2]
+ if source(url)=='suntory.co.jp':
+  # Use the first product heading, not the generic site title.
+  product_heading=next((h.get_text(' ',strip=True) for h in soup.find_all(['h1','h2']) if h.get_text(' ',strip=True) and '商品情報' not in h.get_text(' ',strip=True) and '原材料' not in h.get_text(' ',strip=True)),None)
+  if product_heading:name=product_heading
  if source(url)=='agf.ajinomoto.co.jp':
   # AGF H1 is a short brand title; the first product H2 has the full name.
   product_heading=next((h.get_text(' ',strip=True) for h in soup.find_all('h2') if '商品詳細' not in h.get_text(' ',strip=True) and re.search(r'\d',h.get_text(' ',strip=True))),None)
@@ -276,7 +282,7 @@ class Collector:
    url=canonical(raw)
    if product_url(url) or sitemap_url(url):continue
    parsed=urlsplit(url)
-   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|product/?)',parsed.path):continue
+   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/new\.php|product/?)',parsed.path):continue
    host=parsed.netloc
    limit=8 if source(url)=='topvalu.net' else 1
    if refreshed_by_host.get(host,0)>=limit:continue
