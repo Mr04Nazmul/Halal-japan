@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-10-28-v6'
+EXTRACTOR_VERSION='official-fields-2026-11-01-v7'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -172,7 +172,9 @@ def extract(html,url):
  brand=next(iter(fields.get('メーカー名',[])),source(url))
  jan=codes[0] if len(codes)==1 else None
  decision=screen(ingredients,additives,product_name=name)
- if decision['rule_result']=='UNKNOWN':return None,'incomplete_ingredient_declaration'
+ # A complete displayed ingredient field is valid research data even when
+ # halal suitability cannot be established from its contents. Keep UNKNOWN
+ # pending review rather than treating it as an incomplete declaration.
  key='jan:'+jan if jan else 'name:'+source(url)+'|'+normalized(name)
  result={'product_id':key,'name_ja':name,'brand':brand,'jan':jan,'ingredients_ja':ingredients,
  'additives_ja':additives,'source_url':url,'source_publisher':source(url),
@@ -194,7 +196,7 @@ class Collector:
   if not previous or previous[0]!=EXTRACTOR_VERSION:
    # Revisit only pages rejected by older field extraction.  Network failures,
    # robots decisions and accepted records are not reset.
-   self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity') OR error LIKE 'UnicodeEncodeError:%'")
+   self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity','incomplete_ingredient_declaration') OR error LIKE 'UnicodeEncodeError:%'")
    # Revisit invalid legacy accepted records without altering prior artifacts.
    invalid=[]
    for ident,payload in self.db.execute('SELECT id,payload FROM products'):
