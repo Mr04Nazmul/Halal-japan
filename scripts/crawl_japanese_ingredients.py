@@ -69,7 +69,8 @@ def canonical(u):
  if (p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list':
   allowed.update({'rt_bn_product_category_list_s_skip','rt_bn_product_list_1-2_skip',
                   'rt_bn_product_list_all_skip','rt_bn_product_list_skip'})
- q=sorted((k,v) for k,v in parse_qsl(p.query) if k in allowed)
+ keep_blank=(p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list'
+ q=sorted((k,v) for k,v in parse_qsl(p.query,keep_blank_values=keep_blank) if k in allowed)
  path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
  return urlunsplit(('https',p.netloc.lower(),path.replace('/index.php/','/'),urlencode(q),''))
 
