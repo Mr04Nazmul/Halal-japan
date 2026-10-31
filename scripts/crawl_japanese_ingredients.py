@@ -301,12 +301,15 @@ class Collector:
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
-    # First seeded URLs, then pending product URLs, then official sitemaps,
-    # and only then navigation pages. Sitemaps can replenish product URLs.
+    # Always process pending official product pages before seed catalogue
+    # navigation. A large seed list previously consumed the entire 35-minute
+    # budget on navigation despite having queued product URLs.
+    # Then process official sitemaps and seed catalogue pages to replenish
+    # product URLs; finally use the rotating navigation fallback.
     # The indexed TEMP tables avoid calling Python regexes for every queued
     # URL on every iteration, which matters for 100k+ pending URLs.
     item=None
-    for priority in ('seed_priority','product_priority','sitemap_priority'):
+    for priority in ('product_priority','sitemap_priority','seed_priority'):
      item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
      if item:break
     if not item:
