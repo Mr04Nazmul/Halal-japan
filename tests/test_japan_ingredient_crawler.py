@@ -33,7 +33,7 @@ class Extraction(unittest.TestCase):
   r,e=extract(bourbon,'https://www.bourbon.co.jp/product/detail/35359-03.html')
   self.assertIsNone(e);self.assertEqual(r['rule_result'],'HARAM')
  def test_escaped_html_is_not_a_verified_ingredient_field(self):
-  for artifact in ('米&lt;br&gt;食塩', '米&amp;食塩'):
+  for artifact in ('米&lt;br&gt;食塩', '米&#60;br&#62;食塩'):
    with self.subTest(artifact=artifact):
     record,error=extract(HTML.replace('米、食塩',artifact),URL)
     self.assertIsNone(record)
