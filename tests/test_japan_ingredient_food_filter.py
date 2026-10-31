@@ -1,7 +1,7 @@
 import sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
-from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text
+from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 class FoodFilter(unittest.TestCase):
     def test_reject_obvious_nonfoods(self):
@@ -19,6 +19,13 @@ class FoodFilter(unittest.TestCase):
         for value in ("コーヒー豆", "米、食塩", "小麦粉（国内製造）、砂糖", None, ""):
             with self.subTest(value=value):
                 self.assertFalse(is_nonfood_ingredient_text(value))
+    def test_html_artifacts_are_reviewed_not_imported(self):
+        for value in ("米<br>食塩", "米&lt;br&gt;食塩", "砂糖&#12354;", "砂糖&#x3042;", "米&amp;塩"):
+            with self.subTest(value=value):
+                self.assertTrue(has_unresolved_html_artifacts(value))
+        for value in ("米、食塩", "米 & 塩", "コーヒー豆", None, ""):
+            with self.subTest(value=value):
+                self.assertFalse(has_unresolved_html_artifacts(value))
     def test_empty_values(self):
         self.assertFalse(is_nonfood_name(None))
         self.assertFalse(is_nonfood_name(""))
