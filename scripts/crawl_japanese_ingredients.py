@@ -245,6 +245,7 @@ class Collector:
     'started_at':self.run_started_at,
     'pages_processed':self.db.execute('SELECT count(*) FROM observations WHERE at>=?',(self.run_started_at,)).fetchone()[0],
     'new_accepted':len(rows)-self.run_start_count,
+    'initial_pending_product_pages':getattr(self,'initial_pending_product_pages',None),
     'top_rejection_reasons':dict(counts),
     'page_outcomes':dict(outcomes)}
   elif (self.path/'summary.json').exists():
@@ -295,6 +296,7 @@ class Collector:
   # and /item/. TEMP state keeps the persisted checkpoint schema unchanged.
   self.db.execute("CREATE TEMP TABLE IF NOT EXISTS product_priority(url TEXT PRIMARY KEY)")
   pending_products=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending'") if product_url(u)]
+  self.initial_pending_product_pages=len(pending_products)
   self.db.executemany("INSERT OR IGNORE INTO product_priority(url) VALUES(?)",pending_products)
   # Robots-advertised sitemaps can reveal thousands of direct product URLs.
   # Process them before the long navigation backlog, without trusting off-site XML.
