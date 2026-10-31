@@ -15,7 +15,7 @@ path=Path(sys.argv[1] if len(sys.argv)>1 else "crawler-state/products.json")
 items=json.loads(path.read_text(encoding="utf-8"))
 assert isinstance(items,list), "Expected cumulative array of ingredient products"
 from japan_ingredient_barcodes import jan_valid
-from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text
+from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 from japan_ingredient_policy import screen
 from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts
 rows=[]
@@ -40,6 +40,8 @@ for p in items:
         reject("missing product, ingredient or source field");continue
     if is_nonfood_ingredient_text(ingredient):
         reject('invalid ingredient text or packaging material');continue
+    if has_unresolved_html_artifacts(ingredient):
+        reject('unresolved HTML or entity in ingredient declaration');continue
     if re.match(r'^\s*(?:添加物|添加物名)\s*[:：]',ingredient):
         reject("additives-only incomplete ingredients");continue
     if p.get("ingredient_field_status")!="complete_displayed_field":
