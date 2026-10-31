@@ -64,6 +64,11 @@ def canonical(u):
  allowed={'id','iid','actmode','p','page'}
  if (p.hostname or '').lower() in {'topvalu.net','www.topvalu.net'} and re.fullmatch(r'/items/(?:list|category)/\d+/?',p.path):
   allowed.update({'direction','sort'})
+ # DyDo's official catalogue uses four named pagination parameters.
+ # Preserve only those parameters on its exact catalogue path.
+ if (p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list':
+  allowed.update({'rt_bn_product_category_list_s_skip','rt_bn_product_list_1-2_skip',
+                  'rt_bn_product_list_all_skip','rt_bn_product_list_skip'})
  q=sorted((k,v) for k,v in parse_qsl(p.query) if k in allowed)
  path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
  return urlunsplit(('https',p.netloc.lower(),path.replace('/index.php/','/'),urlencode(q),''))
@@ -289,7 +294,7 @@ class Collector:
    url=canonical(raw)
    if product_url(url) or sitemap_url(url):continue
    parsed=urlsplit(url)
-   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/new\.php|product/?)',parsed.path):continue
+   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|product/?)',parsed.path):continue
    host=parsed.netloc
    limit=8 if source(url)=='topvalu.net' else 1
    if refreshed_by_host.get(host,0)>=limit:continue
