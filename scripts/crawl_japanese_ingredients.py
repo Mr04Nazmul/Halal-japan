@@ -76,6 +76,12 @@ def sitemap_url(u):
  return bool(source(u) and 'sitemap' in path and path.endswith('.xml'))
 def allowed_link(u):
  if sitemap_url(u):return True
+ # These are marketing/recipe link graphs, not official product detail URLs.
+ # Relative links on House Foods special pages can recursively create
+ # hundreds of thousands of synthetic paths. Never enqueue them.
+ host=source(u);path=urlsplit(u).path
+ if host=='housefoods.jp' and path.startswith('/products/special/'):return False
+ if host=='kagome.co.jp' and path.startswith('/products/brand/'):return False
  return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|items/?$|item(?:/category)?|products?(?:/|$)|jp/product|goods/|sweets/|business/|foodservice/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0
@@ -325,14 +331,17 @@ class Collector:
      item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
      if item:break
     if not item:
+     # Ignore legacy marketing-link explosions without deleting checkpoint
+     # rows. Official product detail and catalogue pages remain eligible.
+     # A previous run queued >305k recursive /products/special/ URLs.
      # A large backlog of navigation links from one manufacturer can starve
      # discovery on other official hosts. Rotate hosts only in this fallback:
      # seeded products, pending products and sitemaps still take precedence.
      previous_host=getattr(self,'last_navigation_host',None)
      if previous_host:
-      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
+      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/brand/%' ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
      if not item:
-      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
+      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/brand/%' ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
     if not item:break
     url,attempts=item;reason=None
     if not product_url(url) and not sitemap_url(url):

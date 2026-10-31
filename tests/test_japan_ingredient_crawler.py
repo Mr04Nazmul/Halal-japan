@@ -79,6 +79,31 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
    c.db.close()
+ def test_reject_recursive_marketing_navigation_not_product_pages(self):
+  from crawl_japanese_ingredients import allowed_link
+  recursive='https://housefoods.jp/products/special/currymarche/arrangement/qa/product/qa/product/index.html'
+  self.assertFalse(allowed_link(recursive))
+  self.assertFalse(allowed_link('https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/'))
+  self.assertTrue(allowed_link('https://housefoods.jp/products/catalog/cd_1%2C083967%2Cspice%2Cyoufu%2Chouse_s.html'))
+  self.assertTrue(allowed_link('https://www.kagome.co.jp/foodservice/frozen/5615/'))
+
+ def test_skip_legacy_marketing_backlog_without_deleting_queue(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   bad='https://housefoods.jp/products/special/currymarche/arrangement/qa/product/index.html'
+   kagome='https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/'
+   good='https://muso.co.jp/item/tag/new-products'
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(bad,),(kagome,),(good,)])
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   c.request=lambda u:(visited.append(u) or '<h1>Catalog</h1>')
+   c.run([],max_pages=1,minutes=1)
+   self.assertEqual(visited,[good])
+   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(bad,)).fetchone()[0],'pending')
+   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(kagome,)).fetchone()[0],'pending')
+   c.db.close()
+
  def test_official_itoen_and_ucc_product_patterns(self):
   from crawl_japanese_ingredients import allowed_link
   self.assertTrue(product_url('https://www.itoen.jp/products/43679/'))
