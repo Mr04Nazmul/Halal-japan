@@ -68,5 +68,60 @@ class NatoriOfficialCatalogueTests(unittest.TestCase):
             self.assertEqual(observed, (self.PRODUCT, "accepted_new_product"))
 
 
+    def test_live_natori_nested_div_label_extracts_exact_declaration(self):
+        # Real Natori product-page structure observed on 2026-11-02:
+        # label and value are sibling ible-part divs within the same block.
+        html = ('<html><title>ソフトいか燻製│株式会社なとり</title>'
+                '<h1>ソフトいか燻製</h1>'
+                '<div class="ible-block">'
+                '<div class="ible-part__html"><div class="ible-part__core">'
+                '<h3 class="db_subtitle03">原材料名</h3></div></div>'
+                '<div class="ible-part__html white_bg"><div class="ible-part__core">'
+                'いか（ペルー）、砂糖、発酵調味料、食塩、醸造酢／ソルビトール'
+                '</div></div></div>'
+                '<table><tr><th>エネルギー</th><td>145kcal</td></tr></table>'
+                '</html>')
+        record, reason = extract(html, self.PRODUCT)
+        self.assertIsNone(reason)
+        self.assertEqual(record["ingredients_ja"],
+                         "いか（ペルー）、砂糖、発酵調味料、食塩、醸造酢／ソルビトール")
+        self.assertIsNone(record["jan"])
+        self.assertFalse(record["live_database_updated"])
+
+    def test_nested_div_without_label_never_guesses_ingredients(self):
+        html = ('<html><h1>ソフトいか燻製</h1><div class="ible-block">'
+                '<div class="ible-part__html"><div class="ible-part__core">'
+                '<h3>栄養成分表</h3></div></div>'
+                '<div class="ible-part__html"><div class="ible-part__core">'
+                'いか、食塩</div></div></div></html>')
+        record, reason = extract(html, self.PRODUCT)
+        self.assertIsNone(record)
+        self.assertEqual(reason, "missing_or_ambiguous_ingredients")
+
+    def test_old_natori_field_failures_requeued_once_without_touching_404(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            collector.db.execute(
+                "INSERT INTO queue(url,status,error) VALUES(?,?,?)",
+                (self.PRODUCT, "done", "missing_or_ambiguous_ingredients"))
+            missing = "https://www.natori.co.jp/products_search/cod/item_545"
+            collector.db.execute(
+                "INSERT INTO queue(url,status,error) VALUES(?,?,?)",
+                (missing, "done", "HTTPError:404"))
+            collector.db.execute(
+                "UPDATE metadata SET value=? WHERE key='extractor_version'",
+                ("official-fields-2026-11-01-v9-asahi-maintenance",))
+            collector.db.commit()
+            collector.db.close()
+            upgraded = Collector(directory, 100)
+            self.assertEqual(upgraded.db.execute(
+                "SELECT status,error FROM queue WHERE url=?", (self.PRODUCT,)
+            ).fetchone(), ("pending", None))
+            self.assertEqual(upgraded.db.execute(
+                "SELECT status,error FROM queue WHERE url=?", (missing,)
+            ).fetchone(), ("done", "HTTPError:404"))
+            upgraded.db.close()
+
+
 if __name__ == "__main__":
     unittest.main()
