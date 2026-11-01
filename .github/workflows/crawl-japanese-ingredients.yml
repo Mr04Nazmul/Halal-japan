@@ -123,3 +123,5 @@ jobs:
 # Manual bounded collection wake: 2026-10-29T00:23+09:00; preserve validated checkpoint and existing data
 # Bounded collection wake: 2026-11-01T13:19+09:00; retain source validation, checkpoint and dedup rules
 # Bounded collection wake: 2026-11-01T20:14+09:00; resume latest valid checkpoint without changing extraction or import rules
+
+# Bounded collection wake: 2026-11-01T21:18+09:00; use existing validated checkpoint, preserve dedup and certification safeguards
