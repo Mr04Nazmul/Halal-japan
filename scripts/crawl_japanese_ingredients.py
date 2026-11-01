@@ -52,6 +52,7 @@ SOURCES={
  'kagome.co.jp':r'/foodservice/(?:dry|frozen|chilled)/\d+/?\Z',
  'agf.ajinomoto.co.jp':r'/product/detail/\d+/?$',
  'dydo.co.jp':r'/products/detail/\d+/?$',
+ 'natori.co.jp':r'/products_search/[^/]+/item_\d+/?$',
 }
 class TemporarySourceMaintenance(RuntimeError):
  """Official product site is temporarily unavailable; retry after a host cooldown."""
@@ -81,6 +82,10 @@ def canonical(u):
  if (p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list':
   allowed.update({'rt_bn_product_category_list_s_skip','rt_bn_product_list_1-2_skip',
                   'rt_bn_product_list_all_skip','rt_bn_product_list_skip'})
+ if (p.hostname or '').lower() in {'natori.co.jp','www.natori.co.jp'} and p.path=='/products_search/search':
+  # Natori's official category pages require these filters for pagination.
+  allowed.update({'formid','ible-categoryselectbox1','ible-categoryselectbox2',
+                  'ible-checkboxsolo1','ible-keyword1'})
  keep_blank=(p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list'
  q=sorted((k,v) for k,v in parse_qsl(p.query,keep_blank_values=keep_blank) if k in allowed)
  path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
@@ -101,7 +106,7 @@ def allowed_link(u):
  host=source(u);path=urlsplit(u).path
  if host=='housefoods.jp' and path.startswith('/products/special/'):return False
  if host=='kagome.co.jp' and path.startswith('/products/brand/'):return False
- return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|items/?$|item(?:/category)?|products?(?:/|$)|jp/product|goods/|sweets/|business/|foodservice/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
+ return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|items/?$|item(?:/category)?|products?(?:/|$)|products\.html$|products_search/|jp/product|goods/|sweets/|business/|foodservice/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0
 def clean_label(s):return unicodedata.normalize('NFKC',s).strip().strip('【】〖〗:：/／ ')
@@ -356,9 +361,10 @@ class Collector:
    url=canonical(raw)
    if product_url(url) or sitemap_url(url):continue
    parsed=urlsplit(url)
-   if parsed.query or not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|product/?)',parsed.path):continue
+   if parsed.query and source(url)!='natori.co.jp':continue
+   if not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path):continue
    host=parsed.netloc
-   limit=8 if source(url)=='topvalu.net' else 1
+   limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue
    updated=self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0 WHERE url=? AND status='done' AND error IS NULL",(url,))
    if updated.rowcount:refreshed_by_host[host]=refreshed_by_host.get(host,0)+1
