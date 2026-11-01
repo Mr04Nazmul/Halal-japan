@@ -121,3 +121,4 @@ jobs:
 # Manual batch wake: 2026-10-28T21:17+09:00 (resume latest validated checkpoint after importer fix)
 
 # Manual bounded collection wake: 2026-10-29T00:23+09:00; preserve validated checkpoint and existing data
+# Bounded collection wake: 2026-11-01T13:19+09:00; retain source validation, checkpoint and dedup rules
