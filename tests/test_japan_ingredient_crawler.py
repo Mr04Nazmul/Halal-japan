@@ -37,8 +37,8 @@ class Extraction(unittest.TestCase):
  def test_old_unknown_rejection_requeued_only_after_extractor_upgrade(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   url='https://muso.co.jp/item/32882.html'
-   blocked='https://muso.co.jp/item/32883.html'
+   url='https://agf.ajinomoto.co.jp/product/detail/14113'
+   blocked='https://agf.ajinomoto.co.jp/product/detail/14114'
    c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",
     (url,'done',3,'incomplete_ingredient_declaration'))
    c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",
@@ -346,7 +346,8 @@ class Extraction(unittest.TestCase):
  def test_extractor_upgrade_requeues_only_field_rejections_once(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",(URL,'done',1,'missing_or_ambiguous_ingredients'))
+   agf='https://agf.ajinomoto.co.jp/product/detail/14113'
+   c.db.execute("INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)",(agf,'done',1,'missing_or_ambiguous_ingredients'))
    c.db.execute("DELETE FROM metadata WHERE key='extractor_version'");c.db.commit();c.db.close()
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
@@ -424,6 +425,47 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['jan'],'4901111554733')
   self.assertEqual(record['ingredients_ja'],'コーヒー豆')
   self.assertFalse(record['halal_certified'])
+
+ def test_agf_real_div_based_ingredient_and_jan_markup(self):
+  # Fixture follows the actual labelled div structure of AGF's official
+  # /product/detail/14113 page, rather than an invented p/p table.
+  url='https://agf.ajinomoto.co.jp/product/detail/14113'
+  html='''<h1>「煎」プレミアムドリップ</h1>
+  <h2>「煎」プレミアムドリップ 濃厚 深いコク２０袋</h2>
+  <div class="agf-cs-product-table-row"><div class="agf-cs-product-table-heading">原材料名</div>
+  <div class="agf-cs-product-table-data">コーヒー豆</div></div>
+  <div class="agf-cs-product-table-row"><div class="agf-cs-product-table-heading">JANコード</div>
+  <div class="agf-cs-product-table-data">4901111960473</div></div>
+  <div class="agf-cs-product-table-row"><div class="agf-cs-product-table-heading">主な原料の産地</div>
+  <div class="agf-cs-product-table-data">生豆生産国名：タンザニア、コロンビア、他</div></div>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['ingredients_ja'],'コーヒー豆')
+  self.assertEqual(record['jan'],'4901111960473')
+  self.assertEqual(record['name_ja'],'「煎」プレミアムドリップ 濃厚 深いコク２０袋')
+  self.assertFalse(record['halal_certified'])
+  missing_jan=html.replace('4901111960473','')
+  record,error=extract(missing_jan,url)
+  self.assertIsNone(error)
+  self.assertIsNone(record['jan'])
+  conflicting=html.replace('</div></div>','</div></div><div class="agf-cs-product-table-row"><div class="agf-cs-product-table-heading">原材料名</div><div class="agf-cs-product-table-data">豚肉</div></div>',1)
+  record,error=extract(conflicting,url)
+  self.assertIsNone(record)
+  self.assertEqual(error,'missing_or_ambiguous_ingredients')
+
+ def test_agf_only_requeue_does_not_replay_unrelated_missing_fields(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   agf='https://agf.ajinomoto.co.jp/product/detail/14113'
+   house='https://housefoods.jp/products/catalog/cd_1,082675,spice2,youfu,all.html'
+   c.db.executemany('INSERT INTO queue(url,status,error) VALUES(?,?,?)',
+    [(agf,'done','missing_or_ambiguous_ingredients'),(house,'done','missing_or_ambiguous_ingredients')])
+   c.db.execute("UPDATE metadata SET value='official-fields-2026-11-01-v7' WHERE key='extractor_version'")
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(agf,)).fetchone()[0],'pending')
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(house,)).fetchone()[0],'done')
+   c.db.close()
 
  def test_suntory_and_morinaga_official_product_discovery(self):
   from crawl_japanese_ingredients import allowed_link
