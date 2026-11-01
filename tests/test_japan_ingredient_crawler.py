@@ -6,6 +6,37 @@ from crawl_japanese_ingredients import Collector,extract,product_url,canonical
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
 class Extraction(unittest.TestCase):
+ def test_asahi_maintenance_page_is_not_an_ingredient_record(self):
+  from crawl_japanese_ingredients import is_temporary_maintenance
+  url='https://www.asahiinryo.co.jp/products/milkybeverage/calpis_the_rich/2E24T.html'
+  maintenance='<html><h1>まことに申し訳ございません。ただいまメンテナンス中です。</h1><p>安全性が確認でき次第、順次再開を予定しています。</p></html>'
+  self.assertTrue(is_temporary_maintenance(maintenance,url))
+  self.assertFalse(is_temporary_maintenance(maintenance,'https://7premium.jp/product/search/detail?id=10791'))
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   c.permitted=lambda u:True
+   c.request=lambda u:maintenance
+   c.run([url],max_pages=1,minutes=0.1)
+   status,attempts,next_try,error=c.db.execute('SELECT status,attempts,next_try,error FROM queue WHERE url=?',(url,)).fetchone()
+   self.assertEqual((status,attempts,error),('pending',1,'temporary_source_maintenance'))
+   self.assertGreater(next_try,0)
+   self.assertEqual(c.count(),0)
+   c.db.close()
+
+ def test_asahi_old_field_rejections_requeued_once_on_upgrade(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   url='https://www.asahiinryo.co.jp/products/milkybeverage/calpis_the_rich/2E24T.html'
+   agf='https://agf.ajinomoto.co.jp/product/detail/14113'
+   c.db.executemany('INSERT INTO queue(url,status,error) VALUES(?,?,?)',
+    [(url,'done','missing_or_ambiguous_ingredients'),(agf,'done','missing_or_ambiguous_ingredients')])
+   c.db.execute("UPDATE metadata SET value='official-fields-2026-11-01-v8-agf-div' WHERE key='extractor_version'")
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'pending')
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(agf,)).fetchone()[0],'done')
+   c.db.close()
+
  def test_reject_origin_heading_and_packaging_polymer(self):
   for value in ('主な原材料の産地','ポリエチレン'):
    with self.subTest(value=value):
