@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-01-v7'
+EXTRACTOR_VERSION='official-fields-2026-11-01-v8-agf-div'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -99,6 +99,17 @@ def extract(html,url):
  for dt in soup.find_all('dt'):
   dd=dt.find_next_sibling('dd')
   if dd:fields.setdefault(clean_label(dt.get_text(' ',strip=True)),[]).append(dd.get_text(' ',strip=True))
+ # AGF's actual official product detail HTML uses div-based labelled rows,
+ # not dt/dd or th/td. Read only adjacent labelled values from this
+ # manufacturer-specific structure, never unlabelled page text.
+ if source(url)=='agf.ajinomoto.co.jp':
+  for row in soup.select('div.agf-cs-product-table-row'):
+   heading=row.select_one('.agf-cs-product-table-heading')
+   value=row.select_one('.agf-cs-product-table-data')
+   if heading and value:
+    label=clean_label(heading.get_text(' ',strip=True))
+    if label in LABELS|{'添加物','JAN','JANコード','JANCODE','POSコード'}:
+     fields.setdefault(label,[]).append(value.get_text(' ',strip=True))
  for tr in soup.find_all('tr'):
   cells=tr.find_all(['th','td'],recursive=False)
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
@@ -196,7 +207,13 @@ class Collector:
   if not previous or previous[0]!=EXTRACTOR_VERSION:
    # Revisit only pages rejected by older field extraction.  Network failures,
    # robots decisions and accepted records are not reset.
-   self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL WHERE error IN ('missing_or_ambiguous_ingredients','missing_product_identity','incomplete_ingredient_declaration') OR error LIKE 'UnicodeEncodeError:%'")
+   # This release only changes AGF's div-based field extraction. Requeue
+   # AGF field failures, not the 6k+ unchanged House Foods / 7premium
+   # failures that caused a 1,004-page zero-yield batch. Preserve all rows.
+   self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+    WHERE (url LIKE 'https://agf.ajinomoto.co.jp/product/detail/%'
+     AND error IN ('missing_or_ambiguous_ingredients','missing_product_identity','incomplete_ingredient_declaration'))
+     OR error LIKE 'UnicodeEncodeError:%'""")
    # Revisit invalid legacy accepted records without altering prior artifacts.
    invalid=[]
    for ident,payload in self.db.execute('SELECT id,payload FROM products'):
@@ -263,7 +280,12 @@ class Collector:
   if hasattr(self,'run_started_at'):
    counts=self.db.execute("SELECT reason,count(*) FROM observations WHERE at>=? AND reason IS NOT NULL AND reason NOT IN ('discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product') GROUP BY reason ORDER BY count(*) DESC LIMIT 12",(self.run_started_at,)).fetchall()
    outcomes=self.db.execute("SELECT COALESCE(reason,'unclassified'),count(*) FROM observations WHERE at>=? GROUP BY COALESCE(reason,'unclassified') ORDER BY count(*) DESC LIMIT 12",(self.run_started_at,)).fetchall()
+   host_outcomes={}
+   for observed_url,observed_reason in self.db.execute('SELECT url,reason FROM observations WHERE at>=?',(self.run_started_at,)):
+    key=(urlsplit(observed_url).hostname or 'unknown')+' | '+(observed_reason or 'unclassified')
+    host_outcomes[key]=host_outcomes.get(key,0)+1
    summary['current_run']={
+    'top_host_outcomes':dict(sorted(host_outcomes.items(),key=lambda item:-item[1])[:15]),
     'started_at':self.run_started_at,
     'pages_processed':self.db.execute('SELECT count(*) FROM observations WHERE at>=?',(self.run_started_at,)).fetchone()[0],
     'new_accepted':len(rows)-self.run_start_count,
