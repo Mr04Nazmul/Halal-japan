@@ -1,6 +1,7 @@
 import json
 import sys
 import tempfile
+import time
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
@@ -90,6 +91,32 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             self.assertEqual(summary["current_run"]["new_accepted"], 0)
             self.assertEqual(summary["current_run"]["page_outcomes"],
                              {"discovery_navigation_page": 4})
+
+    def test_host_cooldown_explains_zero_yield_without_network(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            product = "https://www.sbfoods.co.jp/products/detail/123.html"
+            collector.enqueue([product])
+            collector.db.execute(
+                "INSERT INTO host_state(host,next_try,reason) VALUES(?,?,?)",
+                ("www.sbfoods.co.jp", time.time() + 3600, "HTTPError:503"),
+            )
+            collector.db.commit()
+            collector.run([], max_pages=1, minutes=1)
+            summary = json.loads((Path(directory) / "summary.json").read_text())
+            self.assertEqual(summary["current_run"]["new_accepted"], 0)
+            self.assertEqual(summary["current_run"]["stop_reason"],
+                             "no_eligible_pending_urls")
+            self.assertEqual(summary["current_run"]["pages_processed"], 0)
+            self.assertEqual(summary["current_run"]["active_host_cooldowns"][0]["host"],
+                             "www.sbfoods.co.jp")
+
+    def test_page_budget_stop_reason(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            collector.run([], max_pages=0, minutes=1)
+            summary = json.loads((Path(directory) / "summary.json").read_text())
+            self.assertEqual(summary["current_run"]["stop_reason"], "page_budget")
 
     def test_finalizer_preserves_last_run_metrics(self):
         with tempfile.TemporaryDirectory() as directory:
