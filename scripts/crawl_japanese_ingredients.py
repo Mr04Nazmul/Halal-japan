@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-01-v8-agf-div'
+EXTRACTOR_VERSION='official-fields-2026-11-01-v9-asahi-maintenance'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -53,6 +53,18 @@ SOURCES={
  'agf.ajinomoto.co.jp':r'/product/detail/\d+/?$',
  'dydo.co.jp':r'/products/detail/\d+/?$',
 }
+class TemporarySourceMaintenance(RuntimeError):
+ """Official product site is temporarily unavailable; retry after a host cooldown."""
+ pass
+
+def is_temporary_maintenance(html,url):
+ # Asahi's current security-maintenance page is not a product page.
+ # Require distinctive site-specific text to avoid rejecting normal products.
+ if source(url)!='asahiinryo.co.jp':return False
+ plain=''.join(BeautifulSoup(html,'html.parser').stripped_strings)
+ return ('ただいまメンテナンス中です' in plain
+         or ('一時停止しています' in plain and '安全性が確認' in plain))
+
 LABELS={'原材料','原材料名','原材料名/添加物名','原材料(一括表示ラベル)'}
 GENERIC_NAMES={'商品情報','商品紹介','製品情報','商品一覧','商品ラインナップ','基本情報'}
 def normalized(s):return ''.join(unicodedata.normalize('NFKC',s).split())
@@ -207,13 +219,20 @@ class Collector:
   if not previous or previous[0]!=EXTRACTOR_VERSION:
    # Revisit only pages rejected by older field extraction.  Network failures,
    # robots decisions and accepted records are not reset.
-   # This release only changes AGF's div-based field extraction. Requeue
-   # AGF field failures, not the 6k+ unchanged House Foods / 7premium
-   # failures that caused a 1,004-page zero-yield batch. Preserve all rows.
+   # Keep the earlier AGF repair's requeue one-time only. This upgrade
+   # targets Asahi maintenance, not unrelated manufacturer field failures.
+   if not previous or 'v8-agf-div' not in previous[0] and 'v9-asahi-maintenance' not in previous[0]:
+    self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE (url LIKE 'https://agf.ajinomoto.co.jp/product/detail/%'
+      AND error IN ('missing_or_ambiguous_ingredients','missing_product_identity','incomplete_ingredient_declaration'))
+      OR error LIKE 'UnicodeEncodeError:%'""")
+   # Earlier Asahi maintenance responses were mistaken for permanently
+   # missing ingredients. Retry those product pages once, then back off
+   # the whole host while maintenance remains active.
    self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
-    WHERE (url LIKE 'https://agf.ajinomoto.co.jp/product/detail/%'
-     AND error IN ('missing_or_ambiguous_ingredients','missing_product_identity','incomplete_ingredient_declaration'))
-     OR error LIKE 'UnicodeEncodeError:%'""")
+    WHERE (url LIKE 'https://%.asahiinryo.co.jp/products/%'
+       OR url LIKE 'https://asahiinryo.co.jp/products/%')
+      AND error IN ('missing_or_ambiguous_ingredients','temporary_source_maintenance')""")
    # Revisit invalid legacy accepted records without altering prior artifacts.
    invalid=[]
    for ident,payload in self.db.execute('SELECT id,payload FROM products'):
@@ -246,7 +265,13 @@ class Collector:
   if delay>0:time.sleep(delay)
   self.last[host]=time.time()
   with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':UA,'Accept':'text/html,application/xml;q=0.9'}),timeout=25) as r:
-   if urlsplit(r.url).hostname!=urlsplit(url).hostname and not source(r.url):raise ValueError('off_source_redirect')
+   if urlsplit(r.url).hostname!=urlsplit(url).hostname and not source(r.url):
+    final=urlsplit(r.url)
+    if (source(url)=='asahiinryo.co.jp'
+        and final.hostname=='p22sorrysite.z11.web.core.windows.net'
+        and final.path.startswith('/maintenance_')):
+     raise TemporarySourceMaintenance('asahi_security_maintenance_redirect')
+    raise ValueError('off_source_redirect')
    data=r.read(3_000_001)
    if len(data)>3_000_000:raise ValueError('page_too_large')
    return data.decode(r.headers.get_content_charset() or 'utf-8',errors='replace')
@@ -382,6 +407,8 @@ class Collector:
      if not self.permitted(url):reason='robots_disallowed'
      else:
       html=self.request(url)
+      if is_temporary_maintenance(html,url):
+       raise TemporarySourceMaintenance('asahi_security_maintenance_page')
       if urlsplit(url).path.endswith('.xml'):
        links=re.findall(r'<loc>\s*([^<]+)',html)
        self.enqueue([u.replace('&amp;','&') for u in links if allowed_link(u)])
@@ -402,6 +429,15 @@ class Collector:
        else:reason='discovery_navigation_page'
      queue_error=None if reason in {'discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product'} else reason
      self.db.execute("UPDATE queue SET status='done',attempts=attempts+1,error=? WHERE url=?",(queue_error,url))
+    except TemporarySourceMaintenance:
+     # Do not permanently reject legitimate product URLs during an
+     # upstream outage, or burn the full crawl budget on maintenance pages.
+     reason='temporary_source_maintenance'
+     cooldown=6*3600
+     host=urlsplit(url).netloc
+     self.db.execute('INSERT OR REPLACE INTO host_state VALUES(?,?,?)',(host,time.time()+cooldown,reason))
+     self.db.execute("UPDATE queue SET status='pending',attempts=attempts+1,next_try=?,error=? WHERE url=?",
+      (time.time()+cooldown,reason,url))
     except Exception as e:
      code=getattr(e,'code',None);reason=type(e).__name__+':'+str(code or str(e)[:120])
      cooldown=86400 if code in (401,403) else 3600 if code==429 else 900
