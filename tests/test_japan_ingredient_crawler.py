@@ -1,4 +1,4 @@
-import json,sys,tempfile,unittest
+import json,sys,tempfile,unittest,time,urllib.error
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 from crawl_japanese_ingredients import Collector,extract,product_url,canonical
@@ -6,6 +6,33 @@ from crawl_japanese_ingredients import Collector,extract,product_url,canonical
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
 class Extraction(unittest.TestCase):
+ def test_missing_product_404_does_not_block_other_products_on_host(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   first='https://muso.co.jp/item/32882.html'
+   second='https://muso.co.jp/item/32883.html'
+   c.permitted=lambda u:True
+   def request(u):
+    if u==first:raise urllib.error.HTTPError(u,404,'Not Found',{},None)
+    return HTML
+   c.request=request
+   c.run([first,second],max_pages=2,minutes=1)
+   self.assertEqual(c.count(),1)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(first,)).fetchone()[0],'done')
+   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='muso.co.jp'").fetchone())
+   c.db.close()
+
+ def test_old_404_host_cooldowns_are_cleared_without_dropping_queue(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   c.db.execute("INSERT INTO host_state VALUES(?,?,?)",('muso.co.jp',time.time()+900,'HTTPError:404'))
+   c.db.execute("INSERT INTO queue(url) VALUES(?)",('https://muso.co.jp/item/32882.html',))
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='muso.co.jp'").fetchone())
+   self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],1)
+   c.db.close()
+
  def test_asahi_maintenance_page_is_not_an_ingredient_record(self):
   from crawl_japanese_ingredients import is_temporary_maintenance
   url='https://www.asahiinryo.co.jp/products/milkybeverage/calpis_the_rich/2E24T.html'
