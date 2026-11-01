@@ -4,6 +4,7 @@ Requires GitHub Secrets SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
 Does not touch existing product, scanner or certification tables.
 """
 import json,os,sys,re,urllib.request,urllib.error
+from collections import Counter
 from urllib.parse import quote
 from pathlib import Path
 
@@ -118,6 +119,7 @@ if not rows:
     sys.exit(0)
 print(f"Importing {len(rows)} distinct complete-ingredient records into staging only",flush=True)
 newly_inserted=0
+new_source_counts=Counter()
 for i in range(0,len(rows),100):
     req=urllib.request.Request(url+"/rest/v1/jhc_crawler_ingredient_staging?on_conflict=identity_key&select=identity_key",
         data=json.dumps(rows[i:i+100],ensure_ascii=False).encode("utf-8"),method="POST",
@@ -128,10 +130,17 @@ for i in range(0,len(rows),100):
             inserted=json.loads(response.read())
         if not isinstance(inserted,list) or len(inserted)>len(rows[i:i+100]):
             sys.exit("Unexpected Supabase insert response; count is not reliable")
+        source_by_identity={row['identity_key']: row.get('source_publisher') or 'unknown' for row in rows[i:i+100]}
+        for returned in inserted:
+            identity=returned.get('identity_key') if isinstance(returned,dict) else None
+            if identity not in source_by_identity:
+                sys.exit('Unexpected inserted identity in Supabase response; count is not reliable')
+            new_source_counts[source_by_identity[identity]]+=1
         newly_inserted+=len(inserted)
     except urllib.error.HTTPError as e:
         sys.exit(f"Supabase import batch {i//100+1} failed: HTTP {e.code}, {e.read(500).decode(errors='replace')}")
 print(f"Staging import complete: {newly_inserted} NEW unique rows; {len(rows)-newly_inserted} existing identities ignored; {rejected} quarantined.",flush=True)
+print('New imports by source publisher: '+json.dumps(dict(sorted(new_source_counts.items())),ensure_ascii=False),flush=True)
 if os.environ.get("GITHUB_STEP_SUMMARY"):
     with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as report:
         report.write(f"\nNewly inserted staging rows: {newly_inserted}. Existing identities ignored: {len(rows)-newly_inserted}.\n")
