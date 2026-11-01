@@ -53,6 +53,7 @@ SOURCES={
  'agf.ajinomoto.co.jp':r'/product/detail/\d+/?$',
  'dydo.co.jp':r'/products/detail/\d+/?$',
  'natori.co.jp':r'/products_search/[^/]+/item_\d+/?$',
+ 'kirin.co.jp':r'/softdrink/softdrink/detail\.html\?id=\d+$',
 }
 class TemporarySourceMaintenance(RuntimeError):
  """Official product site is temporarily unavailable; retry after a host cooldown."""
@@ -106,6 +107,9 @@ def allowed_link(u):
  host=source(u);path=urlsplit(u).path
  if host=='housefoods.jp' and path.startswith('/products/special/'):return False
  if host=='kagome.co.jp' and path.startswith('/products/brand/'):return False
+ # Kirin's official soft-drink nutrition catalogue links to product pages.
+ # Never traverse unrelated alcohol or marketing sections.
+ if host=='kirin.co.jp' and path.rstrip('/')=='/softdrink/nutrition/softdrink':return True
  return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|items/?$|item(?:/category)?|products?(?:/|$)|products\.html$|products_search/|jp/product|goods/|sweets/|business/|foodservice/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0
@@ -388,7 +392,8 @@ class Collector:
    if product_url(url) or sitemap_url(url):continue
    parsed=urlsplit(url)
    if parsed.query and source(url)!='natori.co.jp':continue
-   if not re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path):continue
+   if not (re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
+           or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue
