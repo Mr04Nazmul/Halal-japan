@@ -247,6 +247,10 @@ class Collector:
    if invalid:print(f"Quarantined {len(invalid)} invalid legacy checkpoint records",flush=True)
    self.db.execute("INSERT OR REPLACE INTO metadata VALUES('extractor_version',?)",(EXTRACTOR_VERSION,))
    self.db.commit()
+  # A 404 only means this URL is missing; it must not throttle every other
+  # product page on the same official host. Clear legacy 404 host cooldowns.
+  self.db.execute("DELETE FROM host_state WHERE reason='HTTPError:404'")
+  self.db.commit()
   self.robots={};self.last={}
  def enqueue(self,urls):
   links=[canonical(u) for u in urls if allowed_link(u)]
@@ -440,8 +444,9 @@ class Collector:
       (time.time()+cooldown,reason,url))
     except Exception as e:
      code=getattr(e,'code',None);reason=type(e).__name__+':'+str(code or str(e)[:120])
-     cooldown=86400 if code in (401,403) else 3600 if code==429 else 900
-     self.db.execute('INSERT OR REPLACE INTO host_state VALUES(?,?,?)',(urlsplit(url).netloc,time.time()+cooldown,reason))
+     cooldown=0 if code==404 else 86400 if code in (401,403) else 3600 if code==429 else 900
+     if code!=404:
+      self.db.execute('INSERT OR REPLACE INTO host_state VALUES(?,?,?)',(urlsplit(url).netloc,time.time()+cooldown,reason))
      self.db.execute("UPDATE queue SET status=?,attempts=attempts+1,next_try=?,error=? WHERE url=?",('done' if code==404 or attempts>=4 else 'pending',time.time()+cooldown,reason,url))
     self.db.execute('INSERT INTO observations VALUES(?,?,?)',(url,reason,datetime.now(timezone.utc).isoformat()));self.db.commit()
     done+=1
