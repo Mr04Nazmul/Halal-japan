@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-01-v9-asahi-maintenance'
+EXTRACTOR_VERSION='official-fields-2026-11-02-v10-natori-core'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -127,6 +127,22 @@ def extract(html,url):
     label=clean_label(heading.get_text(' ',strip=True))
     if label in LABELS|{'添加物','JAN','JANコード','JANCODE','POSコード'}:
      fields.setdefault(label,[]).append(value.get_text(' ',strip=True))
+ # Natori's live product pages put 原材料名 in a heading nested inside
+ # one .ible-part__html div, and its exact declaration in the immediately
+ # following sibling .ible-part__html div (not in h3.next_sibling).
+ # Read only this labelled adjacent pair; never infer from nutrition/allergens.
+ if source(url)=='natori.co.jp':
+  for block in soup.select('div.ible-block'):
+   parts=block.find_all('div',class_='ible-part__html',recursive=False)
+   for left,right in zip(parts,parts[1:]):
+    heading=left.select_one('.ible-part__core h3, .ible-part__core h4')
+    if not heading:continue
+    label=clean_label(heading.get_text(' ',strip=True))
+    if label not in LABELS:continue
+    value=right.select_one('.ible-part__core')
+    if value and not value.find(['h2','h3','h4']):
+     text=value.get_text(' ',strip=True)
+     if text:fields.setdefault(label,[]).append(text)
  for tr in soup.find_all('tr'):
   cells=tr.find_all(['th','td'],recursive=False)
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
@@ -138,6 +154,9 @@ def extract(html,url):
    continue
   label=clean_label(raw)
   if label not in LABELS|{'添加物','JAN','JANコード','JANCODE','POSコード'}:continue
+  # A validated Natori label/value pair supersedes generic document-order
+  # fallback, which otherwise grabs a nutrition-table cell as ingredients.
+  if source(url)=='natori.co.jp' and label in LABELS and fields.get(label):continue
   nxt=el.find_next_sibling()
   while nxt is not None and not nxt.get_text(' ',strip=True):nxt=nxt.find_next_sibling()
   # Official sites often wrap the heading one or two divs deeper than its
@@ -238,6 +257,13 @@ class Collector:
     WHERE (url LIKE 'https://%.asahiinryo.co.jp/products/%'
        OR url LIKE 'https://asahiinryo.co.jp/products/%')
       AND error IN ('missing_or_ambiguous_ingredients','temporary_source_maintenance')""")
+   # Revisit only Natori product pages that the older parser rejected for
+   # missing ingredients. Leave 404s, robots blocks and accepted rows intact.
+   # The version guard prevents replaying these failures every hourly run.
+   if not previous or 'v10-natori-core' not in previous[0]:
+    self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url LIKE 'https://www.natori.co.jp/products_search/%/item_%'
+       AND error='missing_or_ambiguous_ingredients'""")
    # Revisit invalid legacy accepted records without altering prior artifacts.
    invalid=[]
    for ident,payload in self.db.execute('SELECT id,payload FROM products'):
