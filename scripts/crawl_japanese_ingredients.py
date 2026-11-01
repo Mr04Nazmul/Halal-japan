@@ -320,7 +320,14 @@ class Collector:
     'new_accepted':len(rows)-self.run_start_count,
     'initial_pending_product_pages':getattr(self,'initial_pending_product_pages',None),
     'top_rejection_reasons':dict(counts),
-    'page_outcomes':dict(outcomes)}
+    'page_outcomes':dict(outcomes),
+    'stop_reason':getattr(self,'run_stop_reason','in_progress'),
+    'active_host_cooldowns':[
+     {'host':host,'reason':reason,
+      'retry_at':datetime.fromtimestamp(next_try,timezone.utc).isoformat()}
+     for host,next_try,reason in self.db.execute(
+      'SELECT host,next_try,reason FROM host_state WHERE next_try>? ORDER BY next_try LIMIT 15',
+      (time.time(),))]}
   elif (self.path/'summary.json').exists():
    # The workflow's --checkpoint-only finalizer runs in a fresh process.
    # Preserve metrics from the bounded crawl instead of erasing them.
@@ -378,6 +385,7 @@ class Collector:
   self.db.executemany("INSERT OR IGNORE INTO sitemap_priority(url) VALUES(?)",pending_sitemaps)
   self.product_priority_ready=True
   end=time.monotonic()+minutes*60;done=0
+  self.run_stop_reason='in_progress'
   try:
    while done<max_pages and time.monotonic()<end and self.count()<self.target:
     now=time.time()
@@ -403,7 +411,9 @@ class Collector:
       item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/brand/%' ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
      if not item:
       item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/brand/%' ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
-    if not item:break
+    if not item:
+     self.run_stop_reason='no_eligible_pending_urls'
+     break
     url,attempts=item;reason=None
     if not product_url(url) and not sitemap_url(url):
      self.last_navigation_host=urlsplit(url).netloc
@@ -451,7 +461,13 @@ class Collector:
     self.db.execute('INSERT INTO observations VALUES(?,?,?)',(url,reason,datetime.now(timezone.utc).isoformat()));self.db.commit()
     done+=1
     if done%25==0:self.checkpoint()
-  finally:self.checkpoint()
+  finally:
+   if self.run_stop_reason=='in_progress':
+    if self.count()>=self.target:self.run_stop_reason='target_reached'
+    elif done>=max_pages:self.run_stop_reason='page_budget'
+    elif time.monotonic()>=end:self.run_stop_reason='time_budget'
+    else:self.run_stop_reason='interrupted'
+   self.checkpoint()
 
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1500);p.add_argument('--minutes',type=float,default=35);p.add_argument('--checkpoint-only',action='store_true')
