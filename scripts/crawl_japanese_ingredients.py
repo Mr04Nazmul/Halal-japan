@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-02-v10-natori-core'
+EXTRACTOR_VERSION='official-fields-2026-11-02-v11-marukome-business'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -293,6 +293,19 @@ class Collector:
     self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
      WHERE url LIKE 'https://www.natori.co.jp/products_search/%/item_%'
        AND error='missing_or_ambiguous_ingredients'""")
+   # Older checkpoints crawled Marukome business detail URLs before the
+   # trailing-letter URL pattern was recognized. They were incorrectly marked
+   # as completed *navigation*, not extracted as products. Revisit only those
+   # successful navigation pages once; leave rejected pages and accepted
+   # products untouched. The version guard prevents repeated hourly replay.
+   if not previous or 'v11-marukome-business' not in previous[0]:
+    self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url LIKE 'https://www.marukome.co.jp/business/product/detail/%'
+       AND status='done' AND error IS NULL
+       AND NOT EXISTS (
+        SELECT 1 FROM products p
+        WHERE json_extract(p.payload,'$.source_url')=queue.url
+       )""")
    # Revisit invalid legacy accepted records without altering prior artifacts.
    invalid=[]
    for ident,payload in self.db.execute('SELECT id,payload FROM products'):
