@@ -14,7 +14,7 @@ from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-02-v11-marukome-business'
+EXTRACTOR_VERSION='official-fields-2026-11-03-v12-housefoods-origin-heading'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -174,6 +174,12 @@ def extract(html,url):
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
  for el in soup.find_all(['h2','h3','h4','strong','b','p']):
   raw=unicodedata.normalize('NFKC',el.get_text(' ',strip=True))
+  # House Foods uses a section heading "原材料名／主な原材料の産地".
+  # It is NOT a declaration: treating the text after the slash as an
+  # ingredient conflicts with the real labelled <th>原材料名</th> value.
+  if (source(url)=='housefoods.jp' and el.name in {'h2','h3','h4'}
+      and re.fullmatch(r'原材料名\s*/\s*主な原材料の産地',raw)):
+   continue
   combined=re.match(r'^[●•\s]*(原材料名/添加物名|原材料名|原材料|原材料\(一括表示ラベル\))\s*(?:[/／:：]|…|\.\.\.)\s*(.+)$',raw,re.S)
   if combined:
    fields.setdefault(combined.group(1),[]).append(combined.group(2).strip())
@@ -322,6 +328,19 @@ class Collector:
         SELECT 1 FROM products p
         WHERE json_extract(p.payload,'$.source_url')=queue.url
        )""")
+   # Retry only previously rejected House Foods product pages after fixing
+   # the misleading origin-section heading. Keep robots/404 decisions,
+   # already accepted records and the rest of the queue untouched.
+   recovery_key='housefoods_origin_heading_recovery_20261103'
+   if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(recovery_key,)).fetchone():
+    changed=self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url LIKE 'https://housefoods.jp/products/catalog/cd_%'
+       AND status='done' AND error='missing_or_ambiguous_ingredients'
+       AND NOT EXISTS (
+        SELECT 1 FROM products p WHERE json_extract(p.payload,'$.source_url')=queue.url
+       )""")
+    self.db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',(recovery_key,'done'))
+    print('House Foods origin-heading recovery:',changed.rowcount,'previously rejected pages',flush=True)
    # Revisit invalid legacy accepted records without altering prior artifacts.
    invalid=[]
    for ident,payload in self.db.execute('SELECT id,payload FROM products'):
