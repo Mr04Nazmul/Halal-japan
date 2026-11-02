@@ -55,6 +55,7 @@ SOURCES={
  'natori.co.jp':r'/products_search/[^/]+/item_\d+/?$',
  'kirin.co.jp':r'/softdrink/softdrink/detail\.html\?id=\d+$',
  'marukome.co.jp':r'/product/detail/[a-z0-9]+_\d+/?$',
+ 'yamasa.com':r'/products/(?:home|business)/(?:[^/?#]+/)+[^/?#]+/?$',
 }
 class TemporarySourceMaintenance(RuntimeError):
  """Official product site is temporarily unavailable; retry after a host cooldown."""
@@ -202,6 +203,9 @@ def extract(html,url):
   # Use the first product heading, not the generic site title.
   product_heading=next((h.get_text(' ',strip=True) for h in soup.find_all(['h1','h2']) if h.get_text(' ',strip=True) and '商品情報' not in h.get_text(' ',strip=True) and '原材料' not in h.get_text(' ',strip=True)),None)
   if product_heading:name=product_heading
+ if source(url)=='yamasa.com' and soup.title:
+  # Prefer Yamasa's exact product name over the category-prefixed H1.
+  name=re.split(r'[|｜〖【]',soup.title.get_text(' ',strip=True),maxsplit=1)[0].strip()
  if source(url)=='marukome.co.jp' and soup.title:
   # Marukome's product pages may show a generic page H1; prefer the
   # product-specific first segment of the official document title.
@@ -398,7 +402,8 @@ class Collector:
    parsed=urlsplit(url)
    if parsed.query and source(url)!='natori.co.jp':continue
    if not (re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
-           or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')):continue
+           or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
+           or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue
