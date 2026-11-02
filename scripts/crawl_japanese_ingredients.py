@@ -111,7 +111,11 @@ def allowed_link(u):
  # hundreds of thousands of synthetic paths. Never enqueue them.
  host=source(u);path=urlsplit(u).path
  if host=='housefoods.jp' and path.startswith('/products/special/'):return False
- if host=='kagome.co.jp' and path.startswith('/products/brand/'):return False
+ # Kagome's consumer marketing microsites currently account for hundreds of
+ # non-product navigation fetches. Only the supported /foodservice/ detail
+ # paths are eligible for product extraction; keep all queued URLs intact.
+ if host=='kagome.co.jp' and (urlsplit(u).hostname or '').lower()=='and.kagome.co.jp':return False
+ if host=='kagome.co.jp' and path.startswith('/products/') and not product_url(u):return False
  # Business product catalogues are in scope, but business recipes and other
  # marketing pages must not fill the pending queue with non-products.
  if host=='marukome.co.jp' and path.startswith('/business/') and not path.startswith('/business/product/'):return False
@@ -496,9 +500,9 @@ class Collector:
      # seeded products, pending products and sitemaps still take precedence.
      previous_host=getattr(self,'last_navigation_host',None)
      if previous_host:
-      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/brand/%' ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
+      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/%' AND q.url NOT LIKE 'https://and.kagome.co.jp/%' ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
      if not item:
-      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/brand/%' ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
+      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/%' AND q.url NOT LIKE 'https://and.kagome.co.jp/%' ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
     if not item:
      self.run_stop_reason='no_eligible_pending_urls'
      break
