@@ -6,6 +6,50 @@ from crawl_japanese_ingredients import Collector,extract,product_url,canonical
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
 class Extraction(unittest.TestCase):
+ def test_housefoods_origin_heading_is_not_an_ingredient_declaration(self):
+  url='https://housefoods.jp/products/catalog/cd_1,092996.html'
+  ingredients='コーングリッツ（国内製造）、植物油脂、食塩／調味料（アミノ酸等）、（一部に豚肉を含む）'
+  html=f'''<title>６２ｇ とんがりコーン | ハウス食品</title>
+  <h1>６２ｇ とんがりコーン</h1><div id="materials">
+  <h2>原材料名／主な原材料の産地</h2>
+  <table><tr><th>原材料名</th><td>{ingredients}</td></tr>
+  <tr><th>主な原材料の産地</th><td>コーングリッツ［とうもろこし（アメリカ産）］</td></tr></table></div>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertEqual(record['name_ja'],'６２ｇ とんがりコーン')
+  self.assertIsNone(record['jan'])
+  self.assertFalse(record['halal_certified'])
+  # The section heading alone is never enough to create a product record.
+  self.assertEqual(extract('<h1>商品</h1><h2>原材料名／主な原材料の産地</h2>',url)[1],
+                   'missing_or_ambiguous_ingredients')
+
+ def test_housefoods_failed_field_pages_requeued_once_without_touching_blocks(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   base='https://housefoods.jp/products/catalog/cd_1,'
+   rejected=base+'092996.html'
+   blocked=base+'092997.html'
+   accepted=base+'092998.html'
+   c.db.executemany('INSERT INTO queue(url,status,error) VALUES(?,?,?)',[
+    (rejected,'done','missing_or_ambiguous_ingredients'),
+    (blocked,'done','robots_disallowed'),
+    (accepted,'done','missing_or_ambiguous_ingredients')])
+   c.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',
+                ('accepted:test','f',json.dumps({'source_url':accepted})))
+   c.db.execute("UPDATE metadata SET value='official-fields-2026-11-02-v11-marukome-business' WHERE key='extractor_version'")
+   c.db.execute("DELETE FROM metadata WHERE key='housefoods_origin_heading_recovery_20261103'")
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(rejected,)).fetchone()[0],'pending')
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(blocked,)).fetchone()[0],'done')
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(accepted,)).fetchone()[0],'done')
+   self.assertEqual(c.count(),1)
+   c.db.execute("UPDATE queue SET status='done',error='missing_or_ambiguous_ingredients' WHERE url=?",(rejected,))
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(rejected,)).fetchone()[0],'done')
+   c.db.close()
  def test_missing_product_404_does_not_block_other_products_on_host(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
