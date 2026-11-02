@@ -55,6 +55,7 @@ SOURCES={
  'natori.co.jp':r'/products_search/[^/]+/item_\d+/?$',
  'kirin.co.jp':r'/softdrink/softdrink/detail\.html\?id=\d+$',
  'marukome.co.jp':r'/product/detail/[a-z0-9]+_\d+/?$',
+ 'sanko-seika.co.jp':r'/product/item/\d+/?$',
  'yamasa.com':r'/products/(?:home|business)/(?:[^/?#]+/)+[^/?#]+/?$',
 }
 class TemporarySourceMaintenance(RuntimeError):
@@ -171,6 +172,18 @@ def extract(html,url):
   if nxt is None:
    nxt=el.find_next(lambda tag: tag.name in {'p','dd','td','li'} and clean_label(tag.get_text(' ',strip=True)) not in LABELS)
   if nxt is not None:fields.setdefault(label,[]).append(nxt.get_text(' ',strip=True))
+ # Sanko Seika's product label sometimes includes a separate package warning
+ # after a <br> in the same 原材料 cell. Exclude only clearly marked warnings;
+ # never infer missing ingredients or combine separate product declarations.
+ if source(url)=='sanko-seika.co.jp':
+  for tr in soup.find_all('tr'):
+   cells=tr.find_all(['th','td'],recursive=False)
+   if len(cells)!=2 or clean_label(cells[0].get_text(' ',strip=True))!='原材料':continue
+   parts=[s.strip() for s in cells[1].stripped_strings if s.strip()]
+   note_at=next((i for i,p in enumerate(parts[1:],1) if p.startswith(('◆','※','＊'))),None)
+   if note_at is not None:
+    declaration=' '.join(parts[:note_at]).strip()
+    if declaration:fields['原材料']=[declaration]
  # A labelled full declaration (原材料名) takes precedence over generic
  # 原材料 rows in provenance/origin tables.  Combining those unrelated fields
  # wrongly made valid Nissin product pages appear ambiguous.  Still reject
