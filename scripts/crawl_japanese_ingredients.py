@@ -56,6 +56,7 @@ SOURCES={
  'kirin.co.jp':r'/softdrink/softdrink/detail\.html\?id=\d+$',
  'marukome.co.jp':r'/product/detail/[a-z0-9]+_\d+[a-z]?/?$',
  'sanko-seika.co.jp':r'/product/item/\d+/?$',
+ 'yamaki.co.jp':r'/catalog/products/(?:index\.php)?\?id=\d+$',
  'yamasa.com':r'/products/(?:home|business)/(?:[^/?#]+/)+[^/?#]+/?$',
 }
 class TemporarySourceMaintenance(RuntimeError):
