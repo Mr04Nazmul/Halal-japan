@@ -34,6 +34,33 @@ class MarukomeOfficialSourceTests(unittest.TestCase):
         self.assertEqual(record["ingredient_field_status"], "complete_displayed_field")
         self.assertFalse(record.get("halal_certified", False))
 
+    def test_business_catalogue_and_explicit_product_declaration(self):
+        # Business catalogue product identifiers have an official trailing
+        # letter (e.g. miso_045b), unlike consumer product IDs.
+        catalogue = "https://www.marukome.co.jp/business/product/miso_b/all/"
+        detail = "https://www.marukome.co.jp/business/product/detail/miso_045b/"
+        self.assertEqual(source(detail), "marukome.co.jp")
+        self.assertTrue(allowed_link(catalogue))
+        self.assertFalse(product_url(catalogue))
+        self.assertTrue(product_url(detail))
+        self.assertTrue(allowed_link(detail))
+        self.assertFalse(allowed_link("https://www.marukome.co.jp/business/recipe/"))
+
+        # The manufacturer explicitly lists the ingredients for the 10kg/20kg
+        # business packs together. Do not fabricate a JAN for either size.
+        html = """<html><head><title>プロ用白 10kg / 20kg｜マルコメ</title></head>
+        <body><h1>商品情報</h1><dl>
+        <dt>内容量</dt><dd>10kg / 20kg</dd>
+        <dt>原材料</dt><dd>大豆（アメリカ又はカナダ又はその他）、米、食塩／酒精</dd>
+        <dt>アレルゲン</dt><dd>大豆</dd>
+        </dl></body></html>"""
+        record, reason = extract(html, detail)
+        self.assertIsNone(reason)
+        self.assertEqual(record["name_ja"], "プロ用白 10kg / 20kg")
+        self.assertEqual(record["ingredients_ja"], "大豆（アメリカ又はカナダ又はその他）、米、食塩／酒精")
+        self.assertIsNone(record["jan"])
+        self.assertFalse(record.get("halal_certified", False))
+
     def test_missing_declaration_fails_closed(self):
         html = "<html><title>料亭の味（だし入り）｜マルコメ</title><h1>商品情報</h1><p>大豆アレルギー</p></html>"
         record, reason = extract(html, DETAIL)
