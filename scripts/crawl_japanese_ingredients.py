@@ -110,6 +110,9 @@ def allowed_link(u):
  host=source(u);path=urlsplit(u).path
  if host=='housefoods.jp' and path.startswith('/products/special/'):return False
  if host=='kagome.co.jp' and path.startswith('/products/brand/'):return False
+ # Business product catalogues are in scope, but business recipes and other
+ # marketing pages must not fill the pending queue with non-products.
+ if host=='marukome.co.jp' and path.startswith('/business/') and not path.startswith('/business/product/'):return False
  # Kirin's official soft-drink nutrition catalogue links to product pages.
  # Never traverse unrelated alcohol or marketing sections.
  if host=='kirin.co.jp' and path.rstrip('/')=='/softdrink/nutrition/softdrink':return True
