@@ -436,6 +436,27 @@ class Collector:
   self.run_started_at=datetime.now(timezone.utc).isoformat()
   self.run_start_count=self.count()
   self.enqueue(seeds)
+  # Retry a bounded set of independently inspected House Foods product pages
+  # once if a previous checkpoint marked them as navigation or extraction
+  # failures. Never reset accepted records, 404s, robots blocks or cooldowns.
+  recovery_key='housefoods_new_20261103_revisited'
+  if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(recovery_key,)).fetchone():
+   ids={'092996','092961','092963','092886','092982','092973','092972','092950','092952'}
+   revisited=0
+   for raw in seeds:
+    u=canonical(raw)
+    m=re.search(r'/products/catalog/cd_1,([0-9]{6})[.]html',urlsplit(u).path)
+    if source(u)!='housefoods.jp' or not m or m.group(1) not in ids:continue
+    changed=self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url=? AND status='done' AND (error IS NULL OR error IN
+       ('missing_or_ambiguous_ingredients','missing_product_identity','non_ingredient_text'))
+       AND NOT EXISTS (
+        SELECT 1 FROM products p WHERE json_extract(p.payload,'$.source_url')=queue.url
+       )""",(u,))
+    revisited+=changed.rowcount
+   self.db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',(recovery_key,'done'))
+   self.db.commit()
+   print('One-time House Foods 2026 official product recovery:',revisited,'eligible pages',flush=True)
   # Revisit a bounded number of previously successful catalogue entry points
   # on each run. Without this, the persistent queue marks every seed as done
   # forever, so new products are never discovered from updated catalogues.
