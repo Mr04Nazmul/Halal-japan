@@ -448,7 +448,8 @@ class Collector:
    if parsed.query and source(url)!='natori.co.jp':continue
    if not (re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
            or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
-           or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})):continue
+           or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})
+           or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue
