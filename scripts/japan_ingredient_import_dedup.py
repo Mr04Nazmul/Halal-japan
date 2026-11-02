@@ -169,3 +169,16 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
         seen_sources[source] = ident
         safe.append(row)
     return safe, conflicts
+
+
+def exceeds_invalid_rejection_limit(total_candidates, invalid_rejections):
+    """Fail closed for malformed input, but do not treat safe dedup skips as invalid.
+
+    Existing URL/JAN identity collisions are expected on cumulative reimports.
+    They are excluded from this input-quality budget, and still never written.
+    """
+    if (not isinstance(total_candidates, int) or not isinstance(invalid_rejections, int)
+            or total_candidates < 0 or invalid_rejections < 0
+            or invalid_rejections > total_candidates):
+        raise ValueError("Invalid candidate/rejection counts; refusing import")
+    return invalid_rejections > max(10, int(total_candidates * 0.05))
