@@ -18,7 +18,7 @@ assert isinstance(items,list), "Expected cumulative array of ingredient products
 from japan_ingredient_barcodes import jan_valid
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 from japan_ingredient_policy import screen
-from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts
+from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts, exceeds_invalid_rejection_limit
 rows=[]
 seen=set()
 rejections={}
@@ -91,12 +91,18 @@ if source_conflicts:
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
             report.write(f"Existing source URL collisions safely skipped: {len(source_conflicts)}.\n")
-# Preserve valid rows while quarantining and counting invalid records.
-# If more than 5% are rejected, fail rather than silently importing corrupt batches.
-rejected=len(items)-len(rows)
-print(f"Validation: {len(rows)} importable / {len(items)} provided; {rejected} rejected: {json.dumps(rejections,sort_keys=True)}",flush=True)
-if not rows or rejected>max(10,int(len(items)*0.05)):
-    sys.exit("Safety check: empty batch or more than 5% rejected; refusing import")
+# Reject genuinely invalid source records when they exceed the 5% safety budget.
+# Existing-source collisions are safely deduplicated, not invalid ingredients.
+# Do not weaken field checks, collision handling, or the fail-closed behavior.
+invalid_rejected=sum(rejections.values())
+source_deduped=len(source_conflicts)
+rejected=invalid_rejected+source_deduped
+assert rejected==len(items)-len(rows), "Rejection accounting mismatch; refusing import"
+print(f"Validation: {len(rows)} importable / {len(items)} provided; "
+      f"{invalid_rejected} invalid quarantined, {source_deduped} safe source dedup skips: "
+      f"{json.dumps(rejections,sort_keys=True)}",flush=True)
+if not rows or exceeds_invalid_rejection_limit(len(items),invalid_rejected):
+    sys.exit("Safety check: empty batch or more than 5% invalid; refusing import")
 if os.environ.get("GITHUB_STEP_SUMMARY"):
     with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as report:
         report.write(f"## Staging import validation\\n\\nAccepted: {len(rows)} / {len(items)}. Quarantined (not imported): {rejected}.\\n\\n")

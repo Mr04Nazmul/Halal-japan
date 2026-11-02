@@ -6,7 +6,7 @@ import urllib.error
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts
+from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts, exceeds_invalid_rejection_limit
 
 
 class Jan13StagingCollisionTests(unittest.TestCase):
@@ -199,6 +199,24 @@ class SourceUrlCollisionTests(unittest.TestCase):
         self.assertEqual(len(safe), 1)
         self.assertEqual(conflicts[0]["reason"], "same-batch same-name same-ingredients")
 
+
+
+class ImportRejectionBudgetTests(unittest.TestCase):
+    def test_existing_url_collisions_are_not_invalid_records(self):
+        # Actual 2026-11-03 failed run: 142 invalid and 1016 safe URL skips.
+        self.assertFalse(exceeds_invalid_rejection_limit(15203, 142))
+
+    def test_more_than_five_percent_invalid_fails_closed(self):
+        self.assertTrue(exceeds_invalid_rejection_limit(15203, 761))
+
+    def test_small_batches_preserve_minimum_ten_rejection_budget(self):
+        self.assertFalse(exceeds_invalid_rejection_limit(100, 10))
+        self.assertTrue(exceeds_invalid_rejection_limit(100, 11))
+
+    def test_malformed_counts_fail_closed(self):
+        for total, rejected in ((-1, 0), (100, -1), (100, 101)):
+            with self.assertRaises(ValueError):
+                exceeds_invalid_rejection_limit(total, rejected)
 
 
 if __name__ == "__main__":
