@@ -125,3 +125,4 @@ jobs:
 # Bounded collection wake: 2026-11-01T20:14+09:00; resume latest valid checkpoint without changing extraction or import rules
 
 # Bounded collection wake: 2026-11-01T21:18+09:00; use existing validated checkpoint, preserve dedup and certification safeguards
+# Bounded collection wake: 2026-11-03T05:19+09:00; resume newest valid checkpoint after successful #119 importer, preserve source validation and dedup.
