@@ -436,148 +436,16 @@ class Collector:
   self.run_started_at=datetime.now(timezone.utc).isoformat()
   self.run_start_count=self.count()
   self.enqueue(seeds)
-  # A few official House Foods 2026 product URLs were already present in the
-  # persistent queue as completed non-products or old field-extraction
-  # failures. Re-seeding alone cannot revisit completed URLs. Retry only the
-  # nine independently inspected product pages, once per checkpoint, without
-  # resetting accepted records, 404s, robots decisions or host cooldowns.
+  # Retry a bounded set of independently inspected House Foods product pages
+  # once if a previous checkpoint marked them as navigation or extraction
+  # failures. Never reset accepted records, 404s, robots blocks or cooldowns.
   recovery_key='housefoods_new_20261103_revisited'
   if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(recovery_key,)).fetchone():
    ids={'092996','092961','092963','092886','092982','092973','092972','092950','092952'}
    revisited=0
    for raw in seeds:
     u=canonical(raw)
-    m=re.search(r'/products/catalog/cd_1,(\\d{6})\\.html
-  # on each run. Without this, the persistent queue marks every seed as done
-  # forever, so new products are never discovered from updated catalogues.
-  # Never retry rejected/robots-blocked pages or completed product records.
-  refreshed_by_host={}
-  for raw in seeds:
-   url=canonical(raw)
-   if product_url(url) or sitemap_url(url):continue
-   parsed=urlsplit(url)
-   if parsed.query and source(url)!='natori.co.jp':continue
-   if not (re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
-           or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
-           or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})
-           or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')):continue
-   host=parsed.netloc
-   limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
-   if refreshed_by_host.get(host,0)>=limit:continue
-   updated=self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0 WHERE url=? AND status='done' AND error IS NULL",(url,))
-   if updated.rowcount:refreshed_by_host[host]=refreshed_by_host.get(host,0)+1
-  self.db.commit()
-  # Seeded official product URLs must not starve behind an ever-growing discovery queue.
-  # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
-  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_priority(url TEXT PRIMARY KEY)")
-  self.db.executemany("INSERT OR IGNORE INTO seed_priority(url) VALUES(?)",[(canonical(u),) for u in seeds if allowed_link(u)])
-  # Newly supplied product seeds outrank older pending product URLs, but
-  # navigation seeds must not starve any queued product URLs.
-  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS seed_product_priority(url TEXT PRIMARY KEY)")
-  self.db.executemany("INSERT OR IGNORE INTO seed_product_priority(url) VALUES(?)",
-   [(canonical(u),) for u in seeds if product_url(u)])
-  # Prioritize all supported official product URL patterns, not just /detail/
-  # and /item/. TEMP state keeps the persisted checkpoint schema unchanged.
-  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS product_priority(url TEXT PRIMARY KEY)")
-  pending_products=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending'") if product_url(u)]
-  self.initial_pending_product_pages=len(pending_products)
-  self.db.executemany("INSERT OR IGNORE INTO product_priority(url) VALUES(?)",pending_products)
-  # Robots-advertised sitemaps can reveal thousands of direct product URLs.
-  # Process them before the long navigation backlog, without trusting off-site XML.
-  self.db.execute("CREATE TEMP TABLE IF NOT EXISTS sitemap_priority(url TEXT PRIMARY KEY)")
-  pending_sitemaps=[(u,) for (u,) in self.db.execute("SELECT url FROM queue WHERE status='pending'") if sitemap_url(u)]
-  self.db.executemany("INSERT OR IGNORE INTO sitemap_priority(url) VALUES(?)",pending_sitemaps)
-  self.product_priority_ready=True
-  end=time.monotonic()+minutes*60;done=0
-  self.run_stop_reason='in_progress'
-  try:
-   while done<max_pages and time.monotonic()<end and self.count()<self.target:
-    now=time.time()
-    # Process new product seeds, all queued product pages, then sitemaps
-    # before seeded catalogue navigation. Previously seed navigation could
-    # consume the entire 35-minute budget despite queued product URLs.
-    # Keep the rotating navigation fallback for older catalogue pages.
-    # The indexed TEMP tables avoid calling Python regexes for every queued
-    # URL on every iteration, which matters for 100k+ pending URLs.
-    item=None
-    for priority in ('seed_product_priority','product_priority','sitemap_priority','seed_priority'):
-     item=self.db.execute(f"SELECT q.url,q.attempts FROM {priority} p JOIN queue q ON q.url=p.url WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
-     if item:break
-    if not item:
-     # Ignore legacy marketing-link explosions without deleting checkpoint
-     # rows. Official product detail and catalogue pages remain eligible.
-     # A previous run queued >305k recursive /products/special/ URLs.
-     # A large backlog of navigation links from one manufacturer can starve
-     # discovery on other official hosts. Rotate hosts only in this fallback:
-     # seeded products, pending products and sitemaps still take precedence.
-     previous_host=getattr(self,'last_navigation_host',None)
-     if previous_host:
-      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE ? AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/%' AND q.url NOT LIKE 'https://and.kagome.co.jp/%' ORDER BY q.rowid LIMIT 1",(now,now,'https://'+previous_host+'/%')).fetchone()
-     if not item:
-      item=self.db.execute("SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? AND NOT EXISTS(SELECT 1 FROM host_state h WHERE h.next_try>? AND q.url LIKE 'https://' || h.host || '/%') AND q.url NOT LIKE 'https://housefoods.jp/products/special/%' AND q.url NOT LIKE 'https://www.kagome.co.jp/products/%' AND q.url NOT LIKE 'https://and.kagome.co.jp/%' ORDER BY q.rowid LIMIT 1",(now,now)).fetchone()
-    if not item:
-     self.run_stop_reason='no_eligible_pending_urls'
-     break
-    url,attempts=item;reason=None
-    if not product_url(url) and not sitemap_url(url):
-     self.last_navigation_host=urlsplit(url).netloc
-    try:
-     if not self.permitted(url):reason='robots_disallowed'
-     else:
-      html=self.request(url)
-      if is_temporary_maintenance(html,url):
-       raise TemporarySourceMaintenance('asahi_security_maintenance_page')
-      if urlsplit(url).path.endswith('.xml'):
-       links=re.findall(r'<loc>\s*([^<]+)',html)
-       self.enqueue([u.replace('&amp;','&') for u in links if allowed_link(u)])
-       reason='discovery_sitemap'
-      else:
-       soup=BeautifulSoup(html,'html.parser')
-       self.enqueue([urljoin(url,a['href']) for a in soup.select('a[href]')])
-       if product_url(url):
-        record,reason=extract(html,url)
-        if record:
-         formula=normalized(record['ingredients_ja']+'|'+record['additives_ja'])
-         old=self.db.execute('SELECT formula FROM products WHERE id=?',(record['product_id'],)).fetchone()
-         if old and old[0]!=formula:self.db.execute('UPDATE products SET conflict=1 WHERE id=?',(record['product_id'],));reason='formula_conflict'
-         elif not old:
-          self.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',(record['product_id'],formula,json.dumps(record,ensure_ascii=False)))
-          reason='accepted_new_product'
-         else:reason='already_known_product'
-       else:reason='discovery_navigation_page'
-     queue_error=None if reason in {'discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product'} else reason
-     self.db.execute("UPDATE queue SET status='done',attempts=attempts+1,error=? WHERE url=?",(queue_error,url))
-    except TemporarySourceMaintenance:
-     # Do not permanently reject legitimate product URLs during an
-     # upstream outage, or burn the full crawl budget on maintenance pages.
-     reason='temporary_source_maintenance'
-     cooldown=6*3600
-     host=urlsplit(url).netloc
-     self.db.execute('INSERT OR REPLACE INTO host_state VALUES(?,?,?)',(host,time.time()+cooldown,reason))
-     self.db.execute("UPDATE queue SET status='pending',attempts=attempts+1,next_try=?,error=? WHERE url=?",
-      (time.time()+cooldown,reason,url))
-    except Exception as e:
-     code=getattr(e,'code',None);reason=type(e).__name__+':'+str(code or str(e)[:120])
-     cooldown=0 if code==404 else 86400 if code in (401,403) else 3600 if code==429 else 900
-     if code!=404:
-      self.db.execute('INSERT OR REPLACE INTO host_state VALUES(?,?,?)',(urlsplit(url).netloc,time.time()+cooldown,reason))
-     self.db.execute("UPDATE queue SET status=?,attempts=attempts+1,next_try=?,error=? WHERE url=?",('done' if code==404 or attempts>=4 else 'pending',time.time()+cooldown,reason,url))
-    self.db.execute('INSERT INTO observations VALUES(?,?,?)',(url,reason,datetime.now(timezone.utc).isoformat()));self.db.commit()
-    done+=1
-    if done%25==0:self.checkpoint()
-  finally:
-   if self.run_stop_reason=='in_progress':
-    if self.count()>=self.target:self.run_stop_reason='target_reached'
-    elif done>=max_pages:self.run_stop_reason='page_budget'
-    elif time.monotonic()>=end:self.run_stop_reason='time_budget'
-    else:self.run_stop_reason='interrupted'
-   self.checkpoint()
-
-if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1500);p.add_argument('--minutes',type=float,default=35);p.add_argument('--checkpoint-only',action='store_true')
- a=p.parse_args();c=Collector(a.state,a.target)
- if a.checkpoint_only:c.checkpoint()
- else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes),urlsplit(u).path)
+    m=re.search(r'/products/catalog/cd_1,([0-9]{6})[.]html',urlsplit(u).path)
     if source(u)!='housefoods.jp' or not m or m.group(1) not in ids:continue
     changed=self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
      WHERE url=? AND status='done' AND (error IS NULL OR error IN
