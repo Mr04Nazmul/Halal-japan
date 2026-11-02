@@ -175,6 +175,27 @@ class Extraction(unittest.TestCase):
   self.assertTrue(allowed_link('https://housefoods.jp/products/catalog/cd_1%2C083967%2Cspice%2Cyoufu%2Chouse_s.html'))
   self.assertTrue(allowed_link('https://www.kagome.co.jp/foodservice/frozen/5615/'))
 
+ def test_skip_kagome_marketing_backlog_without_deleting_queue(self):
+  from crawl_japanese_ingredients import allowed_link
+  marketing=['https://www.kagome.co.jp/products/vegetablejuice/brand/',
+             'https://and.kagome.co.jp/products/feature/']
+  product='https://www.kagome.co.jp/foodservice/frozen/5615/'
+  self.assertTrue(allowed_link(product))
+  for url in marketing:self.assertFalse(allowed_link(url))
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   good='https://muso.co.jp/item/tag/new-products'
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in marketing+[good]])
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   c.request=lambda u:(visited.append(u) or '<h1>Catalog</h1>')
+   c.run([],max_pages=1,minutes=1)
+   self.assertEqual(visited,[good])
+   for url in marketing:
+    self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'pending')
+   c.db.close()
+
  def test_skip_legacy_marketing_backlog_without_deleting_queue(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
