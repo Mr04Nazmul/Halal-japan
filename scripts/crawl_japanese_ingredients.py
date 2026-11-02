@@ -57,6 +57,7 @@ SOURCES={
  'marukome.co.jp':r'/product/detail/[a-z0-9]+_\d+[a-z]?/?$',
  'sanko-seika.co.jp':r'/product/item/\d+/?$',
  'yamaki.co.jp':r'/catalog/products/(?:index\.php)?\?id=\d+$',
+ 'nichireifoods.co.jp':r'/product/detail/sho_id\d+/?$',
  'yamasa.com':r'/products/(?:home|business)/(?:[^/?#]+/)+[^/?#]+/?$',
 }
 class TemporarySourceMaintenance(RuntimeError):
@@ -138,6 +139,16 @@ def extract(html,url):
     label=clean_label(heading.get_text(' ',strip=True))
     if label in LABELS|{'添加物','JAN','JANコード','JANCODE','POSコード'}:
      fields.setdefault(label,[]).append(value.get_text(' ',strip=True))
+ # Nichirei's official frozen-food detail pages show the full declaration
+ # immediately after an 原材料名 heading (handled by the generic heading
+ # parser below), but JAN is displayed in an adjacent labelled list row.
+ # Never infer JAN from product IDs, and never use the allergen grid.
+ if source(url)=='nichireifoods.co.jp':
+  for row in soup.select('li.p-data-list--info'):
+   label=row.select_one('.p-data-list--info__name')
+   value=row.select_one('.p-data-list--info__text')
+   if label and value and normalized(label.get_text(' ',strip=True))=='JANコード':
+    fields.setdefault('JANコード',[]).append(value.get_text(' ',strip=True))
  # Natori's live product pages put 原材料名 in a heading nested inside
  # one .ible-part__html div, and its exact declaration in the immediately
  # following sibling .ible-part__html div (not in h3.next_sibling).
