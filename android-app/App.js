@@ -146,18 +146,18 @@ export default function App() {
     if(!permission?.granted){const p=await requestPermission();if(!p.granted){setError(t.camera);return;}}
     lock.current=false;setScanning(true);
   };
-  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#0c382b"/><ScrollView contentContainerStyle={s.container} keyboardShouldPersistTaps="handled">
+  return <SafeAreaView style={s.root}><StatusBar barStyle="light-content" backgroundColor="#071713"/><ScrollView contentContainerStyle={s.container} keyboardShouldPersistTaps="handled">
     <Text style={s.brand}>☪  {t.title}</Text>
-    <View style={s.languages}>{['bn','ja','en','ur','ar','fa','uz','id','ms'].map(l=><Pressable key={l} onPress={()=>setLang(l)} style={[s.lang,lang===l&&s.selected]}><Text style={{color:lang===l?'#0c382b':'#e2f0e5',fontWeight:'700'}}>{({bn:'বাংলা',ja:'日本語',en:'English',ur:'اردو',ar:'العربية',fa:'فارسی',uz:'O‘zbek',id:'Indonesia',ms:'Melayu'})[l]}</Text></Pressable>)}</View>
+    <View style={s.languages}>{['bn','ja','en','ur','ar','fa','uz','id','ms'].map(l=><Pressable key={l} onPress={()=>setLang(l)} style={[s.lang,lang===l&&s.selected]}><Text style={{color:lang===l?'#071713':'#F2FAF3',fontWeight:'700'}}>{({bn:'বাংলা',ja:'日本語',en:'English',ur:'اردو',ar:'العربية',fa:'فارسی',uz:'O‘zbek',id:'Indonesia',ms:'Melayu'})[l]}</Text></Pressable>)}</View>
     <Text style={s.intro}>{t.intro}</Text>
     {scanning ? <View><View style={s.cameraFrame}><CameraView style={s.camera} facing="back" barcodeScannerSettings={{barcodeTypes:['ean13','ean8','upc_a','upc_e']}} onBarcodeScanned={onScan}/></View><Pressable style={s.button} onPress={()=>setScanning(false)}><Text style={s.buttonText}>{t.back}</Text></Pressable></View> : <Pressable style={s.button} onPress={openScanner}><Text style={s.buttonText}>▦  {t.scan}</Text></Pressable>}
     <View style={s.card}>
       <Text style={s.heading}>🔎 Product search / 商品検索</Text>
       <Text style={s.muted}>Search Japanese product names. Store names are search hints only. No store stock, ingredients, or halal certification is verified by these results.</Text>
-      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:12}}>{[['all','All'],['seven','7-Eleven'],['family','FamilyMart'],['lawson','Lawson'],['gyomu','業務スーパー']].map(([id,name])=><Pressable key={id} onPress={()=>setStore(id)} style={[s.lang,{backgroundColor:store===id?'#c9f36a':'#0c382b'}]}><Text style={{color:store===id?'#0c382b':'white'}}>{name}</Text></Pressable>)}</View>
+      <View style={{flexDirection:'row',flexWrap:'wrap',gap:6,marginVertical:12}}>{[['all','All'],['seven','7-Eleven'],['family','FamilyMart'],['lawson','Lawson'],['gyomu','業務スーパー']].map(([id,name])=><Pressable key={id} onPress={()=>setStore(id)} style={[s.lang,{backgroundColor:store===id?'#A8E4B4':'#17352B'}]}><Text style={{color:store===id?'#071713':'#F2FAF3'}}>{name}</Text></Pressable>)}</View>
       <TextInput value={query} onChangeText={setQuery} placeholder="商品名 / Product name" style={s.input}/>
       <Pressable style={s.button} onPress={searchProducts} disabled={searching}><Text style={s.buttonText}>{searching?'Searching…':'Search products'}</Text></Pressable>
-      {results.map((p,i)=><Pressable key={p.code||i} onPress={()=>{if(p.code)lookup(p.code);else{setProduct({name:p.name,brand:p.brand,code:'',ingredients:p.ingredients,source:p.source,flags:risky.filter(x=>x.pattern.test(p.ingredients)).map(x=>x.label),sourceUrl:p.sourceUrl});setError('Catalogue listing only: no barcode to confirm this specific package.');}}} style={{paddingVertical:12,borderBottomWidth:1,borderColor:'#dfe8de'}}><Text style={s.heading}>{p.name}</Text><Text style={s.muted}>{p.brand} · {p.code||'No barcode'}</Text><Text style={s.link}>{p.code?'Check barcode details →':'View catalogue details (barcode unavailable) →'}</Text></Pressable>)}
+      {results.map((p,i)=><Pressable key={p.code||i} onPress={()=>{if(p.code)lookup(p.code);else{setProduct({name:p.name,brand:p.brand,code:'',ingredients:p.ingredients,source:p.source,flags:risky.filter(x=>x.pattern.test(p.ingredients)).map(x=>x.label),sourceUrl:p.sourceUrl});setError('Catalogue listing only: no barcode to confirm this specific package.');}}} style={{paddingVertical:12,borderBottomWidth:1,borderColor:'#315547'}}><Text style={s.heading}>{p.name}</Text><Text style={s.muted}>{p.brand} · {p.code||'No barcode'}</Text><Text style={s.link}>{p.code?'Check barcode details →':'View catalogue details (barcode unavailable) →'}</Text></Pressable>)}
     </View>
     <Text style={s.label}>{t.manual}</Text>
     <TextInput value={barcode} onChangeText={setBarcode} keyboardType="number-pad" placeholder="4901234567894" style={s.input} accessibilityLabel={t.manual}/>
@@ -169,10 +169,40 @@ export default function App() {
       <TextInput multiline value={photoText} onChangeText={setPhotoText} placeholder="Recognized ingredients / 原材料名 (editable)" style={[s.input,{minHeight:100,marginTop:12,textAlignVertical:'top'}]}/>
       {!!photoText&&<><Text style={s.heading}>📅 Expiry label check / 期限確認</Text>{expiry?<Text style={expiry.days<0?s.flag:s.body}>{expiry.type}: {expiry.date} · {expiry.days<0?'Date passed':expiry.days===0?'Date is today':expiry.days+' days remaining'} (verify printed label)</Text>:<Text style={s.muted}>No full labelled expiry date detected. Photograph the printed 賞味期限 / 消費期限 and check manually; barcode alone cannot reveal it.</Text>}<Text style={s.heading}>Ingredient review — not certification</Text>{photoFlags.length?photoFlags.map(f=><Text style={s.flag} key={f}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}</>}
     </View>
-    {loading&&<ActivityIndicator style={{marginTop:20}} color="#0c382b" size="large"/>}
+    {loading&&<ActivityIndicator style={{marginTop:20}} color="#A8E4B4" size="large"/>}
     {!!error&&<View style={s.card}><Text style={s.error}>{error}</Text><Pressable onPress={()=>lookup(barcode)}><Text style={s.link}>{t.retry}</Text></Pressable></View>}
     {product&&<View style={s.card}><Text style={s.heading}>{product.name}</Text><Text style={s.muted}>{product.brand} · {product.code}</Text>{fromCache&&<Text style={s.muted}>Saved product record (up to 7 days old) · Open Food Facts</Text>}<Text style={s.muted}>Source: {product.source||'Open Food Facts'}{product.updated?' · Updated: '+new Date(product.updated*1000).toLocaleDateString():''}</Text><Text style={s.heading}>{t.ingredients}</Text><Text style={s.body}>{product.ingredients||t.missing}</Text><Text style={s.heading}>{t.concerns}</Text>{!product.ingredients?<Text style={s.flag}>⚠ Ingredients not available — verification required.</Text>:product.flags.length?product.flags.map(f=><Text key={f} style={s.flag}>⚠ {f}</Text>):<Text style={s.body}>{t.none}</Text>}{/suntory|サントリー/i.test((product.brand||'')+' '+(product.name||''))&&<Pressable onPress={()=>Linking.openURL('https://products.suntory.co.jp/d/'+encodeURIComponent(product.code)+'/')}><Text style={s.link}>Suntory official product ingredients ↗ (check barcode and current label)</Text></Pressable>}{!!product.sourceUrl&&<Pressable onPress={()=>Linking.openURL(product.sourceUrl)}><Text style={s.link}>Original product source ↗</Text></Pressable>}{!!product.code&&<Pressable onPress={()=>Linking.openURL('https://world.openfoodfacts.org/product/'+encodeURIComponent(product.code))}><Text style={s.link}>Open Food Facts ↗</Text></Pressable>}</View>}
     <View style={s.notice}><Text style={s.noticeText}>⚠ {t.warning}</Text><Text style={s.muted}>Open Food Facts data is voluntarily contributed and may be inaccurate, incomplete or unreliable. Store catalogues and manufacturer pages can also change. Check the actual package, ingredient origins and halal certification before deciding.</Text><Pressable onPress={()=>Linking.openURL('https://opendatacommons.org/licenses/odbl/1-0/')}><Text style={s.link}>Open Database License (ODbL) ↗</Text></Pressable></View>
   </ScrollView></SafeAreaView>;
 }
-const s=StyleSheet.create({root:{flex:1,backgroundColor:'#f4f8f3'},container:{padding:18,paddingBottom:45},brand:{backgroundColor:'#0c382b',color:'white',fontSize:23,fontWeight:'800',padding:20,borderTopLeftRadius:18,borderTopRightRadius:18},languages:{flexDirection:'row',flexWrap:'wrap',backgroundColor:'#0c382b',padding:12,borderBottomLeftRadius:18,borderBottomRightRadius:18,gap:8},lang:{padding:9,borderRadius:9,borderWidth:1,borderColor:'#527362'},selected:{backgroundColor:'#c9f36a'},intro:{fontSize:17,color:'#243b2c',marginVertical:19},button:{backgroundColor:'#0c382b',padding:15,borderRadius:12,marginTop:12,alignItems:'center'},buttonText:{color:'white',fontWeight:'800',fontSize:16},label:{fontWeight:'700',color:'#0c382b',marginTop:22,marginBottom:8},input:{borderWidth:1,borderColor:'#bfd2c2',backgroundColor:'white',borderRadius:12,padding:14,fontSize:17},cameraFrame:{height:290,overflow:'hidden',borderRadius:16},camera:{flex:1},card:{backgroundColor:'white',borderRadius:15,padding:17,marginTop:18,borderWidth:1,borderColor:'#dfe8de'},heading:{fontSize:18,fontWeight:'800',marginTop:12,marginBottom:8,color:'#0c382b'},muted:{color:'#63756c',marginTop:7},body:{fontSize:15,lineHeight:23},error:{color:'#a33020'},flag:{color:'#953b16',paddingVertical:4},link:{color:'#12673e',fontWeight:'700',marginTop:15},notice:{padding:17,backgroundColor:'#fff5d8',borderRadius:13,marginTop:18},noticeText:{fontWeight:'800',color:'#775b19'}});
+// Premium dark emerald design tokens; inspired by UI/UX Pro Max accessibility and consistency guidance.
+const colors = {
+  background:'#071713',surface:'#102720',surfaceRaised:'#17352B',
+  border:'#315547',primary:'#A8E4B4',accent:'#D4BA78',
+  text:'#F2FAF3',muted:'#B5CEBF',danger:'#FFB5A5',
+  warning:'#F5D798'
+};
+const s=StyleSheet.create({
+  root:{flex:1,backgroundColor:colors.background},
+  container:{padding:18,paddingBottom:56,maxWidth:700,width:'100%',alignSelf:'center'},
+  brand:{backgroundColor:colors.surface,color:colors.text,fontSize:25,fontWeight:'800',padding:22,borderTopLeftRadius:22,borderTopRightRadius:22,borderColor:colors.border,borderWidth:1,borderBottomWidth:0,letterSpacing:0.2},
+  languages:{flexDirection:'row',flexWrap:'wrap',backgroundColor:colors.surface,padding:12,borderBottomLeftRadius:22,borderBottomRightRadius:22,gap:8,borderWidth:1,borderTopWidth:0,borderColor:colors.border},
+  lang:{paddingVertical:12,paddingHorizontal:14,minHeight:46,justifyContent:'center',borderRadius:13,borderWidth:1,borderColor:colors.border,backgroundColor:colors.surfaceRaised},
+  selected:{backgroundColor:colors.primary,borderColor:colors.primary},
+  intro:{fontSize:17,lineHeight:26,color:colors.muted,marginVertical:22},
+  button:{backgroundColor:colors.primary,paddingVertical:16,paddingHorizontal:18,minHeight:52,borderRadius:15,marginTop:12,alignItems:'center',justifyContent:'center'},
+  buttonText:{color:colors.background,fontWeight:'800',fontSize:16},
+  label:{fontSize:16,fontWeight:'700',color:colors.text,marginTop:22,marginBottom:9},
+  input:{borderWidth:1,borderColor:colors.border,backgroundColor:colors.surface,borderRadius:14,padding:15,fontSize:17,color:colors.text,minHeight:54},
+  cameraFrame:{height:300,overflow:'hidden',borderRadius:20,borderWidth:2,borderColor:colors.primary},
+  camera:{flex:1},
+  card:{backgroundColor:colors.surface,borderRadius:20,padding:18,marginTop:19,borderWidth:1,borderColor:colors.border},
+  heading:{fontSize:19,fontWeight:'800',lineHeight:27,marginTop:12,marginBottom:8,color:colors.text},
+  muted:{color:colors.muted,fontSize:14,lineHeight:22,marginTop:7},
+  body:{fontSize:16,lineHeight:25,color:colors.text},
+  error:{color:colors.danger,fontSize:16,lineHeight:24},
+  flag:{color:colors.warning,fontSize:15,lineHeight:23,paddingVertical:5},
+  link:{color:colors.primary,fontSize:15,fontWeight:'700',marginTop:15},
+  notice:{padding:18,backgroundColor:'#2D2A1B',borderRadius:17,borderWidth:1,borderColor:'#716038',marginTop:19},
+  noticeText:{fontSize:16,lineHeight:23,fontWeight:'800',color:colors.warning}
+});
