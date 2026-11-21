@@ -182,12 +182,17 @@ class Extraction(unittest.TestCase):
   self.assertEqual(canonical('https://www.topvalu.net/items/detail/4549414696004/?sort=Products.release_datetime'),
    'https://www.topvalu.net/items/detail/4549414696004/')
  def test_refreshes_successful_catalogue_seeds_without_retrying_products_or_blocks(self):
+  from crawl_japanese_ingredients import allowed_link
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
    catalogue='https://www.topvalu.net/items/'
+   myojo_catalogue='https://www.myojofoods.co.jp/products/items/'
+   nissin_catalogue='https://www.nissin.com/jp/'
    product='https://www.topvalu.net/items/detail/4549414700565/'
    blocked='https://www.kewpie.co.jp/products/'
-   seeds=[catalogue,product,blocked]
+   self.assertTrue(allowed_link(myojo_catalogue))
+   self.assertTrue(allowed_link(nissin_catalogue))
+   seeds=[catalogue,myojo_catalogue,nissin_catalogue,product,blocked]
    c.enqueue(seeds)
    c.db.execute("UPDATE queue SET status='done'")
    c.db.execute("UPDATE queue SET error='robots_disallowed' WHERE url=?",(blocked,))
@@ -196,6 +201,8 @@ class Extraction(unittest.TestCase):
    c.run(seeds,max_pages=0,minutes=0)
    states=dict(c.db.execute("SELECT url,status FROM queue"))
    self.assertEqual(states[canonical(catalogue)],'pending')
+   self.assertEqual(states[canonical(myojo_catalogue)],'pending')
+   self.assertEqual(states[canonical(nissin_catalogue)],'pending')
    self.assertEqual(states[canonical(product)],'done')
    self.assertEqual(states[canonical(blocked)],'done')
    c.db.close()
