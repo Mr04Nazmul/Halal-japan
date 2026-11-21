@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/scrapy-ingredients.yml'
+      - 'scripts/scrapy_ingredient_discovery.py'
+      - 'data/manufacturer_seed_urls.txt'
   schedule:
     - cron: '27 * * * *'
 permissions:
