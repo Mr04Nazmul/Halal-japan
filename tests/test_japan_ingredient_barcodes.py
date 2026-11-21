@@ -1,12 +1,25 @@
 import sys,unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"scripts"))
-from japan_ingredient_barcodes import jan_valid
+from japan_ingredient_barcodes import jan_valid, jan_for_staging
 
 class JanBarcodeValidation(unittest.TestCase):
     def test_valid_jan8(self):
         self.assertTrue(jan_valid("45123283"))
         self.assertTrue(jan_valid("45117053"))
+
+    def test_valid_jan8_is_preserved_for_staging(self):
+        self.assertEqual(jan_for_staging("45706417"), "45706417")
+        self.assertEqual(jan_for_staging("45706424"), "45706424")
+
+    def test_valid_jan13_is_preserved_for_staging(self):
+        self.assertEqual(jan_for_staging("4902105989937"), "4902105989937")
+
+    def test_invalid_codes_are_not_staged(self):
+        for value in (None, "45123284", "012345678901", "１２３４５６７８"):
+            with self.subTest(value=value):
+                self.assertIsNone(jan_for_staging(value))
+
     def test_valid_jan13(self):
         self.assertTrue(jan_valid("4901002090142"))
         self.assertTrue(jan_valid("4901002118198"))
