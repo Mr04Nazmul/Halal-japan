@@ -112,7 +112,7 @@ def allowed_link(u):
  # Relative links on House Foods special pages can recursively create
  # hundreds of thousands of synthetic paths. Never enqueue them.
  host=source(u);path=urlsplit(u).path
- if host=='matsukiyococara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
+ if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
  if host=='nissin.com' and path.rstrip('/')=='/jp':return True
@@ -210,7 +210,7 @@ def extract(html,url):
   # Matsukiyo Cocokara's retailer product pages place the complete declaration
   # inside a paragraph bracketed by explicit 〖原材料〗 and 〖栄養成分表示〗
   # markers. Capture only that labelled span; never mix in nutrition text.
-  if source(url)=='matsukiyococara-online.com':
+  if source(url)=='matsukiyococokara-online.com':
    for paragraph in soup.select('div.p-explanation__txt.white_space p'):
     text=paragraph.get_text('\\n',strip=True)
     match=re.match(r'^\\s*[【〖]原材料[】〗]\\s*(.*?)\\s*[【〖]栄養成分表示[】〗]',text,re.S)

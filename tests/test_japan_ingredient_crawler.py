@@ -706,7 +706,7 @@ class Extraction(unittest.TestCase):
  def test_matsukiyo_retailer_pages_capture_only_labelled_ingredients_and_explicit_jan(self):
   from crawl_japanese_ingredients import allowed_link,source
   fixtures=[
-   ('https://www.matsukiyococara-online.com/store/catalog/product/view/id/4904083473651',
+   ('https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473651',
     'matsukiyo LAB　糖質９．３ｇソイスナック　チーズ味 ２９ｇ','4904083473651',
     '大豆パフ（調製豆乳粉、でんぷん）（国内製造）、植物油脂、チーズシーズニング（チーズパウダー、グラニュー糖、食塩、たんぱく加水分解物、オニオンパウダー）／調味料（アミノ酸等）、炭酸Ｃａ、香料、微粒二酸化ケイ素、パプリカ色素、甘味料（スクラロース）、（一部に乳成分・小麦・大豆を含む）'),
    ('https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473668',
@@ -730,9 +730,9 @@ class Extraction(unittest.TestCase):
     self.assertEqual(record['ingredients_ja'],ingredients)
     self.assertEqual(record['source_publisher'],'matsukiyococokara-online.com')
     self.assertFalse(record['halal_certified'])
-  category='https://www.matsukiyococara-online.com/store/catalog/category/view/categories/009/04/01'
+  category='https://www.matsukiyococokara-online.com/store/catalog/category/view/categories/009/04/01'
   self.assertTrue(allowed_link(category))
-  self.assertFalse(allowed_link('https://www.matsukiyococara-online.com/store/customer/account'))
-  self.assertFalse(product_url('https://www.matsukiyococara-online.com.evil.example/store/catalog/product/view/id/4904083473651'))
+  self.assertFalse(allowed_link('https://www.matsukiyococokara-online.com/store/customer/account'))
+  self.assertFalse(product_url('https://www.matsukiyococokara-online.com.evil.example/store/catalog/product/view/id/4904083473651'))
 
 if __name__=='__main__':unittest.main()
