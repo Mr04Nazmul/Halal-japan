@@ -21,6 +21,7 @@ SOURCES={
  'topvalu.net':r'/items/detail/\d{13}',
  'kewpie.co.jp':r'/products/detail/\d{13}/?$',
  'pokkasapporo-fb.jp':r'/products/(?:[^/]+/){2}[A-Za-z0-9]+\.html$',
+ 'pasconet.co.jp':r'/products/\d+/index\.html$',
  'asahiinryo.co.jp':r'/products/(?:[^/]+/){2}(?:[A-Za-z0-9_-]+\.html)?$',
  'itoen.jp':r'/products/\d+/?$',
  'ucc.co.jp':r'/product/(?:regular|instant|drink|coffee|gift|drip-pod)/[^?#]+\.html$',
@@ -489,6 +490,7 @@ class Collector:
    if not (re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
            or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
            or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})
+           or (source(url)=='pasconet.co.jp' and parsed.path=='/products/nutrition/index.html')
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1

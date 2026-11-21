@@ -621,4 +621,48 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['rule_result'],'HARAM')
   self.assertFalse(record['halal_certified'])
 
+
+ def test_pasconet_official_product_page_with_full_ingredients_without_jan(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://www.pasconet.co.jp/products/5259/index.html'
+  catalogue='https://www.pasconet.co.jp/products/nutrition/index.html'
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link(url))
+  self.assertTrue(allowed_link(catalogue))
+  self.assertFalse(product_url(catalogue))
+  self.assertFalse(product_url('https://www.pasconet.co.jp.evil.example/products/5259/index.html'))
+  ingredients='小麦粉（小麦（国産））、チーズクリーム、ハム、マーガリン、こしょう入りマヨネーズタイプソース、パン酵母、加工油脂、砂糖、ショートニング、食塩、でんぷん加工品（でんぷん）、乳等を主要原料とする食品、モルトエキス、卵／加工デンプン、増粘剤（加工デンプン、増粘多糖類）、調味料（有機酸等）、ｐＨ調整剤、乳化剤、酢酸Ｎａ、リン酸塩（Ｎａ）、イーストフード、香料、酸化防止剤（ビタミンＣ、ビタミンＥ）、カゼインＮａ、着色料（クチナシ赤色素、カロチノイド）、発色剤（亜硝酸Ｎａ）、ビタミンＣ、香辛料、（一部に卵・小麦・乳成分・大豆・鶏肉・豚肉を含む）'
+  html=f'''<h1 class="title">塩パン ハムチーズペッパー</h1>
+  <section><h3 class="headStyle02 color1 small">原材料</h3><p>{ingredients}</p>
+  <h3 class="headStyle02 color1 small">成分表</h3></section>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'塩パン ハムチーズペッパー')
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertIsNone(record['jan'])
+  self.assertEqual(record['source_publisher'],'pasconet.co.jp')
+  self.assertEqual(record['ingredient_field_status'],'complete_displayed_field')
+  self.assertEqual(record['rule_result'],'HARAM')
+  self.assertFalse(record['halal_certified'])
+
+ def test_pasconet_catalogue_refreshes_and_prioritizes_new_product_pages(self):
+  catalogue='https://www.pasconet.co.jp/products/nutrition/index.html'
+  product='https://www.pasconet.co.jp/products/5259/index.html'
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   c.db.execute('INSERT INTO queue(url,status,error) VALUES(?,?,?)',(catalogue,'done',None))
+   c.db.commit()
+   visited=[]
+   c.permitted=lambda u:True
+   def request(url):
+    visited.append(url)
+    if url==catalogue:return f'<h1>栄養成分表</h1><a href="{product}">商品</a>'
+    return HTML
+   c.request=request
+   c.run([catalogue],max_pages=2,minutes=1)
+   self.assertEqual(visited,[catalogue,product])
+   self.assertEqual(c.count(),1)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(catalogue,)).fetchone()[0],'done')
+   c.db.close()
+
 if __name__=='__main__':unittest.main()
