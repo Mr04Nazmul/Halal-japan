@@ -25,6 +25,15 @@ class Jan13StagingCollisionTests(unittest.TestCase):
         self.assertEqual([r["identity_key"] for r in safe], ["jan:4901002189549", "url:example"])
         self.assertEqual(skipped, ["4901325301994"])
 
+    def test_jan8_different_identity_skipped_without_overwriting(self):
+        row = {"jan_code": "45706417", "identity_key": "jan:45706417"}
+        def opener(req, timeout):
+            self.assertIn("jan_code=in.(45706417)", req.full_url)
+            return io.BytesIO(b'[{"jan_code":"45706417","identity_key":"url:existing-nissin"}]')
+        safe, skipped = filter_existing_jan_conflicts([row], "https://example", "test", opener)
+        self.assertEqual(safe, [])
+        self.assertEqual(skipped, ["45706417"])
+
     def test_same_identity_left_for_idempotent_insert(self):
         row = {"jan_code": "4901325301994", "identity_key": "jan:4901325301994"}
         def opener(req, timeout):
