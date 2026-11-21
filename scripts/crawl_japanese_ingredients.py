@@ -508,7 +508,8 @@ class Collector:
            or (source(url)=='pasconet.co.jp' and parsed.path=='/products/nutrition/index.html')
            or (source(url)=='myojofoods.co.jp' and parsed.path.rstrip('/')=='/products/items')
            or (source(url)=='nissin.com' and parsed.path.rstrip('/')=='/jp')
-           or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')):continue
+           or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')
+           or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue
