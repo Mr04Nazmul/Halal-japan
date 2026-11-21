@@ -1,8 +1,4 @@
-"""Strict JAN-8/JAN-13 validation for Japanese food staging imports.
-
-The crawler recognizes other GTIN lengths for discovery, but the staging
-archive stores only Japanese JAN-8 and JAN-13 values in jan_code.
-"""
+"""Strict JAN-8/JAN-13 validation and preservation for Japanese food staging."""
 import re
 
 def jan_valid(value):
@@ -13,3 +9,11 @@ def jan_valid(value):
         return False
     weighted=sum(int(d)*(3 if i%2==0 else 1) for i,d in enumerate(code[-2::-1]))
     return (weighted+int(code[-1]))%10==0
+
+
+def jan_for_staging(value):
+    """Return a checksum-valid JAN-8 or JAN-13 unchanged; otherwise None."""
+    if value is None:
+        return None
+    code = str(value)
+    return code if jan_valid(code) else None
