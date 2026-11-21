@@ -33,7 +33,7 @@ SOURCES={
  '7premium.jp':r'/product/search/detail\?id=\d+',
  'calbee.co.jp':r'/products/detail/',
  'meiji.co.jp':r'/products/[^/]+/\d+\.html',
- 'mizkan.co.jp':r'/products/[A-Za-z0-9_-]+/?
+ 'mizkan.co.jp':r'/products/[A-Za-z0-9_-]+/?$',
  'bourbon.co.jp':r'/product/detail/',
  'morinagamilk.co.jp':r'/products/[^/]+/[^/]+/\d+\.html',
  'kamedaseika.co.jp':r'/product/\d+',
