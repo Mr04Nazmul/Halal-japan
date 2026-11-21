@@ -672,4 +672,34 @@ class Extraction(unittest.TestCase):
    self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(catalogue,)).fetchone()[0],'done')
    c.db.close()
 
+
+ def test_mizkan_official_store_products_capture_full_ingredients_without_guessing_jan(self):
+  from crawl_japanese_ingredients import allowed_link,source
+  urls=[
+   'https://shop.mizkan.co.jp/products/vnd00329',
+   'https://shop.mizkan.co.jp/products/vnd00328',
+   'https://shop.mizkan.co.jp/products/kurozup04',
+   'https://shop.mizkan.co.jp/products/pnz00242',
+   'https://shop.mizkan.co.jp/products/fruitysup00318',
+   'https://shop.mizkan.co.jp/products/pnz00241',
+   'https://shop.mizkan.co.jp/products/ponzu01',
+   'https://shop.mizkan.co.jp/products/nat00330']
+  for url in urls:
+   with self.subTest(url=url):
+    self.assertEqual(source(url),'mizkan.co.jp')
+    self.assertTrue(product_url(url))
+    self.assertTrue(allowed_link(url))
+  self.assertFalse(product_url('https://shop.mizkan.co.jp/products/'))
+  url=urls[3]
+  ingredients='しょうゆ（国内製造）、醸造酢、果糖ぶどう糖液糖、かんきつ混合果汁、バター風味エキス（ポークエキス、バター（北海道製造）、食塩）、でん粉、食塩、バターミルクパウダー、砂糖、野菜エキス、ポークチキン香味オイル、焙煎糖、こしょう、クリーム加工品、酵母エキス加工品／調味料（アミノ酸等）、香料、酸味料、増粘多糖類、乳化剤、（一部に小麦・乳成分・大豆・鶏肉・豚肉を含む）'
+  html=f'<h1>北海道バタぽんby味ぽん</h1><h3>原材料名</h3><p>{ingredients}</p>'
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'北海道バタぽんby味ぽん')
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertIsNone(record['jan'])
+  self.assertEqual(record['rule_result'],'HARAM')
+  self.assertEqual(record['ingredient_field_status'],'complete_displayed_field')
+  self.assertFalse(record['halal_certified'])
+
 if __name__=='__main__':unittest.main()
