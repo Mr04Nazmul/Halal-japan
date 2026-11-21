@@ -1,4 +1,4 @@
-"""Fail-closed JAN-13 collision guard for isolated ingredient staging imports.
+"""Fail-closed JAN-8/JAN-13 collision guard for isolated ingredient staging imports.
 
 Existing source-researched records may have URL/hash identities but a JAN-13
 that later appears as a crawler 'jan:<barcode>' identity. PostgREST's
@@ -37,17 +37,17 @@ def filter_existing_jan_conflicts(rows, base_url, key, opener=None):
             with opener(req, timeout=30) as response:
                 found = json.loads(response.read())
         except (urllib.error.URLError, ValueError, OSError) as exc:
-            raise RuntimeError("JAN-13 dedup lookup failed; refusing unsafe import") from exc
+            raise RuntimeError("JAN dedup lookup failed; refusing unsafe import") from exc
         if not isinstance(found, list):
-            raise RuntimeError("JAN-13 dedup lookup returned unexpected response")
+            raise RuntimeError("JAN dedup lookup returned unexpected response")
         for item in found:
             if not isinstance(item, dict):
-                raise RuntimeError("JAN-13 dedup lookup returned malformed row")
+                raise RuntimeError("JAN dedup lookup returned malformed row")
             code, owner = item.get("jan_code"), item.get("identity_key")
             if code not in batch or not isinstance(owner, str) or not owner:
-                raise RuntimeError("JAN-13 dedup lookup returned inconsistent identity")
+                raise RuntimeError("JAN dedup lookup returned inconsistent identity")
             if code in owners and owners[code] != owner:
-                raise RuntimeError("JAN-13 dedup lookup returned conflicting owners")
+                raise RuntimeError("JAN dedup lookup returned conflicting owners")
             owners[code] = owner
     safe, conflicts = [], []
     for row in rows:
