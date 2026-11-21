@@ -15,7 +15,7 @@ if not url.startswith("https://") or not key:
 path=Path(sys.argv[1] if len(sys.argv)>1 else "crawler-state/products.json")
 items=json.loads(path.read_text(encoding="utf-8"))
 assert isinstance(items,list), "Expected cumulative array of ingredient products"
-from japan_ingredient_barcodes import jan_valid
+from japan_ingredient_barcodes import jan_valid, jan_for_staging
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 from japan_ingredient_policy import screen
 from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts, exceeds_invalid_rejection_limit
@@ -66,7 +66,7 @@ for p in items:
     # Keep halal_certified=False and the research-only review marker.
     rule=decision["rule_result"]
     seen.add(ident)
-    rows.append(dict(identity_key=ident,jan_code=str(jan) if jan and len(str(jan))==13 else None,
+    rows.append(dict(identity_key=ident,jan_code=jan_for_staging(jan),
         product_name=name,ingredients_ja=ingredient,additives_ja=p.get("additives_ja") or "",
         source_url=source,source_publisher=p.get("source_publisher"),
         rule_result=rule,matched_terms=decision["matched_terms"],
@@ -108,7 +108,7 @@ if os.environ.get("GITHUB_STEP_SUMMARY"):
         report.write(f"## Staging import validation\\n\\nAccepted: {len(rows)} / {len(items)}. Quarantined (not imported): {rejected}.\\n\\n")
         for reason,count in sorted(rejections.items()):
             report.write(f"- {reason}: {count}\\n")
-# A JAN-13 may already be owned by a manufacturer-researched identity.
+# A JAN-8 or JAN-13 may already be owned by a manufacturer-researched identity.
 # PostgREST on_conflict=identity_key alone cannot ignore the separate unique
 # JAN constraint. Preflight only candidate JANs and preserve existing records.
 try:
@@ -116,12 +116,12 @@ try:
 except RuntimeError as exc:
     sys.exit(str(exc))
 if jan_conflicts:
-    print(f"Skipped {len(jan_conflicts)} existing JAN-13 codes owned by different identities; no records overwritten. Examples: {jan_conflicts[:10]}", flush=True)
+    print(f"Skipped {len(jan_conflicts)} existing JAN codes owned by different identities; no records overwritten. Examples: {jan_conflicts[:10]}", flush=True)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as report:
-            report.write(f"Existing JAN-13 identity collisions safely skipped: {len(jan_conflicts)}.\\n")
+            report.write(f"Existing JAN identity collisions safely skipped: {len(jan_conflicts)}.\\n")
 if not rows:
-    print("No rows remain after JAN-13 collision deduplication; import complete: 0 NEW rows.", flush=True)
+    print("No rows remain after JAN collision deduplication; import complete: 0 NEW rows.", flush=True)
     sys.exit(0)
 print(f"Importing {len(rows)} distinct complete-ingredient records into staging only",flush=True)
 newly_inserted=0
