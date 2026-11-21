@@ -111,6 +111,9 @@ def allowed_link(u):
  # Relative links on House Foods special pages can recursively create
  # hundreds of thousands of synthetic paths. Never enqueue them.
  host=source(u);path=urlsplit(u).path
+ # Nissin's Japan homepage is a first-party product catalogue index.
+ # Allow it so the crawler can discover and prioritize official item pages.
+ if host=='nissin.com' and path.rstrip('/')=='/jp':return True
  if host=='housefoods.jp' and path.startswith('/products/special/'):return False
  # Kagome's consumer marketing microsites currently account for hundreds of
  # non-product navigation fetches. Only the supported /foodservice/ detail
@@ -491,6 +494,8 @@ class Collector:
            or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
            or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})
            or (source(url)=='pasconet.co.jp' and parsed.path=='/products/nutrition/index.html')
+           or (source(url)=='myojofoods.co.jp' and parsed.path.rstrip('/')=='/products/items')
+           or (source(url)=='nissin.com' and parsed.path.rstrip('/')=='/jp')
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
