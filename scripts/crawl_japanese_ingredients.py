@@ -32,7 +32,8 @@ SOURCES={
  'sokensha.co.jp':r'/products/product_detail/\d+',
  '7premium.jp':r'/product/search/detail\?id=\d+',
  'calbee.co.jp':r'/products/detail/',
- 'matsukiyococokara-online.com':r'/store/catalog/product/view/id/\d+/? 'meiji.co.jp':r'/products/[^/]+/\d+\.html',
+ 'matsukiyococokara-online.com':r'/store/catalog/product/view/id/\d+/?$',
+ 'meiji.co.jp':r'/products/[^/]+/\d+\.html',
  'mizkan.co.jp':r'/products/[A-Za-z0-9_-]+/?$',
  'bourbon.co.jp':r'/product/detail/',
  'morinagamilk.co.jp':r'/products/[^/]+/[^/]+/\d+\.html',
@@ -175,6 +176,15 @@ def extract(html,url):
     if value and not value.find(['h2','h3','h4']):
      text=value.get_text(' ',strip=True)
      if text:fields.setdefault(label,[]).append(text)
+ # Matsukiyo Cocokara retailer pages bracket the full declaration with
+ # explicit 〖原材料〗 and 〖栄養成分表示〗 markers. Capture only that span.
+ if source(url)=='matsukiyococokara-online.com':
+  for paragraph in soup.select('div.p-explanation__txt.white_space p'):
+   text=paragraph.get_text('\n',strip=True)
+   match=re.match(r'^\s*[【〖]原材料[】〗]\s*(.*?)\s*[【〖]栄養成分表示[】〗]',text,re.S)
+   if match:
+    declaration=match.group(1).strip()
+    if declaration:fields.setdefault('原材料',[]).append(declaration)
  for tr in soup.find_all('tr'):
   cells=tr.find_all(['th','td'],recursive=False)
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
@@ -207,16 +217,6 @@ def extract(html,url):
  # after a <br> in the same 原材料 cell. Exclude only clearly marked warnings;
  # never infer missing ingredients or combine separate product declarations.
  if source(url)=='sanko-seika.co.jp':
-  # Matsukiyo Cocokara's retailer product pages place the complete declaration
-  # inside a paragraph bracketed by explicit 〖原材料〗 and 〖栄養成分表示〗
-  # markers. Capture only that labelled span; never mix in nutrition text.
-  if source(url)=='matsukiyococokara-online.com':
-   for paragraph in soup.select('div.p-explanation__txt.white_space p'):
-    text=paragraph.get_text('\\n',strip=True)
-    match=re.match(r'^\\s*[【〖]原材料[】〗]\\s*(.*?)\\s*[【〖]栄養成分表示[】〗]',text,re.S)
-    if match:
-     declaration=match.group(1).strip()
-     if declaration:fields.setdefault('原材料',[]).append(declaration)
   for tr in soup.find_all('tr'):
    cells=tr.find_all(['th','td'],recursive=False)
    if len(cells)!=2 or clean_label(cells[0].get_text(' ',strip=True))!='原材料':continue
