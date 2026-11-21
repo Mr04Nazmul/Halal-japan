@@ -64,12 +64,13 @@ jobs:
           set -euo pipefail
           mkdir -p checkpoint-candidates
           gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=japan-ingredients-state&per_page=20" \
-            --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.id) | reverse | .[:3][] | [.id,.workflow_run.id] | @tsv' > checkpoint-candidates/ids.tsv
-          while IFS=$'\t' read -r artifact run; do
+            --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | reverse | .[:3][] | [.id,.workflow_run.id,.created_at] | @tsv' > checkpoint-candidates/ids.tsv
+          while IFS=$'\t' read -r artifact run created; do
             [ -n "$artifact" ] || continue
             mkdir -p "checkpoint-candidates/$artifact"
             gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact/zip" > "checkpoint-candidates/$artifact.zip"
             unzip -oq "checkpoint-candidates/$artifact.zip" -d "checkpoint-candidates/$artifact"
+            printf '%s\n' "$created" > "checkpoint-candidates/$artifact/created_at.txt"
           done < checkpoint-candidates/ids.tsv
           python - <<'PY'
           import json,sqlite3,shutil,pathlib
@@ -85,16 +86,15 @@ jobs:
                   count=db.execute("select count(*) from products where conflict=0").fetchone()[0]
                   db.close()
                   if good and count==len(items)==summ["accepted_ingredient_products"]:
-                      valid.append((count,p,summ))
+                      created=(p/"created_at.txt").read_text().strip()
+                      valid.append((count,p,summ,created))
               except Exception as e:print("Rejected checkpoint",p.name,type(e).__name__)
           if not valid:raise SystemExit("No valid cumulative checkpoint; refusing import")
-          # Prefer the newest validated artifact, not the largest historical
-          # count: extractor safety fixes deliberately quarantine bad records.
-          # Artifact IDs increase with creation time and are already filtered
-          # to nonexpired main-branch checkpoints above.
-          count,p,summ=max(valid,key=lambda x:int(x[1].name))
+          # Artifact IDs are opaque and not chronological; select by GitHub's
+          # artifact creation timestamp, never by ID or product count.
+          count,p,summ,created=max(valid,key=lambda x:x[3])
           shutil.copyfile(p/"products.json","verified-products.json")
-          print("Selected latest valid artifact",p.name,"eligible products",count,"extractor",summ.get("extractor_version"),"explicit JAN",summ["with_explicit_jan"])
+          print("Selected latest valid artifact",p.name,"created",created,"eligible products",count,"extractor",summ.get("extractor_version"),"explicit JAN",summ["with_explicit_jan"])
           PY
       - name: Idempotent staging import
         if: steps.secrets.outputs.ready == 'true'
