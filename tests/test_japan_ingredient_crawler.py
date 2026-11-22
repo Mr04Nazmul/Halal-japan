@@ -4,9 +4,9 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 from crawl_japanese_ingredients import Collector,extract,product_url,canonical,LEGACY_NAVIGATION_QUARANTINE_SQL
 
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
-URL='https://www.fujicco.co.jp/products/detail/123'
+URL='https://montoile.co.jp/products/ashitamo-okura-norishio/'
 class Extraction(unittest.TestCase):
- def test_fujicco_product_table_extracts_explicit_jan_and_ingredients(self):
+ def test_montoile_product_table_extracts_explicit_jan_and_ingredients(self):
   record,error=extract(HTML,URL)
   self.assertIsNone(error)
   self.assertEqual(record['name_ja'],'テスト米菓')
@@ -75,8 +75,8 @@ class Extraction(unittest.TestCase):
  def test_missing_product_404_does_not_block_other_products_on_host(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   first='https://www.fujicco.co.jp/products/detail/123'
-   second='https://www.fujicco.co.jp/products/detail/124'
+   first='https://montoile.co.jp/products/detail/123'
+   second='https://montoile.co.jp/products/juicydropgummies/'
    c.permitted=lambda u:True
    def request(u):
     if u==first:raise urllib.error.HTTPError(u,404,'Not Found',{},None)
@@ -85,7 +85,7 @@ class Extraction(unittest.TestCase):
    c.run([first,second],max_pages=2,minutes=1)
    self.assertEqual(c.count(),1)
    self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(first,)).fetchone()[0],'done')
-   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='www.fujicco.co.jp'").fetchone())
+   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='montoile.co.jp'").fetchone())
    c.db.close()
 
  def test_old_404_host_cooldowns_are_cleared_without_dropping_queue(self):
@@ -227,7 +227,7 @@ class Extraction(unittest.TestCase):
    self.assertEqual(states[canonical(blocked)],'done')
    c.db.close()
  def test_unicode_path_is_percent_encoded_before_request(self):
-  self.assertEqual(canonical('https://www.fujicco.co.jp/products/category/新商品'),
+  self.assertEqual(canonical('https://montoile.co.jp/product_category/snack/新商品'),
    'https://www.fujicco.co.jp/products/category/%E6%96%B0%E5%95%86%E5%93%81')
  def test_unicode_encode_failures_are_requeued_on_extractor_upgrade(self):
   with tempfile.TemporaryDirectory() as folder:
@@ -255,7 +255,7 @@ class Extraction(unittest.TestCase):
   for url in marketing:self.assertFalse(allowed_link(url))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   good='https://www.fujicco.co.jp/products/category/new/'
+   good='https://montoile.co.jp/product_category/other/'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in marketing+[good]])
    c.db.commit()
    visited=[]
@@ -481,13 +481,13 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.count(),1)
    c.request=lambda u:'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else HTML.replace('米、食塩','米、ゼラチン')
-   c.run(['https://www.fujicco.co.jp/products/detail/126'],1,1)
+   c.run(['https://montoile.co.jp/products/bonobon-chocolate-cream/'],1,1)
    self.assertEqual(c.count(),0)
    self.assertEqual(json.loads((Path(folder)/'summary.json').read_text())['formula_conflicts_withheld'],1)
  def test_new_official_seed_is_processed_before_older_discovery_backlog(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   old='https://www.fujicco.co.jp/products/detail/127'
+   old='https://montoile.co.jp/products/mcvities-digestive/'
    c.db.execute("INSERT INTO queue(url) VALUES(?)",(old,));c.db.commit()
    visited=[]
    c.request=lambda u: 'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else (visited.append(u) or HTML)
@@ -514,8 +514,8 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link,sitemap_url
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   navigation='https://www.fujicco.co.jp/products/category/old/'
-   sitemap='https://www.fujicco.co.jp/sitemap.xml'
+   navigation='https://montoile.co.jp/product_category/snack/'
+   sitemap='https://montoile.co.jp/sitemap.xml'
    product='https://www.fujicco.co.jp/products/detail/123'
    self.assertTrue(sitemap_url(sitemap))
    self.assertTrue(allowed_link(sitemap))
