@@ -157,6 +157,9 @@ def allowed_link(u):
  # Relative links on House Foods special pages can recursively create
  # hundreds of thousands of synthetic paths. Never enqueue them.
  host=source(u);path=urlsplit(u).path
+ raw_host=(urlsplit(u).hostname or '').lower()
+ # Nagatanien's public consumer product categories link to exact product detail pages.
+ if raw_host in ('nagatanien.co.jp','www.nagatanien.co.jp') and path.startswith('/product/') and not re.fullmatch(r'/product/detail/\d+/?',path):return True
  # Toyo Suisan's sitemap has recursive /products/search/new/... links.
  # Keep only exact product detail pages; sitemap URLs were accepted above.
  if host=='maruchan.co.jp':return product_url(u)
@@ -633,7 +636,8 @@ class Collector:
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')
            or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
            or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')
-           or (source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path))):continue
+           or (source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path))
+           or ((parsed.hostname or '').lower().removeprefix('www.')=='nagatanien.co.jp' and parsed.path.startswith('/product/') and parsed.path.rstrip('/')!='/product' and not re.fullmatch(r'/product/detail/\d+/?',parsed.path))):continue
    host=parsed.netloc
    # Refresh at most one sitemap and one catalogue entry point per host.
    # A sitemap must not be starved by a catalogue seed from the same host.
@@ -642,6 +646,9 @@ class Collector:
    elif source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path):
     # 12 paginated catalogue pages are bounded and each exposes product links.
     refresh_kind='catalogue_page';refresh_limit=12
+   elif (parsed.hostname or '').lower().removeprefix('www.')=='nagatanien.co.jp' and parsed.path.startswith('/product/') and parsed.path.rstrip('/')!='/product' and not re.fullmatch(r'/product/detail/\d+/?',parsed.path):
+    # 22 consumer category pages are bounded and each exposes product-detail links.
+    refresh_kind='catalogue_page';refresh_limit=22
    else:
     refresh_kind='catalogue';refresh_limit=1
    refresh_key=(host,refresh_kind)

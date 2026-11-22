@@ -39,3 +39,25 @@ https://muso.co.jp/item/10022.html
 https://www.yamaki.co.jp/catalog/products/index.php?id=86
 # Nagatanien official product catalogue; collect factual ingredient fields only, no images or promotional copy.
 https://www.nagatanien.co.jp/product/
+# Nagatanien consumer product categories (public label fields only; no images or promotional copy).
+https://www.nagatanien.co.jp/product/lst/1/
+https://www.nagatanien.co.jp/product/lst/2/
+https://www.nagatanien.co.jp/product/lst/3/
+https://www.nagatanien.co.jp/product/lst/4/
+https://www.nagatanien.co.jp/product/lst/5/
+https://www.nagatanien.co.jp/product/lst/6/
+https://www.nagatanien.co.jp/product/lst/7/
+https://www.nagatanien.co.jp/product/lst/8/
+https://www.nagatanien.co.jp/product/lst/9/
+https://www.nagatanien.co.jp/product/lst/13/
+https://www.nagatanien.co.jp/product/lst/14/
+https://www.nagatanien.co.jp/product/new/
+https://www.nagatanien.co.jp/product/group/18/
+https://www.nagatanien.co.jp/product/group/8/
+https://www.nagatanien.co.jp/product/group/17/
+https://www.nagatanien.co.jp/product/group/13/
+https://www.nagatanien.co.jp/product/group/7/
+https://www.nagatanien.co.jp/product/group/6/
+https://www.nagatanien.co.jp/product/group/2/
+https://www.nagatanien.co.jp/product/group/3/
+https://www.nagatanien.co.jp/product/group/4/

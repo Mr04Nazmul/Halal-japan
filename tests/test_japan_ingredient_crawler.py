@@ -238,12 +238,42 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
    c.db.close()
+ def test_nagatanien_category_pages_are_allowed_navigation_not_products(self):
+  from crawl_japanese_ingredients import allowed_link
+  urls = [
+   "https://www.nagatanien.co.jp/product/lst/1/",
+   "https://www.nagatanien.co.jp/product/lst/2/",
+   "https://www.nagatanien.co.jp/product/lst/3/",
+   "https://www.nagatanien.co.jp/product/lst/4/",
+   "https://www.nagatanien.co.jp/product/lst/5/",
+   "https://www.nagatanien.co.jp/product/lst/6/",
+   "https://www.nagatanien.co.jp/product/lst/7/",
+   "https://www.nagatanien.co.jp/product/lst/8/",
+   "https://www.nagatanien.co.jp/product/lst/9/",
+   "https://www.nagatanien.co.jp/product/lst/13/",
+   "https://www.nagatanien.co.jp/product/lst/14/",
+   "https://www.nagatanien.co.jp/product/new/",
+   "https://www.nagatanien.co.jp/product/group/18/",
+   "https://www.nagatanien.co.jp/product/group/8/",
+   "https://www.nagatanien.co.jp/product/group/17/",
+   "https://www.nagatanien.co.jp/product/group/13/",
+   "https://www.nagatanien.co.jp/product/group/7/",
+   "https://www.nagatanien.co.jp/product/group/6/",
+   "https://www.nagatanien.co.jp/product/group/2/",
+   "https://www.nagatanien.co.jp/product/group/3/",
+   "https://www.nagatanien.co.jp/product/group/4/",
+  ]
+  for url in urls:
+   with self.subTest(url=url):
+    self.assertTrue(allowed_link(url))
+    self.assertFalse(product_url(url))
+
  def test_reject_recursive_marketing_navigation_not_product_pages(self):
   from crawl_japanese_ingredients import allowed_link
   recursive='https://housefoods.jp/products/special/currymarche/arrangement/qa/product/qa/product/index.html'
   self.assertFalse(allowed_link(recursive))
   self.assertFalse(allowed_link('https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/'))
-  self.assertTrue(allowed_link('https://housefoods.jp/products/catalog/cd_1%2C083967%2Cspice%2Cyoufu%2Chouse_s.html'))
+  self.assertFalse(allowed_link('https://housefoods.jp/products/catalog/cd_1%2C083967%2Cspice%2Cyoufu%2Chouse_s.html'))
   self.assertTrue(allowed_link('https://www.kagome.co.jp/foodservice/frozen/5615/'))
 
  def test_skip_kagome_marketing_backlog_without_deleting_queue(self):
@@ -311,7 +341,7 @@ class Extraction(unittest.TestCase):
     self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
                      ('done','out_of_scope_navigation'))
    self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(urls[3],)).fetchone(),
-                    ('pending',None))
+                    ('done','source_terms_reuse_restricted'))
    self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],4)
    self.assertEqual(c.db.execute("SELECT value FROM metadata WHERE key='legacy_marketing_navigation_quarantine_20261122_v1'").fetchone()[0],'done')
    c.db.close()
