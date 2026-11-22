@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v17"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v18"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -62,6 +62,11 @@ RESTRICTED_SOURCE_POLICIES = {
         "policy_url": "https://www.kamedaseika.co.jp/guide/",
         "reason": "Kameda terms limit website content to personal or legally permitted use and prohibit unauthorized reproduction, modification, distribution, transmission, or commercial use beyond that scope",
         "reviewed_on": "2026-11-22",
+    },
+    "kagome.co.jp": {
+        "policy_url": "https://www.kagome.co.jp/info/siteguide/",
+        "reason": "Kagome site guide states that website text, images, video, music, programs and other content are copyrighted and may be used only for private use or other legally permitted scope; no separate bulk ingredient-data reuse permission or compatible licence is established, so automated collection/import is paused pending rights-holder clarification.",
+        "reviewed_on": "2026-11-23",
     },
     "sanko-seika.co.jp": {
         "policy_url": "https://www.sanko-seika.co.jp/terms/",
