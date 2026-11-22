@@ -519,10 +519,11 @@ class Collector:
   refreshed_by_host={}
   for raw in seeds:
    url=canonical(raw)
-   if product_url(url) or sitemap_url(url):continue
+   if product_url(url):continue
    parsed=urlsplit(url)
    if parsed.query and source(url)!='natori.co.jp':continue
-   if not (re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
+   if not (sitemap_url(url)
+           or re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
            or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
            or (source(url)=='yamasa.com' and parsed.path.rstrip('/') in {'/products/home','/products/business'})
            or (source(url)=='pasconet.co.jp' and parsed.path=='/products/nutrition/index.html')
