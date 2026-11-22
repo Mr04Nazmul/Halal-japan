@@ -1,10 +1,14 @@
 """Source-terms gate for ingredient-text collection and reuse.
 
-Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions and sources whose site policy asserts copyright ownership while bulk reuse permission remains unestablished. Do not fetch, extract, or import ingredient text from blocked sources until permission or a compatible licence is established. Existing database rows are not modified.
+Reviewed 2026-11-22. These publishers' published terms restrict copying,
+redistribution, publication, or reuse of website content beyond private-use or
+other legally permitted exceptions unless the rights holder grants permission.
+Do not fetch, extract, or import their ingredient text until permission or a
+compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v10"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v9"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -97,11 +101,6 @@ RESTRICTED_SOURCE_POLICIES = {
         "policy_url": "https://www.morinaga.co.jp/terms/",
         "reason": "Morinaga terms prohibit reuse, copying, distribution, or transfer of site data without consent; stated public product-site permission is limited to qualifying non-commercial personal websites",
         "reviewed_on": "2026-11-22",
-    },
-    "nagatanien.co.jp": {
-        "policy_url": "https://www.nagatanien.co.jp/sitepolicy/",
-        "reason": "Nagatanien site policy states that website text, images, video and programs are copyrighted by Nagatanien; bulk ingredient-data reuse permission or a compatible licence is not established, so collection/import is paused pending rights-holder clarification.",
-        "reviewed_on": "2026-11-23",
     },
     "muso.co.jp": {
         "policy_url": "https://muso.co.jp/privacypolicy/",

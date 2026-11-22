@@ -238,9 +238,8 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    self.assertEqual(c.db.execute('SELECT status,attempts,error FROM queue').fetchone(),('pending',0,None))
    c.db.close()
- def test_nagatanien_category_pages_are_blocked_until_reuse_permission(self):
+ def test_nagatanien_category_pages_are_allowed_navigation_not_products(self):
   from crawl_japanese_ingredients import allowed_link
-  from japan_ingredient_source_terms import is_terms_restricted_url
   urls = [
    "https://www.nagatanien.co.jp/product/lst/1/",
    "https://www.nagatanien.co.jp/product/lst/2/",
@@ -266,8 +265,7 @@ class Extraction(unittest.TestCase):
   ]
   for url in urls:
    with self.subTest(url=url):
-    self.assertTrue(is_terms_restricted_url(url))
-    self.assertFalse(allowed_link(url))
+    self.assertTrue(allowed_link(url))
     self.assertFalse(product_url(url))
 
  def test_reject_recursive_marketing_navigation_not_product_pages(self):
