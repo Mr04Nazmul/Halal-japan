@@ -1,4 +1,4 @@
-"""Kirin official soft-drink product evidence is discovered without guessing JANs."""
+"""Kirin product parsing fixtures remain offline; live collection is paused pending reuse permission."""
 import sys
 import unittest
 from pathlib import Path
@@ -17,8 +17,9 @@ HTML = """<html><head><title>キリン おいしい免疫ケア｜商品情報</
 class KirinOfficialSourceTests(unittest.TestCase):
     def test_official_softdrink_catalogue_and_details_only(self):
         self.assertEqual(source(DETAIL), "kirin.co.jp")
-        self.assertTrue(allowed_link(CATALOGUE))
+        self.assertFalse(allowed_link(CATALOGUE))
         self.assertTrue(product_url(DETAIL))
+        self.assertFalse(allowed_link(DETAIL))
         self.assertEqual(canonical(DETAIL), DETAIL)
         self.assertFalse(allowed_link("https://products.kirin.co.jp/alcohol/"))
 
