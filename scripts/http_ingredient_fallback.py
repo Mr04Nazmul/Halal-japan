@@ -5,6 +5,7 @@ from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 from html import unescape
 from pathlib import Path
+from japan_ingredient_source_terms import is_terms_restricted_url
 
 SEEDS = Path("data/manufacturer_seed_urls.txt")
 OUT = Path("data/http_ingredient_evidence.jsonl")
@@ -16,6 +17,7 @@ TITLE = re.compile(r"<title[^>]*>(.*?)</title>", re.I | re.S)
 MAX = min(max(int(os.getenv("CRAWL_MAX_URLS", "50")), 1), 250)
 
 def allowed(url):
+    if is_terms_restricted_url(url): return False
     p = urlparse(url)
     if p.scheme != "https": return False
     rp = RobotFileParser()
@@ -46,6 +48,8 @@ def main():
         attempted.add(url)
         if url in existing:
             print("ALREADY HAVE HTTP EVIDENCE", url, flush=True)
+        elif is_terms_restricted_url(url):
+            print("SOURCE TERMS REUSE RESTRICTED; SKIP", url, flush=True)
         elif not allowed(url):
             print("ROBOTS SKIP", url, flush=True)
         else:
