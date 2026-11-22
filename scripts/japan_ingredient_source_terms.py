@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v17"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v19"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -58,10 +58,20 @@ RESTRICTED_SOURCE_POLICIES = {
         "reason": "Fujicco permits private use but prohibits reuse or transfer of site content to other websites or printed materials",
         "reviewed_on": "2026-11-22",
     },
+    "glico.com": {
+        "policy_url": "https://www.glico.com/jp/termsofuse/",
+        "reason": "Glico group terms restrict all website content to personal non-commercial or legally permitted use; commercial or bulk ingredient-data reuse permission is not established, so automated collection/import is paused pending rights-holder clarification.",
+        "reviewed_on": "2026-11-23",
+    },
     "kamedaseika.co.jp": {
         "policy_url": "https://www.kamedaseika.co.jp/guide/",
         "reason": "Kameda terms limit website content to personal or legally permitted use and prohibit unauthorized reproduction, modification, distribution, transmission, or commercial use beyond that scope",
         "reviewed_on": "2026-11-22",
+    },
+    "kagome.co.jp": {
+        "policy_url": "https://www.kagome.co.jp/info/siteguide/",
+        "reason": "Kagome site guide states that website text, images, video, music, programs and other content are copyrighted and may be used only for private use or other legally permitted scope; no separate bulk ingredient-data reuse permission or compatible licence is established, so automated collection/import is paused pending rights-holder clarification.",
+        "reviewed_on": "2026-11-23",
     },
     "sanko-seika.co.jp": {
         "policy_url": "https://www.sanko-seika.co.jp/terms/",
@@ -186,6 +196,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "kikkoman.co.jp": {
         "policy_url": "https://www.kikkoman.co.jp/kiyaku/kiyaku.html",
         "reason": "Kikkoman website terms restrict use of site content to private use and other copyright-law exceptions; unauthorized use is not allowed.",
+        "reviewed_on": "2026-11-23",
+    },
+    "kirin.co.jp": {
+        "policy_url": "https://www.kirinholdings.com/jp/sitepolicy/",
+        "reason": "Kirin product-information pages link to Kirin Holdings site terms, which apply to group-operated websites and prohibit use of website content beyond private or other legally permitted scope; no bulk ingredient-data reuse permission is established.",
         "reviewed_on": "2026-11-23",
     },
     "morinagamilk.co.jp": {
