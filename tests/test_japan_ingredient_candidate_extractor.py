@@ -13,7 +13,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
     def record(self, url, evidence, barcode_candidates=None):
         return {
             "source_url": url,
-            "page_title": "明治北海道十勝ヨーグルト 400g | ヨーグルト | 株式会社 明治",
+            "page_title": "テスト商品 | ムソー株式会社",
             "evidence": evidence,
             "barcode_candidates": barcode_candidates or [],
             "verification": "needs_human_review",
@@ -23,7 +23,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
 
     def test_numeric_product_url_and_generic_barcode_candidates_are_not_jan(self):
         record = self.record(
-            "https://www.meiji.co.jp/products/yogurt/4902705133099.html",
+            "https://muso.co.jp/item/32882.html",
             ["原材料名 | 乳製品（国内製造、外国製造）、砂糖\\n内容量 | 400g"],
             ["4902705133099", "4902705096707"],
         )
@@ -31,7 +31,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
         self.assertEqual(1, len(rows))
         self.assertEqual("", rows[0]["jan_code"])
         self.assertEqual("[]", rows[0]["jan_code_candidates"])
-        self.assertEqual("明治北海道十勝ヨーグルト 400g", rows[0]["product_name"])
+        self.assertEqual("テスト商品", rows[0]["product_name"])
         self.assertEqual("false", rows[0]["halal_certified"])
         self.assertEqual("needs_human_review", rows[0]["verification_status"])
 
@@ -61,7 +61,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
 
     def test_allergen_only_text_is_not_an_ingredient_record(self):
         record = self.record(
-            "https://www.meiji.co.jp/products/yogurt/4902705133099.html",
+            "https://muso.co.jp/item/32882.html",
             ["アレルギー情報 小麦、卵、乳成分"],
         )
         self.assertEqual([], extract_candidate_records([record], exported_at="2026-11-22T00:00:00Z"))
@@ -75,7 +75,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
 
     def test_generic_title_is_not_a_product_name(self):
         record = self.record(
-            "https://www.meiji.co.jp/products/yogurt/4902705133099.html",
+            "https://muso.co.jp/item/32882.html",
             ["原材料名 | 乳製品（国内製造、外国製造）、砂糖"],
         )
         record["page_title"] = "商品情報"
@@ -84,7 +84,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
 
     def test_label_explanation_is_not_an_ingredient_declaration(self):
         record = self.record(
-            "https://www.meiji.co.jp/products/yogurt/4902705133099.html",
+            "https://muso.co.jp/item/32882.html",
             ["原材料名などを表示したラベルを添付し、情報を公開しています。"],
         )
         self.assertEqual([], extract_candidate_records([record], exported_at="2026-11-22T00:00:00Z"))
@@ -92,7 +92,7 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
     def test_candidate_timestamp_is_never_blank(self):
         exported_at = "2026-11-22T00:00:00Z"
         record = self.record(
-            "https://www.meiji.co.jp/products/yogurt/4902705133099.html",
+            "https://muso.co.jp/item/32882.html",
             ["原材料名 | 乳製品（国内製造、外国製造）、砂糖"],
         )
         rows = extract_candidate_records([record], exported_at=exported_at)
