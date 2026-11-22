@@ -586,6 +586,7 @@ class Collector:
   refreshed_by_host={}
   for raw in seeds:
    url=canonical(raw)
+   if not allowed_link(url):continue
    if product_url(url):continue
    parsed=urlsplit(url)
    if parsed.query and source(url)!='natori.co.jp':continue
