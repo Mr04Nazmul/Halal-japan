@@ -284,7 +284,7 @@ def extract(html,url):
    if h.get_text(' ',strip=True) and clean_label(h.get_text(' ',strip=True)) not in {'グミ','商品情報','商品カタログ'}),None)
   if product_heading:name=product_heading
   elif clean_label(name)=='グミ':return None,'missing_product_identity'
- name=re.sub(r'\s*の詳細情報
+ name=name.removesuffix('の詳細情報').strip()
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
