@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v10"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v11"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -27,6 +27,11 @@ RESTRICTED_SOURCE_POLICIES = {
         "policy_url": "https://www.asahigroup-holdings.com/privacy_policy/terms.html",
         "reason": "Asahi group terms include Asahi Beverage as a domestic subsidiary and restrict reuse beyond private or other legally permitted scope",
         "reviewed_on": "2026-11-22",
+    },
+    "askul.co.jp": {
+        "policy_url": "https://www.askul.co.jp/etc/disclaimer.html",
+        "reason": "ASKUL states product-information content belongs to ASKUL or rights holders and prohibits copying, adaptation, reuse, distribution, public transmission, or third-party provision without prior consent beyond legally permitted scope",
+        "reviewed_on": "2026-11-23",
     },
     "fujiya-peko.co.jp": {
         "policy_url": "https://www.fujiya-peko.co.jp/copyright/",
