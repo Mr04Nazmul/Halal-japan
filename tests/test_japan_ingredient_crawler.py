@@ -861,8 +861,21 @@ class Extraction(unittest.TestCase):
   self.assertFalse(product_url('https://www.matsukiyococokara-online.com.evil.example/store/catalog/product/view/id/4904083473651'))
 
 
+ def test_kirin_official_product_pages_are_blocked_pending_reuse_permission(self):
+  from crawl_japanese_ingredients import allowed_link
+  urls=[
+   'https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380',
+   'https://www.kirin.co.jp/products/softdrink/'
+  ]
+  for url in urls:
+   with self.subTest(url=url):
+    self.assertFalse(allowed_link(url))
+
+
  def test_glico_official_product_title_and_inline_jan_are_captured(self):
+  from crawl_japanese_ingredients import allowed_link
   url='https://www.glico.com/jp/product/drink/glicomilk/47200/'
+  self.assertFalse(allowed_link(url))
   html='''<h1>グリコ牛乳</h1><h2>グリコ牛乳 1000ml</h2>
   <h3>原材料名</h3><p>生乳100％（国産）</p>
   <p>JANコード：4971666400137</p>'''
