@@ -207,10 +207,10 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   catalogue='https://www.yamaki.co.jp/catalog/products/'
-   sitemap='https://www.yamaki.co.jp/catalog/sitemap.xml'
-   product='https://www.yamaki.co.jp/catalog/products/index.php?id=86'
-   blocked='https://www.yamaki.co.jp/catalog/products/index.php?id=999'
+   catalogue='https://www.kyoritsu-foods.co.jp/product/page/7/'
+   sitemap='https://www.kyoritsu-foods.co.jp/sitemap.xml'
+   product='https://www.kyoritsu-foods.co.jp/product/123/'
+   blocked='https://www.kyoritsu-foods.co.jp/product/999/'
    self.assertTrue(allowed_link(catalogue))
    self.assertTrue(allowed_link(sitemap))
    seeds=[catalogue,sitemap,product,blocked]
@@ -531,7 +531,7 @@ class Extraction(unittest.TestCase):
    visited=[]
    c.request=lambda u: 'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else (visited.append(u) or HTML)
    c.run(['https://www.yamaki.co.jp/catalog/products/index.php?id=86'],1,1)
-   self.assertEqual(visited[0],URL)
+   self.assertEqual(visited[0],'https://www.yamaki.co.jp/catalog/products/index.php?id=86')
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(old,)).fetchone()[0],'pending')
    c.db.close()
  def test_pending_product_url_outranks_old_navigation_backlog(self):
