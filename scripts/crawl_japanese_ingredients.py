@@ -32,7 +32,8 @@ SOURCES={
  'sokensha.co.jp':r'/products/product_detail/\d+',
  '7premium.jp':r'/product/search/detail\?id=\d+',
  'calbee.co.jp':r'/products/detail/',
- 'matsukiyococokara-online.com':r'/store/catalog/product/view/id/\d+/?
+ 'matsukiyococara-online.com':r'/store/catalog/product/view/id/\d+/?$',
+ 'montoile.co.jp':r'/products/[^/]+/?$',
  'meiji.co.jp':r'/products/[^/]+/\d+\.html',
  'mizkan.co.jp':r'/products/[A-Za-z0-9_-]+/?$',
  'bourbon.co.jp':r'/product/detail/',
