@@ -12,6 +12,7 @@ from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
+from japan_ingredient_source_terms import is_terms_restricted_url
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-11-22-v16-maruchan-product-catalogue'
@@ -129,6 +130,7 @@ def sitemap_url(u):
  path=urlsplit(u).path.lower()
  return bool(source(u) and 'sitemap' in path and path.endswith('.xml'))
 def allowed_link(u):
+ if is_terms_restricted_url(u):return False
  if sitemap_url(u):return True
  # These are marketing/recipe link graphs, not official product detail URLs.
  # Relative links on House Foods special pages can recursively create
@@ -469,6 +471,7 @@ class Collector:
    return data.decode(r.headers.get_content_charset() or 'utf-8',errors='replace')
  def permitted(self,url):
   url=canonical(url)
+  if is_terms_restricted_url(url):return False
   host=urlsplit(url).netloc
   if host not in self.robots:
    rp=RobotFileParser()
@@ -657,7 +660,8 @@ class Collector:
     if not product_url(url) and not sitemap_url(url):
      self.last_navigation_host=urlsplit(url).netloc
     try:
-     if not self.permitted(url):reason='robots_disallowed'
+     if is_terms_restricted_url(url):reason='source_terms_reuse_restricted'
+     elif not self.permitted(url):reason='robots_disallowed'
      else:
       html=self.request(url)
       if is_temporary_maintenance(html,url):
