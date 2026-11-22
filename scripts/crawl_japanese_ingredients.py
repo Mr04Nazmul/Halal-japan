@@ -15,7 +15,7 @@ from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_t
 from japan_ingredient_source_terms import (is_terms_restricted_url, RESTRICTED_SOURCE_POLICIES, SOURCE_TERMS_POLICY_VERSION)
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-22-v16-maruchan-product-catalogue'
+EXTRACTOR_VERSION='official-fields-2026-11-23-v17-sokensha-release-v8-agf-div-v9-asahi-maintenance-v10-natori-core-v11-marukome-business-v16-maruchan-product-catalogue'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -67,6 +67,13 @@ SOURCES={
  'yamaki.co.jp':r'/catalog/products/(?:index\.php)?\?id=\d+$',
  'nichireifoods.co.jp':r'/product/detail/sho_id\d+/?$',
  'yamasa.com':r'/products/(?:home|business)/(?:[^/?#]+/)+[^/?#]+/?$',
+}
+
+# A single official Sokensha press release contains two side-by-side product
+# columns. Treat only this explicitly reviewed release as a multi-product page;
+# generic news pages remain out of scope.
+SOKEN_SHA_MULTI_PRODUCT_RELEASES = {
+ 'https://sokensha.co.jp/news/2026/13262/': {'published_at':'2026-11-11','product_count':2},
 }
 class TemporarySourceMaintenance(RuntimeError):
  """Official product site is temporarily unavailable; retry after a host cooldown."""
@@ -142,6 +149,7 @@ def source(u):
 def product_url(u):
  d=source(u)
  if not d:return False
+ if d=='sokensha.co.jp' and canonical(u) in SOKEN_SHA_MULTI_PRODUCT_RELEASES:return True
  path=urlsplit(u).path
  # Asahi's /products/list/ pages are catalogue filters, not product detail pages.
  # Keep them discoverable as navigation, but do not count or prioritize them as products.
@@ -374,6 +382,64 @@ def extract(html,url):
  'source_html_sha256':hashlib.sha256(html.encode()).hexdigest(),'ingredient_field_status':'complete_displayed_field',
  'reuse_permission':'not_established','live_database_updated':False,**decision}
  return result,None
+
+def extract_sokensha_news_release(html,url):
+ metadata=SOKEN_SHA_MULTI_PRODUCT_RELEASES.get(canonical(url))
+ if not metadata:return [],'unsupported_sokensha_release'
+ soup=BeautifulSoup(html,'html.parser')
+ required=('商品名','JANコード','原材料名')
+ expected=metadata['product_count']
+ selected=None
+ for table in soup.find_all('table'):
+  rows={}
+  for tr in table.find_all('tr'):
+   cells=tr.find_all(['th','td'],recursive=False)
+   if len(cells)<2:continue
+   label=clean_label(cells[0].get_text(' ',strip=True))
+   if label in required:
+    rows[label]=[cell.get_text(' ',strip=True) for cell in cells[1:]]
+  if all(len(rows.get(label,[]))==expected for label in required):
+   selected=rows;break
+ if selected is None:return [],'missing_or_ambiguous_ingredients'
+ names=selected['商品名'];codes=selected['JANコード'];declarations=selected['原材料名']
+ if len(set(codes))!=expected or any(not gtin(code) for code in codes):
+  return [],'invalid_or_duplicate_jan'
+ retrieved=datetime.now(timezone.utc).isoformat()
+ digest=hashlib.sha256(html.encode()).hexdigest()
+ records=[]
+ for name,jan,ingredients in zip(names,codes,declarations):
+  name=unicodedata.normalize('NFKC',name).strip()
+  ingredients=ingredients.strip()
+  if not name or clean_label(name) in GENERIC_NAMES or is_nonfood_name(name):
+   return [],'missing_product_identity'
+  if (not ingredients or len(ingredients)>=12000
+      or not re.search(r'[ぁ-んァ-ヶ一-龯]',ingredients)
+      or is_nonfood_ingredient_text(ingredients)):
+   return [],'missing_or_ambiguous_ingredients'
+  if has_unresolved_html_artifacts(ingredients):
+   return [],'unresolved_html_in_ingredient_field'
+  if re.match(r'^\\s*(?:添加物|添加物名)\\s*[:：]',ingredients):
+   return [],'additives_only_incomplete_ingredients'
+  if re.search(r'原材料名が入ります|原材料名欄では|アレルゲン情報|栄養成分表示|https?://|\\ufffd',ingredients):
+   return [],'non_ingredient_text'
+  decision=screen(ingredients,'',product_name=name)
+  records.append({
+   'product_id':'jan:'+jan,'name_ja':name,'brand':'創健社','jan':jan,
+   'ingredients_ja':ingredients,'additives_ja':'','source_url':canonical(url),
+   'source_publisher':'sokensha.co.jp','source_type':'official_manufacturer_news_release_page',
+   'source_published_at':metadata['published_at'],'retrieved_at':retrieved,
+   'source_html_sha256':digest,'ingredient_field_status':'complete_displayed_field',
+   'verification_status':'official_ingredient_field_captured_pending_human_review',
+   'reuse_permission':'not_established','research_only':True,'packaging_verified':False,
+   'live_database_updated':False,**decision,'halal_certified':False,
+  })
+ return records,None
+
+def extract_many(html,url):
+ if canonical(url) in SOKEN_SHA_MULTI_PRODUCT_RELEASES:
+  return extract_sokensha_news_release(html,url)
+ record,reason=extract(html,url)
+ return ([record] if record else []),reason
 
 class Collector:
  def __init__(self,path,target):
@@ -725,14 +791,18 @@ class Collector:
        soup=BeautifulSoup(html,'html.parser')
        self.enqueue([urljoin(url,a['href']) for a in soup.select('a[href]')])
        if product_url(url):
-        record,reason=extract(html,url)
-        if record:
-         formula=normalized(record['ingredients_ja']+'|'+record['additives_ja'])
-         old=self.db.execute('SELECT formula FROM products WHERE id=?',(record['product_id'],)).fetchone()
-         if old and old[0]!=formula:self.db.execute('UPDATE products SET conflict=1 WHERE id=?',(record['product_id'],));reason='formula_conflict'
-         elif not old:
-          self.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',(record['product_id'],formula,json.dumps(record,ensure_ascii=False)))
-          reason='accepted_new_product'
+        records,reason=extract_many(html,url)
+        if records:
+         inserted=0;conflicts=0
+         for record in records:
+          formula=normalized(record['ingredients_ja']+'|'+record['additives_ja'])
+          old=self.db.execute('SELECT formula FROM products WHERE id=?',(record['product_id'],)).fetchone()
+          if old and old[0]!=formula:
+           self.db.execute('UPDATE products SET conflict=1 WHERE id=?',(record['product_id'],));conflicts+=1
+          elif not old:
+           self.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',(record['product_id'],formula,json.dumps(record,ensure_ascii=False)));inserted+=1
+         if inserted:reason='accepted_new_product'
+         elif conflicts:reason='formula_conflict'
          else:reason='already_known_product'
        else:reason='discovery_navigation_page'
      queue_error=None if reason in {'discovery_navigation_page','discovery_sitemap','already_known_product','accepted_new_product'} else reason
