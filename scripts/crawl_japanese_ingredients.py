@@ -44,7 +44,7 @@ SOURCES={
  'fujicco.co.jp':r'/products/detail/\d+',
  'fujiya-peko.co.jp':r'/sweets/item/\d+',
  'glico.com':r'/jp/product/.*/\d+',
- 'uha-mikakuto.co.jp':r'/catalog/gummy/(?!index\.html$)[A-Za-z0-9_-]+\.html
+ 'uha-mikakuto.co.jp':r'/catalog/gummy/(?!index\.html$)[A-Za-z0-9_-]+\.html$',
  'housefoods.jp':r'/products/catalog/(?:cd_|discontinued_)',
  'imuraya.co.jp':r'/goods/[^/]+/[^/]+/[^/]+',
  'kikkoman.co.jp':r'/products(?:-G)?/.*/detail/',
