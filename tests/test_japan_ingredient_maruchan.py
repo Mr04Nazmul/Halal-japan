@@ -10,9 +10,9 @@ class MaruchanOfficialSourceTests(unittest.TestCase):
   self.assertFalse(product_url('https://www.maruchan.co.jp/products/search/new/new/'))
   self.assertTrue(sitemap_url('https://www.maruchan.co.jp/sitemap.xml'))
 
- def test_recursive_marketing_paths_are_not_enqueued(self):
-  self.assertTrue(allowed_link('https://www.maruchan.co.jp/products/search/500506.html'))
-  self.assertTrue(allowed_link('https://www.maruchan.co.jp/sitemap.xml'))
+ def test_maruchan_content_is_withheld_without_reuse_permission(self):
+  self.assertFalse(allowed_link('https://www.maruchan.co.jp/products/search/500506.html'))
+  self.assertFalse(allowed_link('https://www.maruchan.co.jp/sitemap.xml'))
   self.assertFalse(allowed_link('https://www.maruchan.co.jp/products/search/new/new/new/'))
   self.assertFalse(allowed_link('https://www.maruchan.co.jp/campaign/'))
 
