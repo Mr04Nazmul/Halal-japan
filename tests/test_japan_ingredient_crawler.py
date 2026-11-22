@@ -909,3 +909,24 @@ class KamedaSeikaExtraction(unittest.TestCase):
   self.assertEqual(record['ingredients_ja'],ingredients)
   self.assertFalse(record['halal_certified'])
   self.assertTrue(product_url(url))
+
+
+class NipponHamSourceTests(unittest.TestCase):
+ def test_nipponham_official_product_pages_capture_labelled_ingredients_without_guessing_jan(self):
+  from crawl_japanese_ingredients import allowed_link,source
+  url='https://www.nipponham.co.jp/products/processed_foods/bread_pizza/20492/'
+  ingredients='小麦粉（国内製造）、トマトソース、植物油脂加工品（油脂加工品、乳たん白、脱脂粉乳、食塩、砂糖、チーズフード、ミルポワパウダー、酵母エキス調味料、ナチュラルチーズ、クリーム加工品、乳たん白分解物、にんにく、デキストリン、酵母エキス、たん白加水分解物）、植物油、ナチュラルチーズ、イースト、ぶどう糖、食塩、香辛料／加工デンプン、増粘剤（加工デンプン、増粘多糖類）、ｐＨ調整剤、セルロース、調味料（アミノ酸等）、乳化剤、ビタミンＣ、香料、カロテノイド色素、（一部に乳成分・小麦を含む）'
+  self.assertEqual(source(url),'nipponham.co.jp')
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link(url))
+  html=f'<h1>Pizza Feliceria®（ピッツァ フェリッチェリア） マルゲリータ</h1><table><tr><th>原材料名</th><td><div class="mod_txt_01"><p>{ingredients}</p></div></td></tr></table>'
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'Pizza Feliceria®（ピッツァ フェリッチェリア） マルゲリータ')
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertIsNone(record['jan'])
+  self.assertEqual(record['ingredient_field_status'],'complete_displayed_field')
+  self.assertFalse(record['halal_certified'])
+  category='https://www.nipponham.co.jp/products/bread_pizza/'
+  self.assertTrue(allowed_link(category))
+  self.assertFalse(product_url(category))
