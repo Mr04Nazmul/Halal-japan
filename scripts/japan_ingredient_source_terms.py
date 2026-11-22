@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v19"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v20"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -258,7 +258,23 @@ RESTRICTED_SOURCE_POLICIES = {
         "reason": "Yamamori site policy states that site text, graphics, photos, and data are owned by Yamamori or their rights holders and may not be used, copied, reprinted, transmitted, or modified without consent or a legal exception; bulk ingredient-data reuse permission is not established.",
         "reviewed_on": "2026-11-23",
     },
+    "katosangyo.co.jp": {
+        "policy_url": "https://www.katosangyo.co.jp/sitepolicy/",
+        "reason": "Kato Sangyo site policy limits copies and reproductions to private use and says unauthorized use beyond copyright-law exceptions, including copying, uploading, or reuse, is not allowed; bulk ingredient-data reuse permission is not established.",
+        "reviewed_on": "2026-11-23",
+    },
+    "ohyamafoods.co.jp": {
+        "policy_url": "https://www.ohyamafoods.co.jp/policies/terms-of-service",
+        "reason": "Ohyama Foods terms section 10 states that website text and images belong to the company and unauthorized reprinting or use is prohibited; bulk ingredient-data reuse permission is not established.",
+        "reviewed_on": "2026-11-23",
+    },
+    "kurakon.jp": {
+        "policy_url": "https://www.kurakon.jp/products/01/shiodai.html",
+        "reason": "Kurakon product pages carry an explicit company copyright notice; no compatible licence or bulk ingredient-data reuse permission is established.",
+        "reviewed_on": "2026-11-23",
+    },
 }
+
 
 
 def source_terms_restriction(url):
