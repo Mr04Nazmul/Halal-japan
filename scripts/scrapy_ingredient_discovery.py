@@ -5,6 +5,7 @@ from urllib.parse import parse_qs, urlparse
 
 import scrapy
 from scrapy.selector import Selector
+from scrapy.http import TextResponse
 from japan_ingredient_source_terms import is_terms_restricted_url
 
 
@@ -75,6 +76,16 @@ def is_allowed_source_url(url):
     return parsed.scheme == "https" and not is_terms_restricted_url(url)
 
 
+def response_text(response):
+    """Return decoded HTML text, or None for binary/non-text responses."""
+    if not isinstance(response, TextResponse):
+        return None
+    try:
+        return response.text
+    except (AttributeError, UnicodeError):
+        return None
+
+
 def is_ingredient_product_candidate(url, html):
     if not is_allowed_source_url(url) or not is_product_detail_url(url):
         return False
@@ -116,7 +127,12 @@ class JapaneseProductLinks(scrapy.Spider):
         if response.status != 200:
             return
 
-        if is_ingredient_product_candidate(response.url, response.text):
+        html = response_text(response)
+        if html is None:
+            self.crawler.stats.inc_value("jhc/non_text_responses_skipped")
+            return
+
+        if is_ingredient_product_candidate(response.url, html):
             yield {
                 "url": response.url,
                 "ingredient_page_candidate": True,

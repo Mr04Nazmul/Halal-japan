@@ -1,5 +1,7 @@
 import sys
 import unittest
+
+from scrapy.http import HtmlResponse, Response
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -8,10 +10,27 @@ from scrapy_ingredient_discovery import (
     is_ingredient_product_candidate,
     is_product_detail_url,
     is_allowed_source_url,
+    response_text,
 )
 
 
 class IngredientDiscoveryTests(unittest.TestCase):
+    def test_binary_response_is_skipped_without_text_access(self):
+        response = Response(
+            url="https://example.jp/image.png",
+            body=b"\\x89PNG\\r\\n\\x1a\\n",
+        )
+        self.assertIsNone(response_text(response))
+
+    def test_html_response_text_is_decoded(self):
+        html = "<html><p>原材料名：小麦粉、砂糖</p></html>"
+        response = HtmlResponse(
+            url="https://example.jp/product/1.html",
+            body=html.encode("utf-8"),
+            encoding="utf-8",
+        )
+        self.assertEqual(response_text(response), html)
+
     def test_meiji_restricted_source_is_not_candidate(self):
         html = """
         <html><h1>テストヨーグルト</h1>
