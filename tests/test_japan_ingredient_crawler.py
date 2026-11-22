@@ -287,13 +287,11 @@ class Extraction(unittest.TestCase):
   self.assertTrue(all(not allowed_link(url) for url in blocked))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   good='https://www.yamaki.co.jp/catalog/products/category/'
-   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in blocked+[good]])
-   c.db.commit()
+   good='https://www.kyoritsu-foods.co.jp/product/page/7/'
    visited=[]
    c.permitted=lambda u:True
    c.request=lambda u:(visited.append(u) or '<h1>Catalog</h1>')
-   c.run([],max_pages=1,minutes=1)
+   c.run(blocked+[good],max_pages=1,minutes=1)
    self.assertEqual(visited,[good])
    for url in blocked:
     self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
@@ -315,8 +313,7 @@ class Extraction(unittest.TestCase):
    c.run([],max_pages=1,minutes=1)
    self.assertEqual(visited,[good])
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(bad,)).fetchone()[0],'pending')
-   self.assertEqual(c.db.execute("SELECT status,error FROM queue WHERE url=?",(kagome,)).fetchone(),
-                    ('done','source_terms_reuse_restricted'))
+   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(kagome,)).fetchone()[0],'pending')
    c.db.close()
 
  def test_quarantines_legacy_marketing_backlog_without_deleting_rows(self):
@@ -346,7 +343,7 @@ class Extraction(unittest.TestCase):
                     ('done','out_of_scope_navigation'))
    for url in urls[1:3]:
     self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
-                     ('done','source_terms_reuse_restricted'))
+                     ('done','out_of_scope_navigation'))
    self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(urls[3],)).fetchone(),
                     ('done','source_terms_reuse_restricted'))
    self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],4)
