@@ -15,6 +15,7 @@ on:
       - tests/test_japan_ingredient_run_yield.py
       - tests/test_japan_ingredient_source_terms.py
       - scripts/japan_ingredient_sources.json
+      - data/manufacturer_seed_urls.txt
       - .github/workflows/crawl-japanese-ingredients.yml
   pull_request:
     paths:
@@ -23,6 +24,7 @@ on:
       - tests/test_japan_ingredient_crawler.py
       - tests/test_japan_ingredient_policy.py
       - tests/test_japan_ingredient_source_terms.py
+      - data/manufacturer_seed_urls.txt
 permissions:
   contents: read
   actions: write

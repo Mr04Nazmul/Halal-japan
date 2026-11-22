@@ -61,3 +61,5 @@ https://www.nagatanien.co.jp/product/group/6/
 https://www.nagatanien.co.jp/product/group/2/
 https://www.nagatanien.co.jp/product/group/3/
 https://www.nagatanien.co.jp/product/group/4/
+# Kyoritsu Foods manufacturer-operated official shop; public product label fields only.
+https://shop.kyoritsu-foods.co.jp/item-detail/1946531
