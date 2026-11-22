@@ -18,13 +18,18 @@ assert isinstance(items,list), "Expected cumulative array of ingredient products
 from japan_ingredient_barcodes import jan_valid, jan_for_staging
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
 from japan_ingredient_policy import screen
+from japan_ingredient_source_terms import is_terms_restricted_url
 from japan_ingredient_import_dedup import filter_existing_jan_conflicts, filter_existing_source_conflicts, exceeds_invalid_rejection_limit
 rows=[]
 seen=set()
 rejections={}
+policy_withheld=0
 def reject(reason):
     rejections[reason]=rejections.get(reason,0)+1
 for p in items:
+    if is_terms_restricted_url(p.get("source_url")):
+        policy_withheld+=1
+        continue
     ident=p.get("product_id")
     ingredient=p.get("ingredients_ja")
     name=p.get("name_ja")
@@ -78,6 +83,9 @@ for p in items:
                   "verification_status":"official_ingredient_field_captured_pending_human_review",
                   "research_only":True,"packaging_verified":False},
         snapshot_hash=p.get("source_html_sha256"),collected_at=p.get("retrieved_at")))
+if not rows and policy_withheld and not rejections:
+    print(f"No import attempted: {policy_withheld} candidates withheld by source terms.",flush=True)
+    sys.exit(0)
 # A manufacturer URL may already exist under a URL/hash identity even when
 # this checkpoint later supplies a JAN-8 or JAN-13. Check only *new*
 # identities to avoid thousands of unnecessary per-URL requests on reruns.
@@ -96,16 +104,20 @@ if source_conflicts:
 # Do not weaken field checks, collision handling, or the fail-closed behavior.
 invalid_rejected=sum(rejections.values())
 source_deduped=len(source_conflicts)
-rejected=invalid_rejected+source_deduped
+rejected=invalid_rejected+source_deduped+policy_withheld
 assert rejected==len(items)-len(rows), "Rejection accounting mismatch; refusing import"
 print(f"Validation: {len(rows)} importable / {len(items)} provided; "
-      f"{invalid_rejected} invalid quarantined, {source_deduped} safe source dedup skips: "
-      f"{json.dumps(rejections,sort_keys=True)}",flush=True)
-if not rows or exceeds_invalid_rejection_limit(len(items),invalid_rejected):
+      f"{invalid_rejected} invalid quarantined, {source_deduped} safe source dedup skips, "
+      f"{policy_withheld} withheld by source terms: {json.dumps(rejections,sort_keys=True)}",flush=True)
+if not rows and invalid_rejected==0:
+    print("No import attempted: no eligible rows remain after source policy and deduplication.",flush=True)
+    sys.exit(0)
+if exceeds_invalid_rejection_limit(len(items),invalid_rejected):
     sys.exit("Safety check: empty batch or more than 5% invalid; refusing import")
 if os.environ.get("GITHUB_STEP_SUMMARY"):
     with open(os.environ["GITHUB_STEP_SUMMARY"],"a") as report:
-        report.write(f"## Staging import validation\\n\\nAccepted: {len(rows)} / {len(items)}. Quarantined (not imported): {rejected}.\\n\\n")
+        report.write(f"## Staging import validation\\n\\nAccepted: {len(rows)} / {len(items)}. Quarantined/withheld (not imported): {rejected}.\\n")
+        report.write(f"- Source terms restricted; withheld: {policy_withheld}\\n\\n")
         for reason,count in sorted(rejections.items()):
             report.write(f"- {reason}: {count}\\n")
 # A JAN-8 or JAN-13 may already be owned by a manufacturer-researched identity.
