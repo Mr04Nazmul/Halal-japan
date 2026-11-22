@@ -75,8 +75,8 @@ class Extraction(unittest.TestCase):
  def test_missing_product_404_does_not_block_other_products_on_host(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   first='https://montoile.co.jp/products/detail/123'
-   second='https://montoile.co.jp/products/juicydropgummies/'
+   first='https://www.yamaki.co.jp/catalog/products/index.php?id=123'
+   second='https://www.yamaki.co.jp/catalog/products/index.php?id=124'
    c.permitted=lambda u:True
    def request(u):
     if u==first:raise urllib.error.HTTPError(u,404,'Not Found',{},None)
@@ -85,17 +85,17 @@ class Extraction(unittest.TestCase):
    c.run([first,second],max_pages=2,minutes=1)
    self.assertEqual(c.count(),1)
    self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(first,)).fetchone()[0],'done')
-   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='montoile.co.jp'").fetchone())
+   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='www.yamaki.co.jp'").fetchone())
    c.db.close()
 
  def test_old_404_host_cooldowns_are_cleared_without_dropping_queue(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   c.db.execute("INSERT INTO host_state VALUES(?,?,?)",('montoile.co.jp',time.time()+900,'HTTPError:404'))
-   c.db.execute("INSERT INTO queue(url) VALUES(?)",('https://montoile.co.jp/products/ashitamo-okura-norishio/',))
+   c.db.execute("INSERT INTO host_state VALUES(?,?,?)",('www.yamaki.co.jp',time.time()+900,'HTTPError:404'))
+   c.db.execute("INSERT INTO queue(url) VALUES(?)",('https://www.yamaki.co.jp/catalog/products/index.php?id=86',))
    c.db.commit();c.db.close()
    c=Collector(folder,100000)
-   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='montoile.co.jp'").fetchone())
+   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='www.yamaki.co.jp'").fetchone())
    self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],1)
    c.db.close()
 
@@ -207,10 +207,10 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   catalogue='https://montoile.co.jp/products/'
-   sitemap='https://montoile.co.jp/sitemap.xml'
-   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
-   blocked='https://montoile.co.jp/products/robots-blocked-test/'
+   catalogue='https://www.yamaki.co.jp/catalog/products/'
+   sitemap='https://www.yamaki.co.jp/catalog/sitemap.xml'
+   product='https://www.yamaki.co.jp/catalog/products/index.php?id=86'
+   blocked='https://www.yamaki.co.jp/catalog/products/index.php?id=999'
    self.assertTrue(allowed_link(catalogue))
    self.assertTrue(allowed_link(sitemap))
    seeds=[catalogue,sitemap,product,blocked]
@@ -287,7 +287,7 @@ class Extraction(unittest.TestCase):
   for url in marketing:self.assertFalse(allowed_link(url))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   good='https://montoile.co.jp/product_category/other/'
+   good='https://www.yamaki.co.jp/catalog/products/category/'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in marketing+[good]])
    c.db.commit()
    visited=[]
@@ -304,7 +304,7 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    bad='https://housefoods.jp/products/special/currymarche/arrangement/qa/product/index.html'
    kagome='https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/'
-   good='https://montoile.co.jp/products/category/new/'
+   good='https://www.yamaki.co.jp/catalog/products/category/new/'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(bad,),(kagome,),(good,)])
    c.db.commit()
    visited=[]
@@ -353,7 +353,7 @@ class Extraction(unittest.TestCase):
   url='https://montoile.co.jp/products/hannama-assort/'
   self.assertTrue(product_url(url))
   self.assertTrue(product_url('https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473651'))
-  self.assertTrue(allowed_link('https://montoile.co.jp/products-sitemap.xml'))
+  self.assertFalse(allowed_link('https://montoile.co.jp/products-sitemap.xml'))
   self.assertFalse(product_url('https://montoile.co.jp/product_category/hannama/'))
   html='''<main><section id="product"><h1>半生アソート</h1>
   <dl><div><dt>内容量</dt><dd>１３４ｇ</dd></div>
@@ -514,31 +514,31 @@ class Extraction(unittest.TestCase):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
    c.request=lambda u:'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else HTML
-   c.run([URL],1,1)
+   c.run(['https://www.yamaki.co.jp/catalog/products/index.php?id=86'],1,1)
    self.assertEqual(c.count(),1)
    c.db.close()
    c=Collector(folder,100000)
    self.assertEqual(c.count(),1)
    c.request=lambda u:'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else HTML.replace('米、食塩','米、ゼラチン')
-   c.run(['https://montoile.co.jp/products/bonobon-chocolate-cream/'],1,1)
+   c.run(['https://www.yamaki.co.jp/catalog/products/index.php?id=87'],1,1)
    self.assertEqual(c.count(),0)
    self.assertEqual(json.loads((Path(folder)/'summary.json').read_text())['formula_conflicts_withheld'],1)
  def test_new_official_seed_is_processed_before_older_discovery_backlog(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   old='https://montoile.co.jp/products/mcvities-digestive/'
+   old='https://www.yamaki.co.jp/catalog/products/index.php?id=88'
    c.db.execute("INSERT INTO queue(url) VALUES(?)",(old,));c.db.commit()
    visited=[]
    c.request=lambda u: 'User-agent: *\nAllow: /' if u.endswith('/robots.txt') else (visited.append(u) or HTML)
-   c.run([URL],1,1)
+   c.run(['https://www.yamaki.co.jp/catalog/products/index.php?id=86'],1,1)
    self.assertEqual(visited[0],URL)
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(old,)).fetchone()[0],'pending')
    c.db.close()
  def test_pending_product_url_outranks_old_navigation_backlog(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   navigation='https://montoile.co.jp/products/'
-   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
+   navigation='https://www.yamaki.co.jp/catalog/products/'
+   product='https://www.yamaki.co.jp/catalog/products/index.php?id=86'
    self.assertTrue(product_url(product))
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(product,)])
    c.db.commit()
@@ -553,9 +553,9 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link,sitemap_url
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   navigation='https://montoile.co.jp/product_category/snack/'
-   sitemap='https://montoile.co.jp/sitemap.xml'
-   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
+   navigation='https://www.yamaki.co.jp/catalog/products/category/'
+   sitemap='https://www.yamaki.co.jp/catalog/sitemap.xml'
+   product='https://www.yamaki.co.jp/catalog/products/index.php?id=86'
    self.assertTrue(sitemap_url(sitemap))
    self.assertTrue(allowed_link(sitemap))
    self.assertFalse(sitemap_url('https://muso.co.jp.evil.example/sitemap.xml'))
@@ -576,9 +576,9 @@ class Extraction(unittest.TestCase):
  def test_discovered_product_is_prioritized_on_next_page(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   navigation='https://montoile.co.jp/products/category/'
-   backlog='https://montoile.co.jp/products/'
-   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
+   navigation='https://www.yamaki.co.jp/catalog/products/category/'
+   backlog='https://www.yamaki.co.jp/catalog/products/'
+   product='https://www.yamaki.co.jp/catalog/products/index.php?id=86'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(backlog,)])
    c.db.commit()
    visited=[]
