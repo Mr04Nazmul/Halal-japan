@@ -210,7 +210,7 @@ class Extraction(unittest.TestCase):
    catalogue='https://montoile.co.jp/products/'
    sitemap='https://montoile.co.jp/sitemap.xml'
    product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
-   blocked='https://www.kewpie.co.jp/products/'
+   blocked='https://montoile.co.jp/products/robots-blocked-test/'
    self.assertTrue(allowed_link(catalogue))
    self.assertTrue(allowed_link(sitemap))
    seeds=[catalogue,sitemap,product,blocked]
@@ -339,7 +339,7 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['source_publisher'],'montoile.co.jp')
   self.assertFalse(record['halal_certified'])
 
- def test_official_itoen_and_ucc_product_patterns(self):
+ def test_restricted_itoen_and_allowed_ucc_product_patterns(self):
   from crawl_japanese_ingredients import allowed_link
   self.assertTrue(product_url('https://www.itoen.jp/products/43679/'))
   self.assertTrue(product_url('https://www.ucc.co.jp/product/instant/class-one/class-one-bin-170g.html'))
@@ -348,7 +348,7 @@ class Extraction(unittest.TestCase):
   self.assertFalse(product_url('https://www.ucc.co.jp/product/'))
   self.assertFalse(product_url('https://www.ucc.co.jp/product/instant/'))
   self.assertFalse(product_url('https://www.itoen.jp.evil.example/products/43679/'))
-  self.assertTrue(allowed_link('https://www.itoen.jp/products/'))
+  self.assertFalse(allowed_link('https://www.itoen.jp/products/43679/'))
   self.assertTrue(allowed_link('https://www.ucc.co.jp/product/'))
  def test_pokka_sapporo_official_product_and_catalog(self):
   from crawl_japanese_ingredients import allowed_link

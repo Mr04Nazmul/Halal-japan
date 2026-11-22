@@ -10,9 +10,6 @@ https://www.family.co.jp/goods/safety/goods020.html
 https://www.family.co.jp/goods/safety/goods060.html
 https://www.family.co.jp/goods/safety/friedfoods.html
 # Drinks: ITO EN official product catalog and ingredient information
-https://www.itoen.jp/products/
-https://www.itoen.jp/products/quality/production/
-https://www.itoen.jp/products/quality/materials/
 # Meiji official product pages
 https://www.meiji.co.jp/products/yogurt/4902705133099.html
 https://www.meiji.co.jp/products/yogurt/4902705011632.html
@@ -28,7 +25,6 @@ https://www.morinaga.co.jp/products/detail.php?id=PRD2010-07-0029
 https://www.morinaga.co.jp/cocoa/senobi/
 https://www.morinaga.co.jp/products/detail.php?id=PRD2020-01-0001
 https://www.topvalu.net/items/
-https://www.kewpie.co.jp/products/
 https://www.sbfoods.co.jp/products/
 https://www.natori.co.jp/products.html
 https://www.kyoritsu-foods.co.jp/product/
