@@ -33,6 +33,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.nissin.com/jp/product/items/13426/": "nissin.com",
             "https://www.sbfoods.co.jp/products/detail/123.html": "sbfoods.co.jp",
             "https://sokensha.co.jp/news/2026/13262/": "sokensha.co.jp",
+            "https://montoile.co.jp/products/tenohira-gopan-tomato-basil/": "montoile.co.jp",
             "https://www.maruchan.co.jp/products/search/310686.html": "maruchan.co.jp",
             "https://www.meiji.co.jp/products/drink/4902705133150.html": "meiji.co.jp",
             "https://www.meito-abc.co.jp/products/lineup/new": "meito-abc.co.jp",
@@ -74,6 +75,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://food.askul.co.jp/p/U217658/"))
         self.assertTrue(is_terms_restricted_url("https://shop.yamamori.co.jp/products/matsusaka_sukiyaki/"))
         self.assertTrue(is_terms_restricted_url("https://shop.sokensha.co.jp/products/example/"))
+        self.assertTrue(is_terms_restricted_url("https://shop.montoile.co.jp/products/example/"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -85,8 +87,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
 
     def test_unreviewed_sources_are_not_mislabeled_as_blocked(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
-        self.assertFalse(is_terms_restricted_url("https://montoile.co.jp/products/example/"))
         self.assertFalse(is_terms_restricted_url("https://www.kyoritsu-foods.co.jp/product/page/7/"))
+        self.assertFalse(is_terms_restricted_url("https://www.yamaki.co.jp/catalog/products/index.php?id=86"))
 
     def test_main_crawler_does_not_enqueue_restricted_current_source_pages(self):
         blocked = [
@@ -102,6 +104,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.nissin.com/jp/product/items/11309/",
             "https://www.sbfoods.co.jp/products/detail/123.html",
             "https://sokensha.co.jp/products/product_detail/161784",
+            "https://montoile.co.jp/products/tenohira-gopan-tomato-basil/",
             "https://www.maruchan.co.jp/products/search/310686.html",
             "https://www.meiji.co.jp/products/drink/4902705133150.html",
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890",
@@ -181,6 +184,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "tajimaya-cc.net",
                 "yamamori.co.jp",
                 "sokensha.co.jp",
+                "montoile.co.jp",
             },
         )
 
@@ -201,18 +205,20 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked = "https://www.nagatanien.co.jp/product/detail/1223/"
             blocked_yamamori = "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/"
             blocked_sokensha = "https://sokensha.co.jp/news/2026/13262/"
-            allowed = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
+            blocked_montoile = "https://montoile.co.jp/products/tenohira-gopan-tomato-basil/"
+            allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 3)
+            self.assertEqual(changed, 4)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
             self.assertEqual(rows[blocked_sokensha], "done")
+            self.assertEqual(rows[blocked_montoile], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 4)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 5)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
