@@ -322,6 +322,28 @@ class Extraction(unittest.TestCase):
    self.assertEqual(c.db.execute("SELECT value FROM metadata WHERE key='legacy_marketing_navigation_quarantine_20261122_v1'").fetchone()[0],'done')
    c.db.close()
 
+ def test_montoile_official_product_page_extracts_labelled_jan_and_ingredients(self):
+  from crawl_japanese_ingredients import allowed_link
+  url='https://montoile.co.jp/products/hannama-assort/'
+  self.assertTrue(product_url(url))
+  self.assertTrue(allowed_link('https://montoile.co.jp/products-sitemap.xml'))
+  self.assertFalse(product_url('https://montoile.co.jp/product_category/hannama/'))
+  html='''<main><section id="product"><h1>半生アソート</h1>
+  <dl><div><dt>内容量</dt><dd>１３４ｇ</dd></div>
+  <div><dt>JANコード</dt><dd>4580530497045</dd></div></dl>
+  <div class="product_detail"><div class="inner"><h2>原材料名</h2>
+  <div>〈粒あんどら焼〉砂糖、小麦粉、液全卵／膨脹剤、香料<br>
+  〈栗どら焼〉砂糖、生あん、小麦粉／トレハロース、膨脹剤</div>
+  </div></div></section></main>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'半生アソート')
+  self.assertEqual(record['jan'],'4580530497045')
+  self.assertIn('〈粒あんどら焼〉',record['ingredients_ja'])
+  self.assertIn('〈栗どら焼〉',record['ingredients_ja'])
+  self.assertEqual(record['source_publisher'],'montoile.co.jp')
+  self.assertFalse(record['halal_certified'])
+
  def test_official_itoen_and_ucc_product_patterns(self):
   from crawl_japanese_ingredients import allowed_link
   self.assertTrue(product_url('https://www.itoen.jp/products/43679/'))
