@@ -350,6 +350,13 @@ class Extraction(unittest.TestCase):
   self.assertFalse(product_url('https://www.itoen.jp.evil.example/products/43679/'))
   self.assertFalse(allowed_link('https://www.itoen.jp/products/43679/'))
   self.assertTrue(allowed_link('https://www.ucc.co.jp/product/'))
+ def test_yamaki_catalogue_root_is_discovery_only(self):
+  from crawl_japanese_ingredients import allowed_link
+  self.assertTrue(allowed_link('https://www.yamaki.co.jp/catalog/'))
+  self.assertFalse(product_url('https://www.yamaki.co.jp/catalog/'))
+  self.assertTrue(product_url('https://www.yamaki.co.jp/catalog/products/index.php?id=327'))
+  self.assertTrue(allowed_link('https://www.yamaki.co.jp/catalog/products/index.php?id=327'))
+
  def test_pokka_sapporo_official_product_and_catalog(self):
   from crawl_japanese_ingredients import allowed_link
   url='https://www.pokkasapporo-fb.jp/products/water/water/WW50.html'
