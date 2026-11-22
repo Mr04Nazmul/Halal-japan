@@ -811,3 +811,19 @@ class FujiccoExtraction(unittest.TestCase):
   self.assertIsNone(record['jan'])
   self.assertFalse(record['halal_certified'])
   self.assertTrue(product_url(url))
+
+
+class KamedaSeikaExtraction(unittest.TestCase):
+ def test_kameda_labeled_div_and_explicit_jan_are_extracted(self):
+  url='https://www.kamedaseika.co.jp/product/320'
+  ingredients='うるち米（米国産、国産）、しょうゆ、砂糖、みりん、デキストリン、たん白加水分解物、食塩、粉末しょうゆ／加工でん粉、調味料（アミノ酸等）、着色料（カラメル）、乳化剤、ソルビトール、（一部に小麦・大豆・ゼラチンを含む）'
+  html=f'''<html><h1>110g 技のこだ割り</h1>
+  <table><tr><th>JANコード</th><td>4901313254998</td></tr></table>
+  <h2>原材料名</h2><div class="c-paragraph">{ingredients}</div></html>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'110g 技のこだ割り')
+  self.assertEqual(record['jan'],'4901313254998')
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertFalse(record['halal_certified'])
+  self.assertTrue(product_url(url))
