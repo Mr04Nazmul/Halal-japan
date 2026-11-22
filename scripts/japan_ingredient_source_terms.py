@@ -8,7 +8,7 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v2"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v3"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -35,6 +35,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "fujiya-peko.co.jp": {
         "policy_url": "https://www.fujiya-peko.co.jp/copyright/",
         "reason": "site policy prohibits reproduction, alteration, transfer, distribution, and commercial use of site content without consent",
+        "reviewed_on": "2026-11-22",
+    },
+    "bourbon.co.jp": {
+        "policy_url": "https://www.bourbon.co.jp/terms.html",
+        "reason": "Bourbon terms permit only personal private use; downloading, copying, modifying, distributing, transmitting, reusing on other websites or printed materials, or commercial use without consent is prohibited",
         "reviewed_on": "2026-11-22",
     },
     "fujicco.co.jp": {
