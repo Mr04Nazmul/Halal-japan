@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
+from japan_ingredient_source_terms import is_terms_restricted_url
 
 SEEDS = Path(os.getenv("CRAWL_SEEDS_FILE", "data/manufacturer_seed_urls.txt"))
 OUT = Path("data/crawl4ai_ingredient_evidence.jsonl")
@@ -18,6 +19,8 @@ BARCODE = re.compile(r"(?<!\d)(?:45|49)\d{11}(?!\d)")
 robots_cache = {}
 
 def allowed(url):
+    if is_terms_restricted_url(url):
+        return False
     p = urlparse(url)
     if p.scheme != "https" or not p.hostname:
         return False
@@ -58,6 +61,8 @@ async def main():
             attempted.add(url)
             if url in existing:
                 print("ALREADY HAVE EVIDENCE", url, flush=True)
+            elif is_terms_restricted_url(url):
+                print("SOURCE TERMS REUSE RESTRICTED; SKIP", url, flush=True)
             elif not allowed(url):
                 print("ROBOTS/HTTPS SKIP", url, flush=True)
             else:
