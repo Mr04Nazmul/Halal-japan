@@ -296,6 +296,32 @@ class Extraction(unittest.TestCase):
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(kagome,)).fetchone()[0],'pending')
    c.db.close()
 
+ def test_quarantines_legacy_marketing_backlog_without_deleting_rows(self):
+  with tempfile.TemporaryDirectory() as folder:
+   db=sqlite3.connect(Path(folder)/'state.sqlite3')
+   db.executescript('''CREATE TABLE queue(url TEXT PRIMARY KEY,status TEXT DEFAULT 'pending',attempts INTEGER DEFAULT 0,next_try REAL DEFAULT 0,error TEXT);
+   CREATE TABLE products(id TEXT PRIMARY KEY,formula TEXT,payload TEXT,conflict INTEGER DEFAULT 0);
+   CREATE TABLE host_state(host TEXT PRIMARY KEY,next_try REAL DEFAULT 0,reason TEXT);
+   CREATE TABLE observations(url TEXT,reason TEXT,at TEXT);
+   CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);''')
+   db.execute("INSERT INTO metadata VALUES('extractor_version',?)",('official-fields-2026-11-22-v14-glico-product-name-jan',))
+   urls=[
+    'https://housefoods.jp/products/special/currymarche/arrangement/qa/index.html',
+    'https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/',
+    'https://and.kagome.co.jp/products/feature/',
+    'https://housefoods.jp/products/catalog/cd_1,092996.html']
+   db.executemany("INSERT INTO queue(url,status) VALUES(?,'pending')",[(u,) for u in urls])
+   db.commit();db.close()
+   c=Collector(folder,100000)
+   for url in urls[:3]:
+    self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
+                     ('done','out_of_scope_navigation'))
+   self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(urls[3],)).fetchone(),
+                    ('pending',None))
+   self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],4)
+   self.assertEqual(c.db.execute("SELECT value FROM metadata WHERE key='legacy_marketing_navigation_quarantine_20261122_v1'").fetchone()[0],'done')
+   c.db.close()
+
  def test_official_itoen_and_ucc_product_patterns(self):
   from crawl_japanese_ingredients import allowed_link
   self.assertTrue(product_url('https://www.itoen.jp/products/43679/'))
@@ -327,6 +353,10 @@ class Extraction(unittest.TestCase):
   self.assertTrue(product_url(url))
   self.assertTrue(product_url('https://www.asahiinryo.co.jp/products/others/koku_uma/'))
   self.assertFalse(product_url('https://www.asahiinryo.co.jp/products/'))
+  for catalogue in ('https://www.asahiinryo.co.jp/products/list/nutrition/',
+                    'https://www.asahiinryo.co.jp/products/list/jan/0002.html'):
+   self.assertFalse(product_url(catalogue))
+   self.assertTrue(allowed_link(catalogue))
   self.assertFalse(product_url('https://www.asahiinryo.co.jp.evil.example/products/milkybeverage/gungun_yogurun/2E2AA.html'))
   self.assertTrue(allowed_link('https://www.asahiinryo.co.jp/products/'))
   html='''<h1>ぐんぐんヨグルン PET500ml</h1><table>

@@ -104,7 +104,14 @@ def canonical(u):
 def source(u):
  host=(urlsplit(u).hostname or '').lower()
  return next((d for d in SOURCES if host==d or host.endswith('.'+d)),None)
-def product_url(u):return bool((d:=source(u)) and re.search(SOURCES[d],u))
+def product_url(u):
+ d=source(u)
+ if not d:return False
+ path=urlsplit(u).path
+ # Asahi's /products/list/ pages are catalogue filters, not product detail pages.
+ # Keep them discoverable as navigation, but do not count or prioritize them as products.
+ if d=='asahiinryo.co.jp' and path.startswith('/products/list/'):return False
+ return bool(re.search(SOURCES[d],u))
 def sitemap_url(u):
  path=urlsplit(u).path.lower()
  return bool(source(u) and 'sitemap' in path and path.endswith('.xml'))
@@ -391,6 +398,24 @@ class Collector:
    if invalid:print(f"Quarantined {len(invalid)} invalid legacy checkpoint records",flush=True)
    self.db.execute("INSERT OR REPLACE INTO metadata VALUES('extractor_version',?)",(EXTRACTOR_VERSION,))
    self.db.commit()
+  # One-time quarantine of known legacy marketing-link explosions. Keep every
+  # queue row for auditability, but stop treating recursive House Foods and
+  # Kagome marketing paths as pending work. Accepted product records are untouched.
+  legacy_backlog_key='legacy_marketing_navigation_quarantine_20261122_v1'
+  if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(legacy_backlog_key,)).fetchone():
+   quarantined=self.db.execute("""UPDATE queue SET status='done',error='out_of_scope_navigation'
+    WHERE status='pending'
+     AND (url LIKE 'https://housefoods.jp/products/special/%'
+      OR url LIKE 'https://www.housefoods.jp/products/special/%'
+      OR url LIKE 'https://www.kagome.co.jp/products/%'
+      OR url LIKE 'https://kagome.co.jp/products/%'
+      OR url LIKE 'https://and.kagome.co.jp/%')
+     AND NOT EXISTS (
+      SELECT 1 FROM products p WHERE json_extract(p.payload,'$.source_url')=queue.url
+     )""")
+   self.db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',(legacy_backlog_key,'done'))
+   self.db.commit()
+   print('Quarantined legacy out-of-scope marketing URLs:',quarantined.rowcount,flush=True)
   # A 404 only means this URL is missing; it must not throttle every other
   # product page on the same official host. Clear legacy 404 host cooldowns.
   self.db.execute("DELETE FROM host_state WHERE reason='HTTPError:404'")
