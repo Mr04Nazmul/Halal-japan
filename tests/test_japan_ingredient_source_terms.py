@@ -1,3 +1,4 @@
+import sqlite3
 import sys
 import tempfile
 import unittest
@@ -10,7 +11,7 @@ from japan_ingredient_source_terms import (
     is_terms_restricted_url,
     source_terms_restriction,
 )
-from crawl_japanese_ingredients import (allowed_link, product_url, Collector, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
+from crawl_japanese_ingredients import (allowed_link, product_url, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
 
 
 class SourceTermsPolicyTests(unittest.TestCase):
@@ -57,6 +58,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.meg-snow.com/products/": "meg-snow.com",
             "https://www.yotsuba.co.jp/products/": "yotsuba.co.jp",
             "https://www.tajimaya-cc.net/products/2118": "tajimaya-cc.net",
+            "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/": "yamamori.co.jp",
         }
         for url, domain in examples.items():
             with self.subTest(url=url):
@@ -69,6 +71,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("http://www.fujiya-peko.co.jp/item/1"))
         self.assertTrue(is_terms_restricted_url("https://shop.muso.co.jp/item/1"))
         self.assertTrue(is_terms_restricted_url("https://food.askul.co.jp/p/U217658/"))
+        self.assertTrue(is_terms_restricted_url("https://shop.yamamori.co.jp/products/matsusaka_sukiyaki/"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -121,6 +124,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.nagatanien.co.jp/product/detail/1223/",
             "https://www.topvalu.net/items/detail/4902123456789/",
             "https://7premium.jp/product/search/detail?id=10791",
+            "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/",
+            "https://www.yamamori.co.jp/business/",
         ]
         for url in blocked:
             with self.subTest(url=url):
@@ -171,27 +176,39 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "meg-snow.com",
                 "yotsuba.co.jp",
                 "tajimaya-cc.net",
+                "yamamori.co.jp",
             },
         )
 
 
     def test_blocked_pending_queue_is_quarantined_once_without_deleting_rows(self):
         with tempfile.TemporaryDirectory() as directory:
-            collector = Collector(directory, 100)
-            collector.db.execute("DELETE FROM metadata WHERE key=?", (SOURCE_TERMS_QUARANTINE_KEY,))
+            db = sqlite3.connect(Path(directory) / "test.sqlite3")
+            db.executescript("""
+                CREATE TABLE queue(
+                    url TEXT PRIMARY KEY,
+                    status TEXT DEFAULT 'pending',
+                    attempts INTEGER DEFAULT 0,
+                    next_try REAL DEFAULT 0,
+                    error TEXT
+                );
+                CREATE TABLE metadata(key TEXT PRIMARY KEY, value TEXT);
+            """)
             blocked = "https://www.nagatanien.co.jp/product/detail/1223/"
+            blocked_yamamori = "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/"
             allowed = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
-            collector.db.executemany("INSERT OR IGNORE INTO queue(url) VALUES(?)",
-                                     [(blocked,), (allowed,)])
-            collector.db.commit()
-            changed = quarantine_restricted_pending_sources(collector.db)
-            self.assertEqual(changed, 1)
-            rows = dict(collector.db.execute("SELECT url,status FROM queue"))
+            db.executemany("INSERT INTO queue(url) VALUES(?)",
+                           [(blocked,), (blocked_yamamori,), (allowed,)])
+            db.commit()
+            changed = quarantine_restricted_pending_sources(db)
+            self.assertEqual(changed, 2)
+            rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
+            self.assertEqual(rows[blocked_yamamori], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(collector.db.execute("SELECT count(*) FROM queue").fetchone()[0], 2)
-            self.assertEqual(quarantine_restricted_pending_sources(collector.db), 0)
-            collector.db.close()
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 3)
+            self.assertEqual(quarantine_restricted_pending_sources(db), 0)
+            db.close()
 
 
 if __name__ == "__main__":
