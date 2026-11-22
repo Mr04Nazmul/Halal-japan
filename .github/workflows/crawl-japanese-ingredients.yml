@@ -133,3 +133,4 @@ jobs:
 # Bounded collection wake: 2026-11-03T05:19+09:00; resume newest valid checkpoint after successful #119 importer, preserve source validation and dedup.
 
 # Source terms policy v2 (2026-11-22): pending URLs from newly restricted publishers are quarantined at restore; accepted product rows are untouched.
+# Bounded hourly wake: 2026-11-23T01:19+09:00; retry only cooldown-expired official URLs, preserve source terms, checkpoint and idempotent staging.
