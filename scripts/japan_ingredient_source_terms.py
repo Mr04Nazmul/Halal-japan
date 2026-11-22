@@ -8,7 +8,7 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v7"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v8"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -135,6 +135,31 @@ RESTRICTED_SOURCE_POLICIES = {
     "hanamaruki.co.jp": {
         "policy_url": "https://www.hanamaruki.co.jp/sitepolicy/",
         "reason": "Hanamaruki site policy permits content use only for private purposes and requires company permission for reproduction, republication, transmission, distribution, or other secondary use",
+        "reviewed_on": "2026-11-23",
+    },
+    "calbee.co.jp": {
+        "policy_url": "https://www.calbee.co.jp/policy/",
+        "reason": "Calbee site policy prohibits unauthorized use or reproduction of site intellectual property, including text.",
+        "reviewed_on": "2026-11-23",
+    },
+    "ebarafoods.com": {
+        "policy_url": "https://www.ebarafoods.com/guide/",
+        "reason": "Ebara website terms prohibit unauthorized use, reproduction, adaptation, distribution, or public transmission of site works except as allowed by copyright law.",
+        "reviewed_on": "2026-11-23",
+    },
+    "imuraya.co.jp": {
+        "policy_url": "https://www.imuraya.co.jp/site-policy/",
+        "reason": "Imuraya site policy states that site works may not be used without prior company permission.",
+        "reviewed_on": "2026-11-23",
+    },
+    "kikkoman.co.jp": {
+        "policy_url": "https://www.kikkoman.co.jp/kiyaku/kiyaku.html",
+        "reason": "Kikkoman website terms restrict use of site content to private use and other copyright-law exceptions; unauthorized use is not allowed.",
+        "reviewed_on": "2026-11-23",
+    },
+    "morinagamilk.co.jp": {
+        "policy_url": "https://www.morinagamilk.co.jp/terms_of_use/",
+        "reason": "Morinaga Milk terms prohibit unauthorized use, reproduction, modification, distribution, or publication beyond private use and require prior permission.",
         "reviewed_on": "2026-11-23",
     },
     "marusanai.co.jp": {

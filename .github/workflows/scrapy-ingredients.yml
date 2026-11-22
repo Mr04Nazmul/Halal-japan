@@ -10,6 +10,9 @@ on:
       - 'data/manufacturer_seed_urls.txt'
   schedule:
     - cron: '27 * * * *'
+concurrency:
+  group: jhc-scrapy-ingredient-discovery
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

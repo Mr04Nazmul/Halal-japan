@@ -37,3 +37,5 @@ https://www.ucc.co.jp/product/
 https://7premium.jp/product/search/
 https://muso.co.jp/item/10022.html
 https://www.yamaki.co.jp/catalog/products/index.php?id=86
+# Nagatanien official product catalogue; collect factual ingredient fields only, no images or promotional copy.
+https://www.nagatanien.co.jp/product/

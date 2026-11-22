@@ -5,6 +5,7 @@ from urllib.parse import parse_qs, urlparse
 
 import scrapy
 from scrapy.selector import Selector
+from japan_ingredient_source_terms import is_terms_restricted_url
 
 
 INGREDIENT_LABELS = {
@@ -68,8 +69,13 @@ def has_declared_ingredient_field(selector):
     return False
 
 
+def is_allowed_source_url(url):
+    parsed = urlparse(url)
+    return parsed.scheme == "https" and not is_terms_restricted_url(url)
+
+
 def is_ingredient_product_candidate(url, html):
-    if not is_product_detail_url(url):
+    if not is_allowed_source_url(url) or not is_product_detail_url(url):
         return False
     return has_declared_ingredient_field(Selector(text=html))
 
@@ -94,7 +100,7 @@ class JapaneseProductLinks(scrapy.Spider):
         seed_urls = [
             line.strip()
             for line in seeds.read_text(encoding="utf-8").splitlines()
-            if line.strip().startswith("https://")
+            if line.strip().startswith("https://") and is_allowed_source_url(line.strip())
         ]
         for url in seed_urls[:80]:
             yield scrapy.Request(
@@ -104,6 +110,8 @@ class JapaneseProductLinks(scrapy.Spider):
             )
 
     def parse(self, response):
+        if not is_allowed_source_url(response.url):
+            return
         if response.status != 200:
             return
 
@@ -117,6 +125,8 @@ class JapaneseProductLinks(scrapy.Spider):
         for href in response.css("a::attr(href)").getall()[:200]:
             url = response.urljoin(href)
             if urlparse(url).hostname != response.meta["origin_host"]:
+                continue
+            if not is_allowed_source_url(url):
                 continue
             path = urlparse(url).path
             if any(token in path for token in ("/product", "/item", "/goods")):

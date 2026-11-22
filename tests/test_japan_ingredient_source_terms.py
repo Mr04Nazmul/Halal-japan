@@ -41,6 +41,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://7premium.jp/product/search/detail?id=10791": "7premium.jp",
             "https://www.hikarimiso.co.jp/products/kodawari01/": "hikarimiso.co.jp",
             "https://www.hanamaruki.co.jp/products/instant_soup/sokuseki_wakame/": "hanamaruki.co.jp",
+            "https://www.calbee.co.jp/products/detail/?p=20261106232447": "calbee.co.jp",
+            "https://www.ebarafoods.com/products/detail/123": "ebarafoods.com",
+            "https://www.imuraya.co.jp/goods/zenzai/c-zenzai/noukouz/": "imuraya.co.jp",
+            "https://www.kikkoman.co.jp/products/K05/detail/K053515.html": "kikkoman.co.jp",
+            "https://www.morinagamilk.co.jp/products/milk/morinagamilk/1254.html": "morinagamilk.co.jp",
             "https://www.marusanai.co.jp/lineup/detail-64095/": "marusanai.co.jp",
             "https://www.itoen.jp/products/41922/": "itoen.jp",
             "https://www.kewpie.co.jp/products/detail/4901577004865/": "kewpie.co.jp",
@@ -70,6 +75,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
         self.assertFalse(is_terms_restricted_url("https://montoile.co.jp/products/example/"))
         self.assertFalse(is_terms_restricted_url("https://www.kyoritsu-foods.co.jp/product/page/7/"))
+        self.assertFalse(is_terms_restricted_url("https://www.nagatanien.co.jp/product/"))
 
     def test_main_crawler_does_not_enqueue_restricted_current_source_pages(self):
         blocked = [
@@ -91,6 +97,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.nipponham.co.jp/products/processed_foods/bread_pizza/24216/",
             "https://www.hikarimiso.co.jp/products/kodawari01/",
             "https://www.hanamaruki.co.jp/products/instant_soup/sokuseki_wakame/",
+            "https://www.calbee.co.jp/products/detail/?p=20261106232447",
+            "https://www.ebarafoods.com/products/detail/123",
+            "https://www.imuraya.co.jp/goods/zenzai/c-zenzai/noukouz/",
+            "https://www.kikkoman.co.jp/products/K05/detail/K053515.html",
+            "https://www.morinagamilk.co.jp/products/milk/morinagamilk/1254.html",
             "https://www.marusanai.co.jp/lineup/detail-64095/",
             "https://www.itoen.jp/products/41922/",
             "https://www.kewpie.co.jp/products/detail/4901577004865/",
@@ -132,6 +143,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "7premium.jp",
                 "hikarimiso.co.jp",
                 "hanamaruki.co.jp",
+                "calbee.co.jp",
+                "ebarafoods.com",
+                "imuraya.co.jp",
+                "kikkoman.co.jp",
+                "morinagamilk.co.jp",
                 "marusanai.co.jp",
                 "itoen.jp",
                 "kewpie.co.jp",

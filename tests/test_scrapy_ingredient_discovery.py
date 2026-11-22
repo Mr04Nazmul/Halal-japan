@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from scrapy_ingredient_discovery import (
     is_ingredient_product_candidate,
     is_product_detail_url,
+    is_allowed_source_url,
 )
 
 
@@ -72,6 +73,34 @@ class IngredientDiscoveryTests(unittest.TestCase):
         for url in urls:
             with self.subTest(url=url):
                 self.assertTrue(is_product_detail_url(url))
+
+    def test_nagatanien_product_detail_with_labelled_ingredients_is_candidate(self):
+        html = """
+        <html><h1>抹茶スープ白味噌仕立て</h1>
+        <dl><dt>原材料名</dt><dd>調味粉、米みそ、砂糖、抹茶、食塩</dd></dl>
+        </html>
+        """
+        url = "https://www.nagatanien.co.jp/product/detail/1220/"
+        self.assertTrue(is_allowed_source_url(url))
+        self.assertTrue(is_product_detail_url(url))
+        self.assertTrue(is_ingredient_product_candidate(url, html))
+
+    def test_restricted_source_is_skipped_even_with_complete_ingredients(self):
+        html = "<html><h1>黄金の味</h1><p>原材料名：りんご、醤油、砂糖、食塩</p></html>"
+        url = "https://www.ebarafoods.com/products/detail/123"
+        self.assertFalse(is_allowed_source_url(url))
+        self.assertFalse(is_ingredient_product_candidate(url, html))
+
+    def test_restricted_domains_and_subdomains_are_not_allowed(self):
+        for url in (
+            "https://www.calbee.co.jp/products/detail/?p=20261106232447",
+            "https://gyoumuyou.ebarafoods.com/products/detail/TCT16A.html",
+            "https://www.imuraya.co.jp/goods/zenzai/c-zenzai/noukouz/",
+            "https://www.kikkoman.co.jp/products/K05/detail/K053515.html",
+            "https://www.morinagamilk.co.jp/products/milk/morinagamilk/1254.html",
+        ):
+            with self.subTest(url=url):
+                self.assertFalse(is_allowed_source_url(url))
 
     def test_generic_catalogue_page_rejected(self):
         self.assertFalse(is_product_detail_url("https://www.family.co.jp/goods.html"))
