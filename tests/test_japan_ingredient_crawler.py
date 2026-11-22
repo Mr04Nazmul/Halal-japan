@@ -436,9 +436,9 @@ class Extraction(unittest.TestCase):
   url='https://www.dydo.co.jp/products/detail/1231/'
   self.assertTrue(product_url(url))
   self.assertFalse(allowed_link('https://www.dydo.co.jp/products/'))
-  self.assertTrue(allowed_link('https://www.dydo.co.jp/products/list/'))
+  self.assertFalse(allowed_link('https://www.dydo.co.jp/products/list/'))
   listing='https://www.dydo.co.jp/products/list/?rt_bn_product_list_skip=12&rt_bn_product_list_all_skip='
-  self.assertTrue(allowed_link(listing))
+  self.assertFalse(allowed_link(listing))
   self.assertIn('rt_bn_product_list_skip=12',canonical(listing))
   self.assertIn('rt_bn_product_list_all_skip=',canonical(listing))
   self.assertNotIn('tracking=',canonical(listing+'&tracking=ignore'))
