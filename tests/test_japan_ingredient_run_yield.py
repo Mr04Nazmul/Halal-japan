@@ -75,8 +75,8 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             urls = [
                 "https://montoile.co.jp/products/",
                 "https://montoile.co.jp/products/category/",
-                "https://www.kamedaseika.co.jp/products/",
-                "https://www.kamedaseika.co.jp/products/list/",
+                "https://www.yamaki.co.jp/catalog/products/",
+                "https://www.yamaki.co.jp/catalog/products/index.php",
             ]
             collector.enqueue(urls)
             collector.permitted = lambda url: True

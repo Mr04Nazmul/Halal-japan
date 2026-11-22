@@ -8,6 +8,8 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
+SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v2"
+
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
     "agf.ajinomoto.co.jp": {
@@ -38,6 +40,16 @@ RESTRICTED_SOURCE_POLICIES = {
     "fujicco.co.jp": {
         "policy_url": "https://www.fujicco.co.jp/about.html",
         "reason": "Fujicco permits private use but prohibits reuse or transfer of site content to other websites or printed materials",
+        "reviewed_on": "2026-11-22",
+    },
+    "kamedaseika.co.jp": {
+        "policy_url": "https://www.kamedaseika.co.jp/guide/",
+        "reason": "Kameda terms limit website content to personal or legally permitted use and prohibit unauthorized reproduction, modification, distribution, transmission, or commercial use beyond that scope",
+        "reviewed_on": "2026-11-22",
+    },
+    "sanko-seika.co.jp": {
+        "policy_url": "https://www.sanko-seika.co.jp/terms/",
+        "reason": "Sanko Seika terms prohibit using, reproducing, altering, or distributing website content without authorization, including commercial reuse",
         "reviewed_on": "2026-11-22",
     },
     "myojofoods.co.jp": {

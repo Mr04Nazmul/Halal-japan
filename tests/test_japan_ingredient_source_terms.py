@@ -1,4 +1,5 @@
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from japan_ingredient_source_terms import (
     is_terms_restricted_url,
     source_terms_restriction,
 )
-from crawl_japanese_ingredients import allowed_link
+from crawl_japanese_ingredients import (allowed_link, Collector, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
 
 
 class SourceTermsPolicyTests(unittest.TestCase):
@@ -21,6 +22,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.asahiinryo.co.jp/products/": "asahiinryo.co.jp",
             "https://www.fujiya-peko.co.jp/sweets/item/26844.html": "fujiya-peko.co.jp",
             "https://www.fujicco.co.jp/products/detail/123": "fujicco.co.jp",
+            "https://www.kamedaseika.co.jp/product/2068/": "kamedaseika.co.jp",
+            "https://www.sanko-seika.co.jp/product/item/123/": "sanko-seika.co.jp",
             "https://www.myojofoods.co.jp/products/items/13987": "myojofoods.co.jp",
             "https://www.natori.co.jp/products_search/item_123": "natori.co.jp",
             "https://www.nissin.com/jp/product/items/13426/": "nissin.com",
@@ -55,6 +58,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://agf.ajinomoto.co.jp/product/detail/14113",
             "https://www.asahiinryo.co.jp/products/carbonated/wilkinson_tansan_fruity_muscat/2T532.html",
             "https://www.fujicco.co.jp/products/detail/123",
+            "https://www.kamedaseika.co.jp/product/2068/",
+            "https://www.sanko-seika.co.jp/product/item/123/",
             "https://www.myojofoods.co.jp/products/items/13987",
             "https://www.natori.co.jp/products_search/squid/item_546",
             "https://www.nissin.com/jp/product/items/11309/",
@@ -81,6 +86,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "asahiinryo.co.jp",
                 "fujiya-peko.co.jp",
                 "fujicco.co.jp",
+                "kamedaseika.co.jp",
+                "sanko-seika.co.jp",
                 "maruchan.co.jp",
                 "myojofoods.co.jp",
                 "natori.co.jp",
@@ -96,6 +103,25 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "7premium.jp",
             },
         )
+
+
+    def test_restricted_pending_queue_is_quarantined_once_without_deleting_rows(self):
+        with tempfile.TemporaryDirectory() as directory:
+            collector = Collector(directory, 100)
+            collector.db.execute("DELETE FROM metadata WHERE key=?", (SOURCE_TERMS_QUARANTINE_KEY,))
+            blocked = "https://www.kamedaseika.co.jp/product/2068/"
+            allowed = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
+            collector.db.executemany("INSERT OR IGNORE INTO queue(url) VALUES(?)",
+                                     [(blocked,), (allowed,)])
+            collector.db.commit()
+            changed = quarantine_restricted_pending_sources(collector.db)
+            self.assertEqual(changed, 1)
+            rows = dict(collector.db.execute("SELECT url,status FROM queue"))
+            self.assertEqual(rows[blocked], "done")
+            self.assertEqual(rows[allowed], "pending")
+            self.assertEqual(collector.db.execute("SELECT count(*) FROM queue").fetchone()[0], 2)
+            self.assertEqual(quarantine_restricted_pending_sources(collector.db), 0)
+            collector.db.close()
 
 
 if __name__ == "__main__":

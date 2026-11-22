@@ -91,11 +91,11 @@ class Extraction(unittest.TestCase):
  def test_old_404_host_cooldowns_are_cleared_without_dropping_queue(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   c.db.execute("INSERT INTO host_state VALUES(?,?,?)",('www.kamedaseika.co.jp',time.time()+900,'HTTPError:404'))
-   c.db.execute("INSERT INTO queue(url) VALUES(?)",('https://www.kamedaseika.co.jp/product/123',))
+   c.db.execute("INSERT INTO host_state VALUES(?,?,?)",('montoile.co.jp',time.time()+900,'HTTPError:404'))
+   c.db.execute("INSERT INTO queue(url) VALUES(?)",('https://montoile.co.jp/products/ashitamo-okura-norishio/',))
    c.db.commit();c.db.close()
    c=Collector(folder,100000)
-   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='www.kamedaseika.co.jp'").fetchone())
+   self.assertIsNone(c.db.execute("SELECT reason FROM host_state WHERE host='montoile.co.jp'").fetchone())
    self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],1)
    c.db.close()
 
@@ -104,7 +104,7 @@ class Extraction(unittest.TestCase):
   url='https://www.asahiinryo.co.jp/products/milkybeverage/calpis_the_rich/2E24T.html'
   maintenance='<html><h1>まことに申し訳ございません。ただいまメンテナンス中です。</h1><p>安全性が確認でき次第、順次再開を予定しています。</p></html>'
   self.assertTrue(is_temporary_maintenance(maintenance,url))
-  self.assertFalse(is_temporary_maintenance(maintenance,'https://www.kamedaseika.co.jp/product/123'))
+  self.assertFalse(is_temporary_maintenance(maintenance,'https://montoile.co.jp/products/ashitamo-okura-norishio/'))
   self.assertFalse(allowed_link(url))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
@@ -272,7 +272,7 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    bad='https://housefoods.jp/products/special/currymarche/arrangement/qa/product/index.html'
    kagome='https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/'
-   good='https://www.kamedaseika.co.jp/products/category/new/'
+   good='https://montoile.co.jp/products/category/new/'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(bad,),(kagome,),(good,)])
    c.db.commit()
    visited=[]
@@ -498,8 +498,8 @@ class Extraction(unittest.TestCase):
  def test_pending_product_url_outranks_old_navigation_backlog(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   navigation='https://www.kamedaseika.co.jp/products/'
-   product='https://www.kamedaseika.co.jp/product/123'
+   navigation='https://montoile.co.jp/products/'
+   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
    self.assertTrue(product_url(product))
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(product,)])
    c.db.commit()
@@ -516,7 +516,7 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    navigation='https://montoile.co.jp/product_category/snack/'
    sitemap='https://montoile.co.jp/sitemap.xml'
-   product='https://www.kamedaseika.co.jp/product/123'
+   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
    self.assertTrue(sitemap_url(sitemap))
    self.assertTrue(allowed_link(sitemap))
    self.assertFalse(sitemap_url('https://muso.co.jp.evil.example/sitemap.xml'))
@@ -537,9 +537,9 @@ class Extraction(unittest.TestCase):
  def test_discovered_product_is_prioritized_on_next_page(self):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   navigation='https://www.kamedaseika.co.jp/products/category/'
-   backlog='https://www.kamedaseika.co.jp/products/'
-   product='https://www.kamedaseika.co.jp/product/123'
+   navigation='https://montoile.co.jp/products/category/'
+   backlog='https://montoile.co.jp/products/'
+   product='https://montoile.co.jp/products/ashitamo-okura-norishio/'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(backlog,)])
    c.db.commit()
    visited=[]

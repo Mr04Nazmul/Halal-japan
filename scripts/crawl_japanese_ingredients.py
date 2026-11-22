@@ -12,7 +12,7 @@ from urllib.robotparser import RobotFileParser
 from bs4 import BeautifulSoup
 from japan_ingredient_policy import screen
 from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_text,has_unresolved_html_artifacts
-from japan_ingredient_source_terms import is_terms_restricted_url
+from japan_ingredient_source_terms import (is_terms_restricted_url, RESTRICTED_SOURCE_POLICIES, SOURCE_TERMS_POLICY_VERSION)
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
 EXTRACTOR_VERSION='official-fields-2026-11-22-v16-maruchan-product-catalogue'
@@ -81,6 +81,27 @@ LEGACY_NAVIGATION_QUARANTINE_SQL = """UPDATE queue SET status='done',error='out_
    OR url LIKE 'https://www.kagome.co.jp/products/%'
    OR url LIKE 'https://kagome.co.jp/products/%'
    OR url LIKE 'https://and.kagome.co.jp/%')"""
+
+SOURCE_TERMS_QUARANTINE_KEY = f"source_terms_quarantine_{SOURCE_TERMS_POLICY_VERSION}"
+
+def quarantine_restricted_pending_sources(db):
+ # A policy update can turn thousands of old queued URLs into non-collectable
+ # pages. Quarantine those queue entries in one indexed pass so they do not
+ # consume the hourly page budget. Keep every row and all accepted products.
+ if db.execute("SELECT 1 FROM metadata WHERE key=?", (SOURCE_TERMS_QUARANTINE_KEY,)).fetchone():
+  return 0
+ patterns=[];params=[]
+ for domain in RESTRICTED_SOURCE_POLICIES:
+  patterns.extend(["url GLOB ?", "url GLOB ?", "url GLOB ?", "url GLOB ?"])
+  params.extend([f"https://{domain}/*",f"https://*.{domain}/*",
+                 f"http://{domain}/*",f"http://*.{domain}/*"])
+ sql=("UPDATE queue SET status='done',error='source_terms_reuse_restricted' "
+      "WHERE status='pending' AND ("+" OR ".join(patterns)+")")
+ changed=db.execute(sql,params)
+ db.execute("INSERT OR REPLACE INTO metadata VALUES(?,?)",
+            (SOURCE_TERMS_QUARANTINE_KEY,"done"))
+ db.commit()
+ return changed.rowcount
 
 def is_temporary_maintenance(html,url):
  # Asahi's current security-maintenance page is not a product page.
@@ -437,6 +458,9 @@ class Collector:
    self.db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',(legacy_backlog_key,'done'))
    self.db.commit()
    print('Quarantined legacy out-of-scope marketing URLs:',quarantined.rowcount,flush=True)
+  terms_quarantined=quarantine_restricted_pending_sources(self.db)
+  if terms_quarantined:
+   print('Quarantined pending URLs blocked by source terms:',terms_quarantined,flush=True)
   # A 404 only means this URL is missing; it must not throttle every other
   # product page on the same official host. Clear legacy 404 host cooldowns.
   self.db.execute("DELETE FROM host_state WHERE reason='HTTPError:404'")
