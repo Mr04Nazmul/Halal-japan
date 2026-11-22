@@ -2,8 +2,8 @@
 """Convert public ingredient evidence into auditable candidates, never halal certification.
 
 JAN is populated only when a checksum-valid JAN-13 is explicitly labelled in
-the captured page evidence. Numeric product URLs and generic barcode candidates
-are not sufficient evidence of a product's JAN.
+captured page evidence or in the crawler's same-page explicit-label metadata.
+Numeric product URLs and generic barcode candidates are not sufficient evidence.
 """
 import csv
 import json
@@ -124,6 +124,13 @@ def extract_candidate_records(records, exported_at=None):
             continue
 
         jan_candidates = explicit_jan_codes(text)
+        # The browser crawler can capture a labelled JAN outside short ingredient
+        # snippets. Trust only its separate explicit-label field, never generic
+        # barcode_candidates.
+        for raw in record.get("jan_candidates", []) or []:
+            code = re.sub(r"\D", "", str(raw))
+            if len(code) == 13 and jan_valid(code) and code not in jan_candidates:
+                jan_candidates.append(code)
         jan_code = jan_candidates[0] if len(jan_candidates) == 1 else ""
         items.append(
             {

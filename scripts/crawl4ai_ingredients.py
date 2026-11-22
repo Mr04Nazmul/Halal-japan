@@ -16,6 +16,7 @@ MAX_URLS = min(max(int(os.getenv("CRAWL_MAX_URLS", "50")), 1), 250)
 AGENT = "JapanHalalCheckerResearchBot"
 PATTERN = re.compile(r"(原材料名|原材料|使用原材料|ingredients|アレルゲン|添加物)", re.I)
 BARCODE = re.compile(r"(?<!\d)(?:45|49)\d{11}(?!\d)")
+JAN_LABEL = re.compile(r"(?:JANコード|JAN\s*CODE|JANCODE|POSコード)\s*[:：|｜]?\s*((?:\d[\s-]?){7,12}\d)(?!\d)", re.I)
 robots_cache = {}
 
 def allowed(url):
@@ -81,6 +82,7 @@ async def main():
                             record={"source_url":url,"host":urlparse(url).hostname,"page_title":title,
                                     "evidence":evidence[:25],
                                     "barcode_candidates":list(dict.fromkeys(BARCODE.findall(md)))[:20],
+                                    "jan_candidates":list(dict.fromkeys(re.sub(r"\D", "", m.group(1)) for m in JAN_LABEL.finditer(md) if len(re.sub(r"\D", "", m.group(1))) == 13))[:10],
                                     "page_sha256":hashlib.sha256(md.encode()).hexdigest(),
                                     "verification":"needs_human_review","halal_certified":False}
                             with OUT.open("a", encoding="utf-8") as f:

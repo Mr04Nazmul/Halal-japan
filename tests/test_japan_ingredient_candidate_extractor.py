@@ -44,6 +44,28 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
         self.assertEqual("4903065061206", rows[0]["jan_code"])
         self.assertEqual('[\"4903065061206\"]', rows[0]["jan_code_candidates"])
 
+    def test_crawler_explicit_jan_metadata_is_used_when_snippet_omits_jan(self):
+        record = self.record(
+            "https://www.yamaki.co.jp/catalog/products/index.php?id=86",
+            ["原材料名 食塩（国内製造）、ぶどう糖、風味原料（かつおぶし粉末）"],
+        )
+        record["jan_candidates"] = ["4903065061206"]
+        # Generic barcode_candidates remain intentionally ignored.
+        record["barcode_candidates"] = ["4903065061206"]
+        rows = extract_candidate_records([record], exported_at="2026-11-22T00:00:00Z")
+        self.assertEqual("4903065061206", rows[0]["jan_code"])
+        self.assertEqual('["4903065061206"]', rows[0]["jan_code_candidates"])
+
+    def test_invalid_crawler_jan_metadata_is_ignored(self):
+        record = self.record(
+            "https://www.yamaki.co.jp/catalog/products/index.php?id=86",
+            ["原材料名 食塩（国内製造）、ぶどう糖、風味原料（かつおぶし粉末）"],
+        )
+        record["jan_candidates"] = ["4903065061207"]
+        rows = extract_candidate_records([record], exported_at="2026-11-22T00:00:00Z")
+        self.assertEqual("", rows[0]["jan_code"])
+        self.assertEqual("[]", rows[0]["jan_code_candidates"])
+
     def test_multiple_explicit_jans_are_not_guessed(self):
         record = self.record(
             "https://www.yamaki.co.jp/catalog/products/index.php?id=86",
