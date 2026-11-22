@@ -34,7 +34,8 @@ LEM_HTML = f"""
 class SokenshaReleaseExtraction(unittest.TestCase):
     def test_release_is_allowed_and_extracts_two_separate_products(self):
         self.assertTrue(product_url(RELEASE_URL))
-        self.assertTrue(allowed_link(RELEASE_URL))
+        # Offline extraction fixtures remain useful, but live collection is paused until reuse permission is established.
+        self.assertFalse(allowed_link(RELEASE_URL))
 
         records, error = extract_many(RELEASE_HTML, RELEASE_URL)
 
@@ -79,7 +80,7 @@ class SokenshaReleaseExtraction(unittest.TestCase):
 
     def test_sokensha_product_detail_accepts_explicit_pos_code_and_label(self):
         self.assertTrue(product_url(LEM_URL))
-        self.assertTrue(allowed_link(LEM_URL))
+        self.assertFalse(allowed_link(LEM_URL))
         record, error = extract(LEM_HTML, LEM_URL)
         self.assertIsNone(error)
         self.assertEqual(record["jan"], "4901735026180")
