@@ -62,7 +62,6 @@ SOURCES={
  'kirin.co.jp':r'/softdrink/softdrink/detail\.html\?id=\d+$',
  'marukome.co.jp':r'/product/detail/[a-z0-9]+_\d+[a-z]?/?$',
  'maruchan.co.jp':r'/products/search/[^/]+\.html$',
- 'maruchan.co.jp':r'/products/search/[^/]+\.html$',
  'sanko-seika.co.jp':r'/product/item/\d+/?$',
  'yamaki.co.jp':r'/catalog/products/(?:index\.php)?\?id=\d+$',
  'nichireifoods.co.jp':r'/product/detail/sho_id\d+/?$',
