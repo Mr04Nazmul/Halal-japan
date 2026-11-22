@@ -795,3 +795,19 @@ class UhaSourceTests(unittest.TestCase):
 
 
 if __name__=='__main__':unittest.main()
+
+class FujiccoExtraction(unittest.TestCase):
+ def test_fujicco_labelled_h2_uses_adjacent_ingredient_paragraph_only(self):
+  url='https://www.fujicco.co.jp/products/detail/20252465.html'
+  ingredients='生乳、乳製品、（一部に乳成分を含む）'
+  html=f'''<html><h1>カスピ海ヨーグルト　リッチモ　プレーン　900g</h1>
+  <section><div class="heading2"><div><h2>原材料名</h2></div></div>
+  <p class="text">{ingredients}</p>
+  <h3>原材料の産地情報</h3><p>国産（生乳）</p></section></html>'''
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'カスピ海ヨーグルト　リッチモ　プレーン　900g')
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertIsNone(record['jan'])
+  self.assertFalse(record['halal_certified'])
+  self.assertTrue(product_url(url))
