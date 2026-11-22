@@ -25,7 +25,7 @@ class Extraction(unittest.TestCase):
     (blocked,'done',1,0,'robots_disallowed'),
     (accepted,'done',1,0,'missing_or_ambiguous_ingredients')])
    c.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',
-    ('existing:muso','existing',json.dumps({'source_url':accepted})))
+    ('existing:muso','existing',json.dumps({'source_url':accepted,'jan':None,'rule_result':'UNKNOWN'})))
    c.db.commit()
    c.permitted=lambda u:True
    c.request=lambda u:HTML
