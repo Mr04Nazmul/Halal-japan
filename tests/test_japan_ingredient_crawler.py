@@ -394,7 +394,7 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   url='https://www.nissin.com/jp/product/items/11309/'
   self.assertTrue(product_url(url))
-  self.assertTrue(allowed_link(url))
+  self.assertFalse(allowed_link(url))
   self.assertFalse(product_url('https://www.nissin.com.evil.example/jp/product/items/11309/'))
   html='''<title>0秒チキンラーメン | 日清食品グループ</title>
   <h1> </h1><h1>0秒チキンラーメン</h1>
