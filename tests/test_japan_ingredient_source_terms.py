@@ -54,6 +54,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
         blocked = [
             "https://agf.ajinomoto.co.jp/product/detail/14113",
             "https://www.asahiinryo.co.jp/products/carbonated/wilkinson_tansan_fruity_muscat/2T532.html",
+            "https://www.fujicco.co.jp/products/detail/123",
+            "https://www.myojofoods.co.jp/products/items/13987",
+            "https://www.natori.co.jp/products_search/squid/item_546",
+            "https://www.nissin.com/jp/product/items/11309/",
+            "https://www.sbfoods.co.jp/products/detail/123.html",
             "https://www.maruchan.co.jp/products/search/310686.html",
             "https://www.meiji.co.jp/products/drink/4902705133150.html",
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890",
