@@ -18,9 +18,9 @@ class NatoriOfficialCatalogueTests(unittest.TestCase):
     def test_only_supported_natori_product_urls_are_products(self):
         self.assertEqual(source(self.PRODUCT), "natori.co.jp")
         self.assertTrue(product_url(self.PRODUCT))
-        self.assertTrue(allowed_link(self.PRODUCT))
-        self.assertTrue(allowed_link("https://www.natori.co.jp/products.html"))
-        self.assertTrue(allowed_link(self.SEARCH))
+        self.assertFalse(allowed_link(self.PRODUCT))
+        self.assertFalse(allowed_link("https://www.natori.co.jp/products.html"))
+        self.assertFalse(allowed_link(self.SEARCH))
         self.assertFalse(product_url(self.SEARCH))
         self.assertFalse(allowed_link("https://www.natori.co.jp/company/"))
 
@@ -52,20 +52,23 @@ class NatoriOfficialCatalogueTests(unittest.TestCase):
         self.assertIsNone(record)
         self.assertEqual(reason, "missing_or_ambiguous_ingredients")
 
-    def test_new_natori_product_seed_precedes_navigation(self):
+    def test_restricted_natori_product_seed_is_not_queued(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
             collector.permitted = lambda url: True
-            collector.request = lambda url: (
-                "<html><h1>ソフトいか燻製</h1>"
-                "<h3>原材料名</h3><p>いか、食塩</p></html>"
+            requested = []
+            collector.request = lambda url: requested.append(url) or (
+                "<html><h1>ソフトいか燻製</h1><h3>原材料名</h3><p>いか、食塩</p></html>"
             )
             collector.run(["https://www.natori.co.jp/products.html", self.PRODUCT],
                           max_pages=1, minutes=1)
-            observed = collector.db.execute(
-                "SELECT url,reason FROM observations ORDER BY rowid LIMIT 1"
-            ).fetchone()
-            self.assertEqual(observed, (self.PRODUCT, "accepted_new_product"))
+            self.assertEqual(requested, [])
+            self.assertEqual(collector.count(), 0)
+            self.assertEqual(collector.db.execute(
+                "SELECT count(*) FROM queue WHERE url IN (?,?)",
+                ("https://www.natori.co.jp/products.html", self.PRODUCT),
+            ).fetchone()[0], 0)
+            collector.db.close()
 
 
     def test_live_natori_nested_div_label_extracts_exact_declaration(self):
