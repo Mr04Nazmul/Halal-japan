@@ -51,7 +51,7 @@ class IngredientDiscoveryTests(unittest.TestCase):
 
     def test_inline_labeled_declaration_is_candidate(self):
         html = "<html><h1>商品</h1><p>原材料名：小麦粉、砂糖、植物油脂</p></html>"
-        url = "https://www.nagatanien.co.jp/product/detail/1220/"
+        url = "https://www.yamaki.co.jp/catalog/products/index.php?id=86"
         self.assertTrue(is_ingredient_product_candidate(url, html))
 
     def test_7premium_disclaimer_is_not_ingredient_evidence(self):
@@ -93,16 +93,16 @@ class IngredientDiscoveryTests(unittest.TestCase):
             with self.subTest(url=url):
                 self.assertTrue(is_product_detail_url(url))
 
-    def test_nagatanien_product_detail_with_labelled_ingredients_is_candidate(self):
+    def test_nagatanien_product_detail_is_skipped_until_reuse_permission(self):
         html = """
         <html><h1>抹茶スープ白味噌仕立て</h1>
         <dl><dt>原材料名</dt><dd>調味粉、米みそ、砂糖、抹茶、食塩</dd></dl>
         </html>
         """
         url = "https://www.nagatanien.co.jp/product/detail/1220/"
-        self.assertTrue(is_allowed_source_url(url))
+        self.assertFalse(is_allowed_source_url(url))
         self.assertTrue(is_product_detail_url(url))
-        self.assertTrue(is_ingredient_product_candidate(url, html))
+        self.assertFalse(is_ingredient_product_candidate(url, html))
 
     def test_restricted_source_is_skipped_even_with_complete_ingredients(self):
         html = "<html><h1>黄金の味</h1><p>原材料名：りんご、醤油、砂糖、食塩</p></html>"

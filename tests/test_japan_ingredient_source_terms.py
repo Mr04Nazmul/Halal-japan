@@ -14,7 +14,7 @@ from crawl_japanese_ingredients import (allowed_link, product_url, Collector, SO
 
 
 class SourceTermsPolicyTests(unittest.TestCase):
-    def test_explicitly_restricted_publishers_are_withheld(self):
+    def test_reviewed_reuse_blocks_are_withheld(self):
         examples = {
             "https://agf.ajinomoto.co.jp/product/detail/14113": "agf.ajinomoto.co.jp",
             "https://www.ajinomoto.co.jp/products/": "ajinomoto.co.jp",
@@ -34,6 +34,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.meiji.co.jp/products/drink/4902705133150.html": "meiji.co.jp",
             "https://www.meito-abc.co.jp/products/lineup/new": "meito-abc.co.jp",
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890": "morinaga.co.jp",
+            "https://www.nagatanien.co.jp/product/detail/1223/": "nagatanien.co.jp",
             "https://muso.co.jp/item/75025.html": "muso.co.jp",
             "https://www.nipponham.co.jp/products/processed_foods/bread_pizza/24216/": "nipponham.co.jp",
             "https://www.tohato.jp/products/caramelcorn/": "tohato.jp",
@@ -54,6 +55,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.kewpie.co.jp/products/detail/4901577004865/": "kewpie.co.jp",
             "https://www.meg-snow.com/products/": "meg-snow.com",
             "https://www.yotsuba.co.jp/products/": "yotsuba.co.jp",
+            "https://www.nagatanien.co.jp/product/detail/1223/": "nagatanien.co.jp",
         }
         for url, domain in examples.items():
             with self.subTest(url=url):
@@ -74,11 +76,10 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 self.assertFalse(product_url(url))
                 self.assertFalse(is_terms_restricted_url(url))
 
-    def test_unreviewed_sources_are_not_mislabeled_as_explicitly_restricted(self):
+    def test_unreviewed_sources_are_not_mislabeled_as_blocked(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
         self.assertFalse(is_terms_restricted_url("https://montoile.co.jp/products/example/"))
         self.assertFalse(is_terms_restricted_url("https://www.kyoritsu-foods.co.jp/product/page/7/"))
-        self.assertFalse(is_terms_restricted_url("https://www.nagatanien.co.jp/product/"))
 
     def test_main_crawler_does_not_enqueue_restricted_current_source_pages(self):
         blocked = [
@@ -120,7 +121,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             with self.subTest(url=url):
                 self.assertFalse(allowed_link(url))
 
-    def test_policy_contains_only_reviewed_explicit_restrictions(self):
+    def test_policy_contains_only_reviewed_reuse_blocks(self):
         self.assertEqual(
             set(RESTRICTED_SOURCE_POLICIES),
             {
@@ -142,6 +143,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "meiji.co.jp",
                 "meito-abc.co.jp",
                 "morinaga.co.jp",
+                "nagatanien.co.jp",
                 "muso.co.jp",
                 "nipponham.co.jp",
                 "tohato.jp",
@@ -166,11 +168,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
         )
 
 
-    def test_restricted_pending_queue_is_quarantined_once_without_deleting_rows(self):
+    def test_blocked_pending_queue_is_quarantined_once_without_deleting_rows(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
             collector.db.execute("DELETE FROM metadata WHERE key=?", (SOURCE_TERMS_QUARANTINE_KEY,))
-            blocked = "https://www.kamedaseika.co.jp/product/2068/"
+            blocked = "https://www.nagatanien.co.jp/product/detail/1223/"
             allowed = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
             collector.db.executemany("INSERT OR IGNORE INTO queue(url) VALUES(?)",
                                      [(blocked,), (allowed,)])
