@@ -27,8 +27,6 @@ jobs:
             workflow: collect-japan-food.yml
           - task: Japan product lead discovery
             workflow: collect-japan-products.yml
-          - task: Apify official manufacturer research
-            workflow: apify-japanese-food-research.yml
     runs-on: ubuntu-latest
     timeout-minutes: 8
     env:
