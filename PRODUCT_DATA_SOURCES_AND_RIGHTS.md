@@ -1,6 +1,6 @@
 # Japan Halal Checker — licensed product-data expansion
 
-Reviewed: 2026-10-14.
+Reviewed: 2026-11-23.
 
 ## Competitor data availability
 - Halal Japan by NOLIMIT INTERNATIONAL: https://play.google.com/store/apps/details?id=com.conceptuale.productivity.halaljapan
@@ -24,3 +24,13 @@ Reviewed: 2026-10-14.
 - Each batch must report attempted, accepted, duplicates, rejected, published, and ingredient-verified counts separately.
 
 Status: research/licensing plan only. No competitor records have been copied, and no new product records were imported in this commit.
+
+
+## Additional source-policy review — 2026-11-23
+- Kato Sangyo: its site policy limits reproduction to private use and restricts other copying, uploading, publication, or reuse without authorization. Automated collection is blocked pending permission.
+- Ohyama Foods: its online-shop terms section 10 states that website text and images belong to the company and unauthorized reprinting/use is prohibited. Automated collection is blocked pending permission.
+- Kurakon: product pages carry a company copyright notice; no compatible licence or bulk ingredient-data reuse permission is established. Automated collection is blocked pending permission.
+- These restrictions affect future collection only. Existing Supabase rows are not deleted or modified.
+
+## Source-discovery workflow status
+The former Agent Reach scheduled job did not have a configured search provider and was fetching an unrelated third-party halal-guide site. That access and the hourly schedule have been removed. The status workflow is manual/on-change only and reports zero candidates until an approved search provider is configured. The main Japanese ingredient crawler remains scheduled and continues to enforce its source registry, robots checks, source-terms restrictions, and deduplication.
