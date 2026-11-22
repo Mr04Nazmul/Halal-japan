@@ -389,12 +389,12 @@ class Extraction(unittest.TestCase):
   self.assertTrue(product_url('https://www.yamaki.co.jp/catalog/products/index.php?id=327'))
   self.assertTrue(allowed_link('https://www.yamaki.co.jp/catalog/products/index.php?id=327'))
 
- def test_pokka_sapporo_official_product_and_catalog(self):
+ def test_pokka_sapporo_parser_remains_offline_while_reuse_is_restricted(self):
   from crawl_japanese_ingredients import allowed_link
   url='https://www.pokkasapporo-fb.jp/products/water/water/WW50.html'
   self.assertTrue(product_url(url))
-  self.assertTrue(allowed_link(url))
-  self.assertTrue(allowed_link('https://www.pokkasapporo-fb.jp/products/new.html'))
+  self.assertFalse(allowed_link(url))
+  self.assertFalse(allowed_link('https://www.pokkasapporo-fb.jp/products/new.html'))
   self.assertFalse(product_url('https://www.pokkasapporo-fb.jp/products/new.html'))
   self.assertFalse(product_url('https://www.pokkasapporo-fb.jp.evil.example/products/water/water/WW50.html'))
   html='<h1>Green Pack Water（195g）</h1><table><tr><th>JANコード</th><td>4902471103814</td></tr><tr><th>原材料</th><td>水（純水）</td></tr></table>'
@@ -888,14 +888,15 @@ class UhaSourceTests(unittest.TestCase):
   self.assertEqual(record['ingredient_field_status'],'complete_displayed_field')
   self.assertFalse(record['halal_certified'])
 
- def test_uha_gummy_catalogue_root_refreshes_without_treating_it_as_a_product(self):
+ def test_uha_gummy_catalogue_is_quarantined_pending_reuse_permission(self):
   from crawl_japanese_ingredients import allowed_link
   root='https://www.uha-mikakuto.co.jp/catalog/gummy'
   detail='https://www.uha-mikakuto.co.jp/catalog/gummy/gu273.html'
   index='https://www.uha-mikakuto.co.jp/catalog/gummy/index.html'
-  self.assertTrue(allowed_link(root))
+  self.assertFalse(allowed_link(root))
   self.assertFalse(product_url(root))
   self.assertTrue(product_url(detail))
+  self.assertFalse(allowed_link(detail))
   self.assertFalse(allowed_link(index))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
@@ -904,8 +905,8 @@ class UhaSourceTests(unittest.TestCase):
    c.db.commit()
    c.run([root,detail],max_pages=0,minutes=0)
    states=dict(c.db.execute("SELECT url,status FROM queue"))
-   self.assertEqual(states[canonical(root)],'pending')
-   self.assertEqual(states[canonical(detail)],'done')
+   self.assertNotIn(canonical(root),states)
+   self.assertNotIn(canonical(detail),states)
    c.db.close()
 
 
