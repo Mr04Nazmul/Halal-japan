@@ -41,7 +41,7 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             collector = Collector(directory, 100)
             collector.permitted = lambda url: True
             collector.request = lambda url: "<html><body><h1>Product catalogue</h1></body></html>"
-            collector.run(["https://montoile.co.jp/products/"], max_pages=1, minutes=1)
+            collector.run(["https://www.kyoritsu-foods.co.jp/product/page/7/"], max_pages=1, minutes=1)
             summary = json.loads((Path(directory) / "summary.json").read_text())
             self.assertEqual(summary["current_run"]["pages_processed"], 1)
             self.assertEqual(summary["current_run"]["new_accepted"], 0)
@@ -53,8 +53,8 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
         # A large seed list must never starve unprocessed official product pages.
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
-            product = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
-            catalogue = "https://montoile.co.jp/products/"
+            product = "https://www.yamaki.co.jp/catalog/products/index.php?id=86"
+            catalogue = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             collector.enqueue([product])
             collector.permitted = lambda url: True
             collector.request = lambda url: (
@@ -73,8 +73,8 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
             urls = [
-                "https://montoile.co.jp/products/",
-                "https://montoile.co.jp/products/category/",
+                "https://www.kyoritsu-foods.co.jp/product/page/7/",
+                "https://www.kyoritsu-foods.co.jp/product/page/8/",
                 "https://www.yamaki.co.jp/catalog/products/",
                 "https://www.yamaki.co.jp/catalog/products/index.php",
             ]
@@ -95,11 +95,11 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
     def test_host_cooldown_explains_zero_yield_without_network(self):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
-            product = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
+            product = "https://www.yamaki.co.jp/catalog/products/index.php?id=86"
             collector.enqueue([product])
             collector.db.execute(
                 "INSERT INTO host_state(host,next_try,reason) VALUES(?,?,?)",
-                ("montoile.co.jp", time.time() + 3600, "HTTPError:503"),
+                ("www.yamaki.co.jp", time.time() + 3600, "HTTPError:503"),
             )
             collector.db.commit()
             collector.run([], max_pages=1, minutes=1)
@@ -109,7 +109,7 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
                              "no_eligible_pending_urls")
             self.assertEqual(summary["current_run"]["pages_processed"], 0)
             self.assertEqual(summary["current_run"]["active_host_cooldowns"][0]["host"],
-                             "montoile.co.jp")
+                             "www.yamaki.co.jp")
 
     def test_page_budget_stop_reason(self):
         with tempfile.TemporaryDirectory() as directory:
