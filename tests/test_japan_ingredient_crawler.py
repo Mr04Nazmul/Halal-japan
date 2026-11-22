@@ -276,27 +276,29 @@ class Extraction(unittest.TestCase):
   self.assertFalse(allowed_link(recursive))
   self.assertFalse(allowed_link('https://www.kagome.co.jp/products/brand/ys100/chisan/farmer/10/'))
   self.assertFalse(allowed_link('https://housefoods.jp/products/catalog/cd_1%2C083967%2Cspice%2Cyoufu%2Chouse_s.html'))
-  self.assertTrue(allowed_link('https://www.kagome.co.jp/foodservice/frozen/5615/'))
+  self.assertFalse(allowed_link('https://www.kagome.co.jp/foodservice/frozen/5615/'))
+  self.assertFalse(allowed_link('https://and.kagome.co.jp/products/feature/'))
 
- def test_skip_kagome_marketing_backlog_without_deleting_queue(self):
+ def test_kagome_restricted_source_is_quarantined_without_deleting_queue(self):
   from crawl_japanese_ingredients import allowed_link
-  marketing=['https://www.kagome.co.jp/products/vegetablejuice/brand/',
-             'https://and.kagome.co.jp/products/feature/']
-  product='https://www.kagome.co.jp/foodservice/frozen/5615/'
-  self.assertTrue(allowed_link(product))
-  for url in marketing:self.assertFalse(allowed_link(url))
+  blocked=['https://www.kagome.co.jp/products/vegetablejuice/brand/',
+           'https://and.kagome.co.jp/products/feature/',
+           'https://www.kagome.co.jp/foodservice/frozen/5615/']
+  self.assertTrue(all(not allowed_link(url) for url in blocked))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
    good='https://www.yamaki.co.jp/catalog/products/category/'
-   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in marketing+[good]])
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in blocked+[good]])
    c.db.commit()
    visited=[]
    c.permitted=lambda u:True
    c.request=lambda u:(visited.append(u) or '<h1>Catalog</h1>')
    c.run([],max_pages=1,minutes=1)
    self.assertEqual(visited,[good])
-   for url in marketing:
-    self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'pending')
+   for url in blocked:
+    self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
+                     ('done','source_terms_reuse_restricted'))
+   self.assertEqual(c.db.execute("SELECT count(*) FROM queue").fetchone()[0],4)
    c.db.close()
 
  def test_skip_legacy_marketing_backlog_without_deleting_queue(self):
@@ -313,7 +315,8 @@ class Extraction(unittest.TestCase):
    c.run([],max_pages=1,minutes=1)
    self.assertEqual(visited,[good])
    self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(bad,)).fetchone()[0],'pending')
-   self.assertEqual(c.db.execute("SELECT status FROM queue WHERE url=?",(kagome,)).fetchone()[0],'pending')
+   self.assertEqual(c.db.execute("SELECT status,error FROM queue WHERE url=?",(kagome,)).fetchone(),
+                    ('done','source_terms_reuse_restricted'))
    c.db.close()
 
  def test_quarantines_legacy_marketing_backlog_without_deleting_rows(self):
@@ -339,9 +342,11 @@ class Extraction(unittest.TestCase):
    self.assertTrue(any('queue_status_next_try_idx' in item for item in plan),plan)
    self.assertFalse(any('CORRELATED SCALAR SUBQUERY' in item for item in plan),plan)
    self.assertEqual(c.db.execute("SELECT count(*) FROM products WHERE id='legacy-navigation-product'").fetchone()[0],1)
-   for url in urls[:3]:
+   self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(urls[0],)).fetchone(),
+                    ('done','out_of_scope_navigation'))
+   for url in urls[1:3]:
     self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
-                     ('done','out_of_scope_navigation'))
+                     ('done','source_terms_reuse_restricted'))
    self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(urls[3],)).fetchone(),
                     ('done','source_terms_reuse_restricted'))
    self.assertEqual(c.db.execute('SELECT count(*) FROM queue').fetchone()[0],4)
@@ -641,7 +646,8 @@ class Extraction(unittest.TestCase):
   url='https://www.kagome.co.jp/foodservice/frozen/5615/'
   self.assertTrue(product_url(url))
   self.assertTrue(product_url('https://www.kagome.co.jp/foodservice/dry/3526/'))
-  self.assertTrue(allowed_link('https://www.kagome.co.jp/foodservice/'))
+  self.assertFalse(allowed_link(url))
+  self.assertFalse(allowed_link('https://www.kagome.co.jp/foodservice/'))
   self.assertFalse(product_url('https://www.kagome.co.jp.evil.example/foodservice/frozen/5615/'))
   self.assertFalse(product_url('https://www.kagome.co.jp/foodservice/frozen/'))
   html='''<h1>赤・黄ピーマングリルのミックス</h1><dl>
