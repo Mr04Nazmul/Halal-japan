@@ -4,9 +4,14 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v13"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v14"
 
 RESTRICTED_SOURCE_POLICIES = {
+    "sokensha.co.jp": {
+        "policy_url": "https://sokensha.co.jp/",
+        "reason": "Sokensha corporate pages display a copyright notice; no compatible licence or bulk ingredient-data reuse permission is established, so automated collection/import is paused pending rights-holder clarification.",
+        "reviewed_on": "2026-11-23",
+    },
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
     "agf.ajinomoto.co.jp": {
         "policy_url": "https://agf.ajinomoto.co.jp/website.html",
