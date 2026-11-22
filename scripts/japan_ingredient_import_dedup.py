@@ -9,6 +9,7 @@ import re
 import urllib.error
 import urllib.request
 from urllib.parse import urlsplit
+from japan_ingredient_barcodes import jan_valid
 
 
 def filter_existing_jan_conflicts(rows, base_url, key, opener=None):
@@ -60,12 +61,12 @@ def filter_existing_jan_conflicts(rows, base_url, key, opener=None):
 
 
 def filter_existing_source_conflicts(rows, base_url, key, opener=None):
-    """Skip new identities whose source URL already belongs to another row.
+    """Deduplicate source URLs without collapsing distinct JAN-coded products.
 
-    Read the existing staging identity/source index in bounded, ordered pages.
-    The old 100-key PostgREST 'in' queries produced oversized URLs and could
-    fail before import. This also avoids one HTTP request per new source URL.
-    Any lookup error or malformed page fails closed without writing rows.
+    One official release page can contain multiple products. Share a source URL
+    only when every competing row has a different, checksum-valid JAN. A
+    JAN-less row, an identical JAN, or an existing URL owner without a valid
+    JAN remains a collision. Existing records are never modified.
     """
     opener = opener or urllib.request.urlopen
     headers = {"apikey": key, "Authorization": "Bearer " + key}
@@ -75,8 +76,12 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
     formula_owners = {}
     page_size = 1000
     offset = 0
+
+    def valid_jan(value):
+        return isinstance(value, str) and jan_valid(value)
+
     while True:
-        endpoint = (base + "?select=identity_key,source_url,product_name,ingredients_ja"
+        endpoint = (base + "?select=identity_key,source_url,product_name,ingredients_ja,jan_code"
                     "&order=identity_key.asc&limit=" + str(page_size)
                     + "&offset=" + str(offset))
         req = urllib.request.Request(endpoint, headers=headers)
@@ -92,15 +97,20 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
                     or not isinstance(item.get("identity_key"), str)
                     or not item["identity_key"]
                     or (item.get("source_url") is not None
-                        and not isinstance(item["source_url"], str))):
+                        and not isinstance(item["source_url"], str))
+                    or (item.get("jan_code") is not None
+                        and not isinstance(item.get("jan_code"), str))):
                 raise RuntimeError("Source dedup staging index returned malformed row")
             ident = item["identity_key"]
             if ident in existing:
                 raise RuntimeError("Source dedup staging index contains duplicate identity")
             source = item.get("source_url")
             existing[ident] = source
+            owner_jan = item.get("jan_code")
+            if not valid_jan(owner_jan):
+                owner_jan = None
             if source:
-                source_owners.setdefault(source, set()).add(ident)
+                source_owners.setdefault(source, {})[ident] = owner_jan
             # JAN-less crawls can rediscover the same formula under a different
             # manufacturer product-page URL. Do not count those as new foods.
             name = item.get("product_name")
@@ -115,21 +125,21 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
         offset += page_size
 
     # A JAN-less page and a JAN-backed page can describe the identical
-    # manufacturer formula under different URLs in the SAME checkpoint.
-    # Prefer the JAN-backed identity regardless of input order. Distinct
-    # valid JANs remain separate package identities.
+    # manufacturer formula in the same checkpoint. Prefer the JAN-backed row.
     batch_jan_formulas = set()
+    batch_source_rows = {}
     for row in rows:
-        src, name, ingredients = (row.get("source_url"), row.get("product_name"),
-                                  row.get("ingredients_ja"))
-        if (row.get("jan_code") and isinstance(src, str)
+        src = row.get("source_url")
+        if isinstance(src, str):
+            batch_source_rows.setdefault(src, []).append(row)
+        name, ingredients = row.get("product_name"), row.get("ingredients_ja")
+        if (valid_jan(row.get("jan_code")) and isinstance(src, str)
                 and isinstance(name, str) and name.strip()
                 and isinstance(ingredients, str) and ingredients.strip()):
             batch_jan_formulas.add((urlsplit(src).hostname,
                                     re.sub(r"\s+", "", name), ingredients.strip()))
 
     safe, conflicts = [], []
-    seen_sources = {}
     seen_formulas = {}
     for row in rows:
         ident = row["identity_key"]
@@ -139,15 +149,39 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
             continue
         if not isinstance(source, str) or not source.startswith("https://"):
             raise RuntimeError("Source dedup requires a valid HTTPS source URL")
-        if source in seen_sources and seen_sources[source] != ident:
-            conflicts.append({"identity_key": ident, "source_url": source, "reason": "same-batch URL"})
+
+        candidate_jan = row.get("jan_code")
+        candidate_has_jan = valid_jan(candidate_jan)
+
+        existing_owners = [(owner, owner_jan)
+                           for owner, owner_jan in source_owners.get(source, {}).items()
+                           if owner != ident]
+        if existing_owners and not (
+                candidate_has_jan
+                and all(valid_jan(owner_jan) and owner_jan != candidate_jan
+                        for _, owner_jan in existing_owners)):
+            conflicts.append({"identity_key": ident, "source_url": source,
+                              "reason": "existing URL"})
             continue
-        if any(owner != ident for owner in source_owners.get(source, ())):
-            conflicts.append({"identity_key": ident, "source_url": source, "reason": "existing URL"})
-            continue
+
+        same_batch = [other for other in batch_source_rows.get(source, ())
+                      if other.get("identity_key") != ident]
+        if same_batch:
+            if not candidate_has_jan:
+                conflicts.append({"identity_key": ident, "source_url": source,
+                                  "reason": "same-batch URL"})
+                continue
+            if any(valid_jan(other.get("jan_code"))
+                   and other.get("jan_code") == candidate_jan for other in same_batch):
+                conflicts.append({"identity_key": ident, "source_url": source,
+                                  "reason": "same-batch URL same JAN"})
+                continue
+            # Distinct valid JANs may share a multi-product manufacturer page.
+            # A competing JAN-less row is rejected when it is processed.
+
         # Only JAN-less/name identities are ambiguous: different valid JANs
         # may legitimately represent different package sizes or variants.
-        if not row.get("jan_code") and not ident.startswith("jan:"):
+        if not candidate_has_jan:
             name = row.get("product_name")
             ingredients = row.get("ingredients_ja")
             if isinstance(name, str) and name.strip() and isinstance(ingredients, str) and ingredients.strip():
@@ -166,10 +200,8 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
                                       "reason": "same-batch same-name same-ingredients"})
                     continue
                 seen_formulas[formula] = ident
-        seen_sources[source] = ident
         safe.append(row)
     return safe, conflicts
-
 
 def exceeds_invalid_rejection_limit(total_candidates, invalid_rejections):
     """Fail closed for malformed input, but do not treat safe dedup skips as invalid.

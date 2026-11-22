@@ -75,31 +75,80 @@ class SourceUrlCollisionTests(unittest.TestCase):
         calls = []
         def opener(req, timeout):
             calls.append(req.full_url)
-            self.assertIn("select=identity_key,source_url", req.full_url)
+            self.assertIn("select=identity_key,source_url,product_name,ingredients_ja,jan_code", req.full_url)
             self.assertNotIn("identity_key=in.", req.full_url)
-            return io.BytesIO(b'[{"identity_key":"url:existing-meiji","source_url":"https://www.meiji.co.jp/products/yogurt/4902705133099.html"}]')
+            return io.BytesIO(b'[{"identity_key":"url:existing-meiji","source_url":"https://www.meiji.co.jp/products/yogurt/4902705133099.html","jan_code":null}]')
         safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
         self.assertEqual(safe, [])
         self.assertEqual(len(conflicts), 1)
         self.assertEqual(len(calls), 1)
 
     def test_existing_identity_is_idempotent(self):
-        row = {"identity_key": "jan:123", "source_url": "https://example.org/a"}
+        row = {"identity_key": "jan:123", "jan_code": None, "source_url": "https://example.org/a"}
         def opener(req, timeout):
-            return io.BytesIO(b'[{"identity_key":"jan:123","source_url":"https://example.org/a"}]')
+            return io.BytesIO(b'[{"identity_key":"jan:123","jan_code":null,"source_url":"https://example.org/a"}]')
         self.assertEqual(filter_existing_source_conflicts([row], "https://example", "test", opener),
                          ([row], []))
 
-    def test_same_batch_duplicate_url_is_skipped(self):
+    def test_same_batch_duplicate_url_prefers_jan_backed_row(self):
         rows = [
-            {"identity_key": "url:a", "source_url": "https://example.org/product"},
-            {"identity_key": "jan:123", "source_url": "https://example.org/product"},
+            {"identity_key": "url:a", "jan_code": None, "source_url": "https://example.org/product"},
+            {"identity_key": "jan:4901735026081", "jan_code": "4901735026081",
+             "source_url": "https://example.org/product"},
         ]
         def opener(req, timeout):
             return io.BytesIO(b"[]")
         safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
-        self.assertEqual(len(safe), 1)
+        self.assertEqual(safe, [rows[1]])
         self.assertEqual(len(conflicts), 1)
+        self.assertEqual(conflicts[0]["identity_key"], "url:a")
+
+    def test_same_batch_multi_product_url_allows_distinct_jans(self):
+        source = "https://sokensha.co.jp/news/2026/13262/"
+        rows = [
+            {"identity_key": "jan:4901735026081", "jan_code": "4901735026081",
+             "product_name": "海のめぐみのもっちりキャンディー 塩レモン味",
+             "ingredients_ja": "水飴、砂糖、レモン果汁パウダー、澱粉／香料",
+             "source_url": source},
+            {"identity_key": "jan:4901735026173", "jan_code": "4901735026173",
+             "product_name": "海のめぐみのもっちりキャンディー いちご味",
+             "ingredients_ja": "水飴、砂糖、いちご果汁パウダー、澱粉／香料",
+             "source_url": source},
+        ]
+        def opener(req, timeout):
+            return io.BytesIO(b"[]")
+        safe, conflicts = filter_existing_source_conflicts(rows, "https://example", "test", opener)
+        self.assertEqual(safe, rows)
+        self.assertEqual(conflicts, [])
+
+    def test_existing_multi_product_url_allows_a_distinct_jan(self):
+        source = "https://sokensha.co.jp/news/2026/13262/"
+        row = {"identity_key": "jan:4901735026173", "jan_code": "4901735026173",
+               "product_name": "海のめぐみのもっちりキャンディー いちご味",
+               "ingredients_ja": "水飴、砂糖、いちご果汁パウダー、澱粉／香料",
+               "source_url": source}
+        def opener(req, timeout):
+            self.assertIn("jan_code", req.full_url)
+            return io.BytesIO(json.dumps([{
+                "identity_key": "jan:4901735026081", "jan_code": "4901735026081",
+                "source_url": source, "product_name": "海のめぐみのもっちりキャンディー 塩レモン味",
+                "ingredients_ja": "水飴、砂糖、レモン果汁パウダー、澱粉／香料"
+            }], ensure_ascii=False).encode())
+        safe, conflicts = filter_existing_source_conflicts([row], "https://example", "test", opener)
+        self.assertEqual(safe, [row])
+        self.assertEqual(conflicts, [])
+
+    def test_existing_url_without_jan_still_blocks_new_jan(self):
+        source = "https://example.org/product"
+        row = {"identity_key": "jan:4901735026173", "jan_code": "4901735026173",
+               "source_url": source}
+        def opener(req, timeout):
+            return io.BytesIO(json.dumps([{
+                "identity_key": "url:legacy", "jan_code": None, "source_url": source
+            }]).encode())
+        safe, conflicts = filter_existing_source_conflicts([row], "https://example", "test", opener)
+        self.assertEqual(safe, [])
+        self.assertEqual(conflicts[0]["reason"], "existing URL")
 
     def test_failed_lookup_blocks_import(self):
         def opener(req, timeout):
@@ -165,12 +214,12 @@ class SourceUrlCollisionTests(unittest.TestCase):
         self.assertEqual(conflicts, [])
 
     def test_different_jan_preserves_distinct_packaging(self):
-        rows = [{"identity_key": "jan:4900000000001", "jan_code": "4900000000001",
+        rows = [{"identity_key": "jan:4901735026081", "jan_code": "4901735026081",
                  "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩",
                  "source_url": "https://example.org/products/new"}]
         def opener(req, timeout):
             return io.BytesIO(json.dumps([{
-                "identity_key": "jan:4900000000002",
+                "identity_key": "jan:4901735026173", "jan_code": "4901735026173",
                 "source_url": "https://example.org/products/old",
                 "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩"
             }], ensure_ascii=False).encode())
