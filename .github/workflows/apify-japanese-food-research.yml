@@ -1,12 +1,15 @@
 name: Apify Japanese Food Research
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - '.github/workflows/apify-japanese-food-research.yml'
-      - 'scripts/apify/collect.mjs'
+    inputs:
+      allow_paid_usage:
+        description: 'Explicitly approve Apify actor usage for this run'
+        required: true
+        default: false
+        type: boolean
 jobs:
   research:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.allow_paid_usage == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
