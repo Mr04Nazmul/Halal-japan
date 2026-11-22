@@ -35,6 +35,31 @@ RESTRICTED_SOURCE_POLICIES = {
         "reason": "site policy prohibits reproduction, alteration, transfer, distribution, and commercial use of site content without consent",
         "reviewed_on": "2026-11-22",
     },
+    "fujicco.co.jp": {
+        "policy_url": "https://www.fujicco.co.jp/about.html",
+        "reason": "Fujicco permits private use but prohibits reuse or transfer of site content to other websites or printed materials",
+        "reviewed_on": "2026-11-22",
+    },
+    "myojofoods.co.jp": {
+        "policy_url": "https://www.nissin.com/jp/docs/terms/",
+        "reason": "Myojo Foods is included in the Nissin Group's stated group definition; the group terms prohibit use beyond private or other legally permitted scope without authorization",
+        "reviewed_on": "2026-11-22",
+    },
+    "natori.co.jp": {
+        "policy_url": "https://www.natori.co.jp/policy.html",
+        "reason": "Natori limits use of site content to private or other legally permitted scope and prohibits reuse on other websites or printed materials",
+        "reviewed_on": "2026-11-22",
+    },
+    "nissin.com": {
+        "policy_url": "https://www.nissin.com/jp/docs/terms/",
+        "reason": "Nissin Group terms prohibit use, copying, alteration or distribution beyond private or other legally permitted scope without authorization",
+        "reviewed_on": "2026-11-22",
+    },
+    "sbfoods.co.jp": {
+        "policy_url": "https://www.sbfoods.co.jp/terms/",
+        "reason": "S&B terms prohibit use of website content beyond private or other legally permitted scope without prior permission",
+        "reviewed_on": "2026-11-22",
+    },
     "maruchan.co.jp": {
         "policy_url": "https://www.maruchan.co.jp/customer/terms.html",
         "reason": "Toyo Suisan requires prior permission for reproduction, modification, adaptation, translation, or distribution except where copyright law permits",
