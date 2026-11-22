@@ -18,6 +18,7 @@ INGREDIENT_LABELS = {
 DETAIL_PATH_PATTERNS = (
     re.compile(r"/products/[^/]+/\d+\.html$"),
     re.compile(r"/products/detail/\d+$"),
+    re.compile(r"/product/detail/\d+$"),
     re.compile(r"/products/\d+$"),
     re.compile(r"/products_search/[^/]+/item_\d+$"),
     re.compile(r"/product/item/\d+$"),
