@@ -600,7 +600,7 @@ class Collector:
            or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
            or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')):continue
    host=parsed.netloc
-   limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
+   limit=8 if source(url) in {'topvalu.net','natori.co.jp','fujicco.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue
    updated=self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0 WHERE url=? AND status='done' AND error IS NULL",(url,))
    if updated.rowcount:refreshed_by_host[host]=refreshed_by_host.get(host,0)+1
