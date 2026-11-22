@@ -755,11 +755,11 @@ class UhaSourceTests(unittest.TestCase):
  def test_uha_gummy_detail_extracts_exact_product_name_and_ingredients(self):
   url='https://www.uha-mikakuto.co.jp/catalog/gummy/gu273.html'
   ingredients='砂糖（国内製造）、果糖ぶどう糖液糖、ゼラチン、米粉、濃縮果汁（マスカット、りんご）、イヌリン／酸味料、ゲル化剤（アラビアガム）、香料'
-  html=f\'''<h1>グミ</h1><h2>忍者めし鋼　マスカット味</h2>
+  html=f'''<h1>グミ</h1><h2>忍者めし鋼　マスカット味</h2>
   <table class="product-data-table">
    <tr><th>原材料名</th><td>{ingredients}</td></tr>
    <tr><th>内容量</th><td>45g</td></tr>
-  </table>\'''
+  </table>'''
   self.assertTrue(product_url(url))
   record,error=extract(html,url)
   self.assertIsNone(error)
