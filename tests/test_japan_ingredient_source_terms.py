@@ -24,6 +24,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.askul.co.jp/p/U217658/": "askul.co.jp",
             "https://www.fujiya-peko.co.jp/sweets/item/26844.html": "fujiya-peko.co.jp",
             "https://www.fujicco.co.jp/products/detail/123": "fujicco.co.jp",
+            "https://www.glico.com/jp/product/drink/glicomilk/47200/": "glico.com",
             "https://www.kamedaseika.co.jp/product/2068/": "kamedaseika.co.jp",
             "https://www.sanko-seika.co.jp/product/item/123/": "sanko-seika.co.jp",
             "https://www.bourbon.co.jp/products/detail/123": "bourbon.co.jp",
@@ -53,6 +54,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.ebarafoods.com/products/detail/123": "ebarafoods.com",
             "https://www.imuraya.co.jp/goods/zenzai/c-zenzai/noukouz/": "imuraya.co.jp",
             "https://www.kikkoman.co.jp/products/K05/detail/K053515.html": "kikkoman.co.jp",
+            "https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380": "kirin.co.jp",
             "https://www.morinagamilk.co.jp/products/milk/morinagamilk/1254.html": "morinagamilk.co.jp",
             "https://housefoods.jp/products/catalog/cd_1,082683.html": "housefoods.jp",
             "https://www.tablemark.co.jp/products/frozen/rice/detail/7117493.html": "tablemark.co.jp",
@@ -84,6 +86,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.pokkasapporo-fb.jp/products/example/"))
         self.assertTrue(is_terms_restricted_url("https://shop.uha-mikakuto.co.jp/catalog/gummy/gu330.html"))
         self.assertTrue(is_terms_restricted_url("https://and.kagome.co.jp/products/feature/"))
+        self.assertTrue(is_terms_restricted_url("https://www.glico.com/jp/product/drink/glicomilk/47200/"))
+        self.assertTrue(is_terms_restricted_url("https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -144,6 +148,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/",
             "https://www.yamamori.co.jp/business/",
             "https://www.kagome.co.jp/foodservice/frozen/5615/",
+            "https://www.glico.com/jp/product/drink/glicomilk/47200/",
+            "https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380",
         ]
         for url in blocked:
             with self.subTest(url=url):
@@ -192,6 +198,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "itoen.jp",
                 "kewpie.co.jp",
                 "kagome.co.jp",
+                "glico.com",
+                "kirin.co.jp",
                 "meg-snow.com",
                 "yotsuba.co.jp",
                 "tajimaya-cc.net",
@@ -226,12 +234,14 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_pokka = "https://www.pokkasapporo-fb.jp/products/soup/jikkuri/WZ02.html"
             blocked_uha = "https://www.uha-mikakuto.co.jp/catalog/gummy/gu330.html"
             blocked_kagome = "https://www.kagome.co.jp/foodservice/frozen/5615/"
+            blocked_glico = "https://www.glico.com/jp/product/drink/glicomilk/47200/"
+            blocked_kirin = "https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380"
             allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 8)
+            self.assertEqual(changed, 10)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
@@ -241,8 +251,10 @@ class SourceTermsPolicyTests(unittest.TestCase):
             self.assertEqual(rows[blocked_pokka], "done")
             self.assertEqual(rows[blocked_uha], "done")
             self.assertEqual(rows[blocked_kagome], "done")
+            self.assertEqual(rows[blocked_glico], "done")
+            self.assertEqual(rows[blocked_kirin], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 9)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 11)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
