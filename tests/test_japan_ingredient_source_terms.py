@@ -10,7 +10,7 @@ from japan_ingredient_source_terms import (
     is_terms_restricted_url,
     source_terms_restriction,
 )
-from crawl_japanese_ingredients import (allowed_link, Collector, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
+from crawl_japanese_ingredients import (allowed_link, product_url, Collector, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
 
 
 class SourceTermsPolicyTests(unittest.TestCase):
@@ -57,6 +57,14 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.meiji.co.jp/product/1"))
         self.assertTrue(is_terms_restricted_url("http://www.fujiya-peko.co.jp/item/1"))
         self.assertTrue(is_terms_restricted_url("https://shop.muso.co.jp/item/1"))
+
+    def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
+        for page in range(2, 14):
+            url = f\"https://www.kyoritsu-foods.co.jp/product/page/{page}/\"
+            with self.subTest(url=url):
+                self.assertTrue(allowed_link(url))
+                self.assertFalse(product_url(url))
+                self.assertFalse(is_terms_restricted_url(url))
 
     def test_unreviewed_sources_are_not_mislabeled_as_explicitly_restricted(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.

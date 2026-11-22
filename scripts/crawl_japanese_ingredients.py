@@ -160,6 +160,8 @@ def allowed_link(u):
  # Toyo Suisan's sitemap has recursive /products/search/new/... links.
  # Keep only exact product detail pages; sitemap URLs were accepted above.
  if host=='maruchan.co.jp':return product_url(u)
+ # Kyoritsu's official consumer catalogue paginates product listings at /product/page/N/.
+ if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\\d+/?',path):return True
  if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
@@ -630,13 +632,20 @@ class Collector:
            or (source(url)=='nissin.com' and parsed.path.rstrip('/')=='/jp')
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')
            or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
-           or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')):continue
+           or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')
+           or (source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\\d+/?',parsed.path))):continue
    host=parsed.netloc
    # Refresh at most one sitemap and one catalogue entry point per host.
    # A sitemap must not be starved by a catalogue seed from the same host.
-   refresh_kind='sitemap' if sitemap_url(url) else 'catalogue'
+   if sitemap_url(url):
+    refresh_kind='sitemap';refresh_limit=1
+   elif source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\\d+/?',parsed.path):
+    # 12 paginated catalogue pages are bounded and each exposes product links.
+    refresh_kind='catalogue_page';refresh_limit=12
+   else:
+    refresh_kind='catalogue';refresh_limit=1
    refresh_key=(host,refresh_kind)
-   if refreshed_by_host.get(refresh_key,0)>=1:continue
+   if refreshed_by_host.get(refresh_key,0)>=refresh_limit:continue
    updated=self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0 WHERE url=? AND status='done' AND error IS NULL",(url,))
    if updated.rowcount:refreshed_by_host[refresh_key]=refreshed_by_host.get(refresh_key,0)+1
   self.db.commit()
