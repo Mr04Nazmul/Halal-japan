@@ -34,7 +34,7 @@ SOURCES={
  '7premium.jp':r'/product/search/detail\?id=\d+',
  'calbee.co.jp':r'/products/detail/',
  'matsukiyococokara-online.com':r'/store/catalog/product/view/id/\d+/?$',
- 'montoile.co.jp':r'/products/[^/]+/?$',
+ 'montoile.co.jp':r'/products/(?!category(?:/|$))[^/]+/?$',
  'nipponham.co.jp':r'/products/(?:[^/]+/){1,4}\d+/?$',
  'meiji.co.jp':r'/products/[^/]+/\d+\.html',
  'mizkan.co.jp':r'/products/[A-Za-z0-9_-]+/?$',
