@@ -21,12 +21,58 @@ concurrency:
   cancel-in-progress: false
 permissions:
   contents: read
+  actions: read
 jobs:
   crawl:
     runs-on: ubuntu-latest
     timeout-minutes: 110
     steps:
       - uses: actions/checkout@v4
+      - name: Restore prior public ingredient evidence and attempt history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p data /tmp/crawl4ai-previous
+          previous_run="$(gh api "repos/$REPOSITORY/actions/artifacts?name=crawl4ai-ingredient-evidence&per_page=30" --jq '[.artifacts[] | select(.expired == false and .workflow_run.head_branch == "main")] | sort_by(.created_at) | reverse | .[0].workflow_run.id // empty')"
+          if [ -n "$previous_run" ]; then
+            if gh run download "$previous_run" --repo "$REPOSITORY" -n crawl4ai-ingredient-evidence -D /tmp/crawl4ai-previous; then
+              for file in crawl4ai_ingredient_evidence.jsonl http_ingredient_evidence.jsonl manufacturer_ingredient_candidates.csv crawl4ai_attempted_urls.txt http_attempted_urls.txt; do
+                if [ -f "/tmp/crawl4ai-previous/$file" ]; then
+                  cp "/tmp/crawl4ai-previous/$file" "data/$file"
+                fi
+              done
+              echo "Restored Crawl4AI evidence and attempt history from run $previous_run"
+            else
+              echo "Previous evidence artifact unavailable; continuing without restore"
+            fi
+          else
+            echo "No previous Crawl4AI evidence artifact; starting a fresh evidence history"
+          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for evidence_name, attempted_name in (
+              ("crawl4ai_ingredient_evidence.jsonl", "crawl4ai_attempted_urls.txt"),
+              ("http_ingredient_evidence.jsonl", "http_attempted_urls.txt"),
+          ):
+              evidence = Path("data") / evidence_name
+              attempted = Path("data") / attempted_name
+              if attempted.exists() or not evidence.exists():
+                  continue
+              urls = []
+              for line in evidence.read_text(encoding="utf-8").splitlines():
+                  try:
+                      url = json.loads(line).get("source_url")
+                      if url and url not in urls:
+                          urls.append(url)
+                  except (ValueError, TypeError):
+                      continue
+              attempted.write_text("\\n".join(urls) + ("\\n" if urls else ""), encoding="utf-8")
+              print(f"Reconstructed {attempted_name}: {len(urls)} evidenced URLs")
+          PY
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -55,6 +101,8 @@ jobs:
             data/crawl4ai_ingredient_evidence.jsonl
             data/http_ingredient_evidence.jsonl
             data/manufacturer_ingredient_candidates.csv
+            data/crawl4ai_attempted_urls.txt
+            data/http_attempted_urls.txt
           if-no-files-found: warn
 
 # Restart request 2026-10-17 09:48 JST
