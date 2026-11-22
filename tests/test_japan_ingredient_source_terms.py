@@ -40,6 +40,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.topvalu.net/items/detail/4902123456789/": "topvalu.net",
             "https://7premium.jp/product/search/detail?id=10791": "7premium.jp",
             "https://www.hikarimiso.co.jp/products/kodawari01/": "hikarimiso.co.jp",
+            "https://www.hanamaruki.co.jp/products/instant_soup/sokuseki_wakame/": "hanamaruki.co.jp",
             "https://www.marusanai.co.jp/lineup/detail-64095/": "marusanai.co.jp",
             "https://www.itoen.jp/products/41922/": "itoen.jp",
             "https://www.kewpie.co.jp/products/detail/4901577004865/": "kewpie.co.jp",
@@ -60,6 +61,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
     def test_unreviewed_sources_are_not_mislabeled_as_explicitly_restricted(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
         self.assertFalse(is_terms_restricted_url("https://montoile.co.jp/products/example/"))
+        self.assertFalse(is_terms_restricted_url("https://www.kyoritsu-foods.co.jp/product/page/7/"))
 
     def test_main_crawler_does_not_enqueue_restricted_current_source_pages(self):
         blocked = [
@@ -80,6 +82,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://muso.co.jp/item/75025.html",
             "https://www.nipponham.co.jp/products/processed_foods/bread_pizza/24216/",
             "https://www.hikarimiso.co.jp/products/kodawari01/",
+            "https://www.hanamaruki.co.jp/products/instant_soup/sokuseki_wakame/",
             "https://www.marusanai.co.jp/lineup/detail-64095/",
             "https://www.itoen.jp/products/41922/",
             "https://www.kewpie.co.jp/products/detail/4901577004865/",
@@ -120,6 +123,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "topvalu.net",
                 "7premium.jp",
                 "hikarimiso.co.jp",
+                "hanamaruki.co.jp",
                 "marusanai.co.jp",
                 "itoen.jp",
                 "kewpie.co.jp",

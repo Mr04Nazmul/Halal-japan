@@ -8,7 +8,7 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v6"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v7"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -131,6 +131,11 @@ RESTRICTED_SOURCE_POLICIES = {
         "policy_url": "https://www.hikarimiso.co.jp/siteguide/",
         "reason": "Hikari Miso permits private use but prohibits reuse of site content on other websites or printed matter without permission",
         "reviewed_on": "2026-11-22",
+    },
+    "hanamaruki.co.jp": {
+        "policy_url": "https://www.hanamaruki.co.jp/sitepolicy/",
+        "reason": "Hanamaruki site policy permits content use only for private purposes and requires company permission for reproduction, republication, transmission, distribution, or other secondary use",
+        "reviewed_on": "2026-11-23",
     },
     "marusanai.co.jp": {
         "policy_url": "https://www.marusanai.co.jp/privacy/",
