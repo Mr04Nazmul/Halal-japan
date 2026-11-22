@@ -29,7 +29,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       GH_TOKEN: ${{ github.token }}
       REPOSITORY: ${{ github.repository }}
@@ -92,7 +92,7 @@ jobs:
           rm -rf crawler-candidates
       - name: Crawl one bounded batch toward 100000 actual ingredient products
         if: github.ref == 'refs/heads/main'
-        run: python -u scripts/crawl_japanese_ingredients.py --target 100000 --minutes 35 --max-pages 1500
+        run: python -u scripts/crawl_japanese_ingredients.py --target 100000 --minutes 30 --max-pages 1200
       - name: Finalize consistent exports even after an interrupted batch
         id: finalize
         if: always() && github.ref == 'refs/heads/main' && steps.restore.outcome == 'success' && hashFiles('crawler-state/state.sqlite3') != ''

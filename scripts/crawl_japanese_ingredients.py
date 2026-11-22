@@ -329,7 +329,9 @@ def extract(html,url):
 class Collector:
  def __init__(self,path,target):
   self.path=Path(path);self.path.mkdir(parents=True,exist_ok=True);self.target=target
-  self.db=sqlite3.connect(self.path/'state.sqlite3')
+  # Wait briefly for a writer to finish after a hosted runner interruption.
+  self.db=sqlite3.connect(self.path/'state.sqlite3',timeout=60)
+  self.db.execute('PRAGMA busy_timeout=60000')
   self.db.executescript('''CREATE TABLE IF NOT EXISTS queue(url TEXT PRIMARY KEY,status TEXT DEFAULT 'pending',attempts INTEGER DEFAULT 0,next_try REAL DEFAULT 0,error TEXT);
   CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,formula TEXT,payload TEXT,conflict INTEGER DEFAULT 0);
   CREATE TABLE IF NOT EXISTS host_state(host TEXT PRIMARY KEY,next_try REAL DEFAULT 0,reason TEXT);
@@ -682,7 +684,9 @@ class Collector:
      self.db.execute("UPDATE queue SET status=?,attempts=attempts+1,next_try=?,error=? WHERE url=?",('done' if code==404 or attempts>=4 else 'pending',time.time()+cooldown,reason,url))
     self.db.execute('INSERT INTO observations VALUES(?,?,?)',(url,reason,datetime.now(timezone.utc).isoformat()));self.db.commit()
     done+=1
-    if done%25==0:self.checkpoint()
+    # Export the full cumulative JSON less often; each page is already committed
+    # to SQLite, so an interrupted run can still be finalized from the DB.
+    if done%100==0:self.checkpoint()
   finally:
    if self.run_stop_reason=='in_progress':
     if self.count()>=self.target:self.run_stop_reason='target_reached'
@@ -691,8 +695,23 @@ class Collector:
     else:self.run_stop_reason='interrupted'
    self.checkpoint()
 
+def checkpoint_only(path,target):
+ # Finalization must not run Collector.__init__ migrations or DML after a
+ # crawler was interrupted. Read the committed SQLite checkpoint only.
+ root=Path(path)
+ db_path=root/'state.sqlite3'
+ if not db_path.is_file():raise FileNotFoundError(db_path)
+ c=Collector.__new__(Collector)
+ c.path=root;c.target=target
+ c.db=sqlite3.connect(db_path,timeout=120)
+ c.db.execute('PRAGMA busy_timeout=120000')
+ try:c.checkpoint()
+ finally:c.db.close()
+
 if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1500);p.add_argument('--minutes',type=float,default=35);p.add_argument('--checkpoint-only',action='store_true')
- a=p.parse_args();c=Collector(a.state,a.target)
- if a.checkpoint_only:c.checkpoint()
- else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes)
+ p=argparse.ArgumentParser();p.add_argument('--state',default='crawler-state');p.add_argument('--seeds',default='scripts/japan_ingredient_sources.json');p.add_argument('--target',type=int,default=100000);p.add_argument('--max-pages',type=int,default=1200);p.add_argument('--minutes',type=float,default=30);p.add_argument('--checkpoint-only',action='store_true')
+ a=p.parse_args()
+ if a.checkpoint_only:checkpoint_only(a.state,a.target)
+ else:
+  c=Collector(a.state,a.target)
+  c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes)
