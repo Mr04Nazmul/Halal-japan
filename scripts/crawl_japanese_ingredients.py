@@ -695,7 +695,7 @@ if __name__=='__main__':
  a=p.parse_args();c=Collector(a.state,a.target)
  if a.checkpoint_only:c.checkpoint()
  else:c.run(json.loads(Path(a.seeds).read_text()),a.max_pages,a.minutes),
- 'nipponham.co.jp':r'/products/(?:[^/]+/){1,4}\\d+/?
+ 'nipponham.co.jp':r'/products/(?:[^/]+/){1,4}\d+/?$',
  'meiji.co.jp':r'/products/[^/]+/\d+\.html',
  'mizkan.co.jp':r'/products/[A-Za-z0-9_-]+/?$',
  'bourbon.co.jp':r'/product/detail/',
