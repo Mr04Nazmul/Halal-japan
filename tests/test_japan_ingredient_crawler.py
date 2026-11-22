@@ -435,7 +435,7 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   url='https://www.dydo.co.jp/products/detail/1231/'
   self.assertTrue(product_url(url))
-  self.assertTrue(allowed_link('https://www.dydo.co.jp/products/'))
+  self.assertFalse(allowed_link('https://www.dydo.co.jp/products/'))
   self.assertTrue(allowed_link('https://www.dydo.co.jp/products/list/'))
   listing='https://www.dydo.co.jp/products/list/?rt_bn_product_list_skip=12&rt_bn_product_list_all_skip='
   self.assertTrue(allowed_link(listing))
