@@ -184,6 +184,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
             collector.db.execute("DELETE FROM metadata WHERE key=?", (SOURCE_TERMS_QUARANTINE_KEY,))
+            collector.db.execute("DELETE FROM queue")
             blocked = "https://www.nagatanien.co.jp/product/detail/1223/"
             blocked_yamamori = "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/"
             allowed = "https://montoile.co.jp/products/ashitamo-okura-norishio/"
