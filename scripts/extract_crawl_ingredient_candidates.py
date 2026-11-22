@@ -18,6 +18,7 @@ from japan_ingredient_food_filter import (
     is_nonfood_ingredient_text,
     is_nonfood_name,
 )
+from japan_ingredient_source_terms import is_terms_restricted_url
 
 OUT = Path("data/manufacturer_ingredient_candidates.csv")
 PATHS = [
@@ -100,7 +101,8 @@ def extract_candidate_records(records, exported_at=None):
         url = str(record.get("source_url") or "").strip()
         # Only exact, supported manufacturer/retailer product-detail URLs qualify.
         # Generic category, corporate, safety and marketing pages are discovery leads, not products.
-        if not url.startswith("https://") or url in seen_urls or not is_supported_product_url(url):
+        if (not url.startswith("https://") or url in seen_urls
+                or is_terms_restricted_url(url) or not is_supported_product_url(url)):
             continue
         text = evidence_text(record)
         ingredients = extract_ingredient_text(text)
