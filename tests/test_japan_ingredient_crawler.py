@@ -188,11 +188,13 @@ class Extraction(unittest.TestCase):
    catalogue='https://www.topvalu.net/items/'
    myojo_catalogue='https://www.myojofoods.co.jp/products/items/'
    nissin_catalogue='https://www.nissin.com/jp/'
+   muso_sitemap='https://muso.co.jp/wp-sitemap.xml'
    product='https://www.topvalu.net/items/detail/4549414700565/'
    blocked='https://www.kewpie.co.jp/products/'
    self.assertTrue(allowed_link(myojo_catalogue))
    self.assertTrue(allowed_link(nissin_catalogue))
-   seeds=[catalogue,myojo_catalogue,nissin_catalogue,product,blocked]
+   self.assertTrue(allowed_link(muso_sitemap))
+   seeds=[catalogue,myojo_catalogue,nissin_catalogue,muso_sitemap,product,blocked]
    c.enqueue(seeds)
    c.db.execute("UPDATE queue SET status='done'")
    c.db.execute("UPDATE queue SET error='robots_disallowed' WHERE url=?",(blocked,))
@@ -203,6 +205,7 @@ class Extraction(unittest.TestCase):
    self.assertEqual(states[canonical(catalogue)],'pending')
    self.assertEqual(states[canonical(myojo_catalogue)],'pending')
    self.assertEqual(states[canonical(nissin_catalogue)],'pending')
+   self.assertEqual(states[canonical(muso_sitemap)],'pending')
    self.assertEqual(states[canonical(product)],'done')
    self.assertEqual(states[canonical(blocked)],'done')
    c.db.close()
