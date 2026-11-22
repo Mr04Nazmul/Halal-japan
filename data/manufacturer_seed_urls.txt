@@ -63,3 +63,32 @@ https://www.nagatanien.co.jp/product/group/3/
 https://www.nagatanien.co.jp/product/group/4/
 # Kyoritsu Foods manufacturer-operated official shop; public product label fields only.
 https://shop.kyoritsu-foods.co.jp/item-detail/1946531
+# Kyoritsu official shop product details; public label fields, JAN and ingredients only.
+https://shop.kyoritsu-foods.co.jp/item-detail/1929310
+https://shop.kyoritsu-foods.co.jp/item-detail/1929325
+https://shop.kyoritsu-foods.co.jp/item-detail/1946453
+https://shop.kyoritsu-foods.co.jp/item-detail/1953378
+https://shop.kyoritsu-foods.co.jp/item-detail/1953381
+https://shop.kyoritsu-foods.co.jp/item-detail/1953389
+https://shop.kyoritsu-foods.co.jp/item-detail/1961591
+https://shop.kyoritsu-foods.co.jp/item-detail/1970482
+https://shop.kyoritsu-foods.co.jp/item-detail/1970519
+https://shop.kyoritsu-foods.co.jp/item-detail/1970529
+https://shop.kyoritsu-foods.co.jp/item-detail/1970570
+https://shop.kyoritsu-foods.co.jp/item-detail/1970575
+https://shop.kyoritsu-foods.co.jp/item-detail/1970586
+https://shop.kyoritsu-foods.co.jp/item-detail/1970874
+https://shop.kyoritsu-foods.co.jp/item-detail/1975713
+https://shop.kyoritsu-foods.co.jp/item-detail/1977972
+https://shop.kyoritsu-foods.co.jp/item-detail/1977982
+https://shop.kyoritsu-foods.co.jp/item-detail/1981260
+https://shop.kyoritsu-foods.co.jp/item-detail/1981263
+https://shop.kyoritsu-foods.co.jp/item-detail/1981264
+https://shop.kyoritsu-foods.co.jp/item-detail/1981265
+https://shop.kyoritsu-foods.co.jp/item-detail/1981283
+https://shop.kyoritsu-foods.co.jp/item-detail/1981287
+https://shop.kyoritsu-foods.co.jp/item-detail/1981292
+https://shop.kyoritsu-foods.co.jp/item-detail/1981297
+https://shop.kyoritsu-foods.co.jp/item-detail/1981307
+https://shop.kyoritsu-foods.co.jp/item-detail/1981473
+https://shop.kyoritsu-foods.co.jp/item-detail/1981475
