@@ -214,12 +214,12 @@ class SourceUrlCollisionTests(unittest.TestCase):
         self.assertEqual(conflicts, [])
 
     def test_different_jan_preserves_distinct_packaging(self):
-        rows = [{"identity_key": "jan:4900000000001", "jan_code": "4901735026081",
+        rows = [{"identity_key": "jan:4901735026081", "jan_code": "4901735026081",
                  "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩",
                  "source_url": "https://example.org/products/new"}]
         def opener(req, timeout):
             return io.BytesIO(json.dumps([{
-                "identity_key": "jan:4900000000002",
+                "identity_key": "jan:4901735026173", "jan_code": "4901735026173",
                 "source_url": "https://example.org/products/old",
                 "product_name": "同じ商品", "ingredients_ja": "小麦粉、塩"
             }], ensure_ascii=False).encode())
