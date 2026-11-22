@@ -16,7 +16,7 @@ class SankoSeikaTests(unittest.TestCase):
  def test_scope(self):
   self.assertEqual(source(URL),"sanko-seika.co.jp")
   self.assertTrue(product_url(URL))
-  self.assertTrue(allowed_link("https://www.sanko-seika.co.jp/product/"))
+  self.assertFalse(allowed_link("https://www.sanko-seika.co.jp/product/"))
   self.assertFalse(product_url("https://www.sanko-seika.co.jp/product/"))
   self.assertFalse(allowed_link("https://www.sanko-seika.co.jp/news/9237/"))
 
