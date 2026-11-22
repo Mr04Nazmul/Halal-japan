@@ -56,6 +56,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.kewpie.co.jp/products/detail/4901577004865/": "kewpie.co.jp",
             "https://www.meg-snow.com/products/": "meg-snow.com",
             "https://www.yotsuba.co.jp/products/": "yotsuba.co.jp",
+            "https://www.tajimaya-cc.net/products/2118": "tajimaya-cc.net",
         }
         for url, domain in examples.items():
             with self.subTest(url=url):
@@ -116,6 +117,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.kewpie.co.jp/products/detail/4901577004865/",
             "https://www.meg-snow.com/products/",
             "https://www.yotsuba.co.jp/products/",
+            "https://www.tajimaya-cc.net/products/2118",
             "https://www.nagatanien.co.jp/product/detail/1223/",
             "https://www.topvalu.net/items/detail/4902123456789/",
             "https://7premium.jp/product/search/detail?id=10791",
@@ -168,6 +170,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "kewpie.co.jp",
                 "meg-snow.com",
                 "yotsuba.co.jp",
+                "tajimaya-cc.net",
             },
         )
 
