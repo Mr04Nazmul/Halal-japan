@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v12"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v13"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -212,6 +212,11 @@ RESTRICTED_SOURCE_POLICIES = {
         "policy_url": "https://www.yotsuba.co.jp/guide/rule/",
         "reason": "Yotsuba prohibits unauthorized use of copyrighted website content beyond personal or legally permitted use",
         "reviewed_on": "2026-11-22",
+    },
+    "yamamori.co.jp": {
+        "policy_url": "https://www.yamamori.co.jp/policy-site",
+        "reason": "Yamamori site policy states that site text, graphics, photos, and data are owned by Yamamori or their rights holders and may not be used, copied, reprinted, transmitted, or modified without consent or a legal exception; bulk ingredient-data reuse permission is not established.",
+        "reviewed_on": "2026-11-23",
     },
 }
 
