@@ -20,6 +20,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.asahi-gf.co.jp/products/food/": "asahi-gf.co.jp",
             "https://www.asahiinryo.co.jp/products/": "asahiinryo.co.jp",
             "https://www.fujiya-peko.co.jp/sweets/item/26844.html": "fujiya-peko.co.jp",
+            "https://www.fujicco.co.jp/products/detail/123": "fujicco.co.jp",
+            "https://www.myojofoods.co.jp/products/items/13987": "myojofoods.co.jp",
+            "https://www.natori.co.jp/products_search/item_123": "natori.co.jp",
+            "https://www.nissin.com/jp/product/items/13426/": "nissin.com",
+            "https://www.sbfoods.co.jp/products/detail/123.html": "sbfoods.co.jp",
             "https://www.maruchan.co.jp/products/search/310686.html": "maruchan.co.jp",
             "https://www.meiji.co.jp/products/drink/4902705133150.html": "meiji.co.jp",
             "https://www.meito-abc.co.jp/products/lineup/new": "meito-abc.co.jp",
@@ -42,8 +47,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.muso.co.jp/item/1"))
 
     def test_unreviewed_sources_are_not_mislabeled_as_explicitly_restricted(self):
+        # Not yet reviewed for reuse terms; this is not an assertion of permission.
         self.assertFalse(is_terms_restricted_url("https://montoile.co.jp/products/example/"))
-        self.assertFalse(is_terms_restricted_url("https://www.fujicco.co.jp/products/detail/123/"))
 
     def test_main_crawler_does_not_enqueue_restricted_current_source_pages(self):
         blocked = [
@@ -70,7 +75,12 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "asahi-gf.co.jp",
                 "asahiinryo.co.jp",
                 "fujiya-peko.co.jp",
+                "fujicco.co.jp",
                 "maruchan.co.jp",
+                "myojofoods.co.jp",
+                "natori.co.jp",
+                "nissin.com",
+                "sbfoods.co.jp",
                 "meiji.co.jp",
                 "meito-abc.co.jp",
                 "morinaga.co.jp",
