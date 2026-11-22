@@ -35,6 +35,16 @@ JAN_LABEL = re.compile(
     re.IGNORECASE,
 )
 
+GENERIC_PAGE_NAMES = frozenset({
+    "商品情報", "商品一覧", "商品紹介", "製品情報", "商品ラインナップ", "原料調達",
+    "野菜･果実飲料の原材料について", "野菜・果実飲料の原材料について",
+})
+NON_DECLARATION_TEXT = re.compile(
+    r"(?:などを表示したラベル|ラベルを添付し|原材料の調達における取り組み|産地情報を開示しています)",
+    re.IGNORECASE,
+)
+
+
 
 def evidence_text(record):
     values = record.get("evidence", record.get("ingredient_evidence", []))
