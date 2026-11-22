@@ -341,6 +341,13 @@ class Collector:
   CREATE TABLE IF NOT EXISTS host_state(host TEXT PRIMARY KEY,next_try REAL DEFAULT 0,reason TEXT);
   CREATE TABLE IF NOT EXISTS observations(url TEXT,reason TEXT,at TEXT);
   CREATE TABLE IF NOT EXISTS metadata(key TEXT PRIMARY KEY,value TEXT);''')
+  # Index the correlated lookups used by legacy checkpoint migrations before
+  # scanning the large pending queue. Without this JSON source-URL index, the
+  # one-time navigation quarantine can repeatedly scan every accepted product
+  # for hundreds of thousands of queued URLs and hit the hosted-runner timeout.
+  self.db.execute("CREATE INDEX IF NOT EXISTS products_source_url_idx ON products(json_extract(payload,'$.source_url'))")
+  self.db.execute("CREATE INDEX IF NOT EXISTS queue_status_next_try_idx ON queue(status,next_try)")
+  self.db.commit()
   previous=self.db.execute("SELECT value FROM metadata WHERE key='extractor_version'").fetchone()
   if not previous or previous[0]!=EXTRACTOR_VERSION:
    # Revisit only pages rejected by older field extraction.  Network failures,

@@ -930,3 +930,21 @@ class NipponHamSourceTests(unittest.TestCase):
   category='https://www.nipponham.co.jp/products/bread_pizza/'
   self.assertTrue(allowed_link(category))
   self.assertFalse(product_url(category))
+
+class CheckpointPerformanceIndexes(unittest.TestCase):
+ def test_collector_indexes_source_url_and_pending_queue_lookups(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   product_indexes={row[1] for row in c.db.execute('PRAGMA index_list(products)')}
+   queue_indexes={row[1] for row in c.db.execute('PRAGMA index_list(queue)')}
+   self.assertIn('products_source_url_idx',product_indexes)
+   self.assertIn('queue_status_next_try_idx',queue_indexes)
+   product_plan=list(c.db.execute(
+    "EXPLAIN QUERY PLAN SELECT 1 FROM products p WHERE json_extract(p.payload,'$.source_url')=?",
+    ('https://example.jp/product/1',)))
+   queue_plan=list(c.db.execute(
+    "EXPLAIN QUERY PLAN SELECT q.url,q.attempts FROM queue q WHERE q.status='pending' AND q.next_try<=? ORDER BY q.rowid LIMIT 1",
+    (0,)))
+   self.assertTrue(any('products_source_url_idx' in row[3] for row in product_plan),product_plan)
+   self.assertTrue(any('queue_status_next_try_idx' in row[3] for row in queue_plan),queue_plan)
+   c.db.close()
