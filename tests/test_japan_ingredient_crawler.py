@@ -1,7 +1,7 @@
 import json,sys,tempfile,unittest,time,urllib.error,sqlite3
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
-from crawl_japanese_ingredients import Collector,extract,product_url,canonical
+from crawl_japanese_ingredients import Collector,extract,product_url,canonical,LEGACY_NAVIGATION_QUARANTINE_SQL
 
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
@@ -311,8 +311,14 @@ class Extraction(unittest.TestCase):
     'https://and.kagome.co.jp/products/feature/',
     'https://housefoods.jp/products/catalog/cd_1,092996.html']
    db.executemany("INSERT INTO queue(url,status) VALUES(?,'pending')",[(u,) for u in urls])
+   db.execute('INSERT INTO products(id,formula,payload,conflict) VALUES(?,?,?,0)',
+    ('legacy-navigation-product','test',json.dumps({'source_url':urls[0],'ingredients_ja':'米、食塩'})))
    db.commit();db.close()
    c=Collector(folder,100000)
+   plan=[row[3] for row in c.db.execute('EXPLAIN QUERY PLAN '+LEGACY_NAVIGATION_QUARANTINE_SQL)]
+   self.assertTrue(any('queue_status_next_try_idx' in item for item in plan),plan)
+   self.assertFalse(any('CORRELATED SCALAR SUBQUERY' in item for item in plan),plan)
+   self.assertEqual(c.db.execute("SELECT count(*) FROM products WHERE id='legacy-navigation-product'").fetchone()[0],1)
    for url in urls[:3]:
     self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
                      ('done','out_of_scope_navigation'))

@@ -71,6 +71,16 @@ class TemporarySourceMaintenance(RuntimeError):
  """Official product site is temporarily unavailable; retry after a host cooldown."""
  pass
 
+# One-time queue-only migration for recursive marketing/navigation URLs.
+# Keep these patterns explicit and narrow; accepted product rows are never changed.
+LEGACY_NAVIGATION_QUARANTINE_SQL = """UPDATE queue SET status='done',error='out_of_scope_navigation'
+ WHERE status='pending'
+  AND (url LIKE 'https://housefoods.jp/products/special/%'
+   OR url LIKE 'https://www.housefoods.jp/products/special/%'
+   OR url LIKE 'https://www.kagome.co.jp/products/%'
+   OR url LIKE 'https://kagome.co.jp/products/%'
+   OR url LIKE 'https://and.kagome.co.jp/%')"""
+
 def is_temporary_maintenance(html,url):
  # Asahi's current security-maintenance page is not a product page.
  # Require distinctive site-specific text to avoid rejecting normal products.
@@ -418,16 +428,10 @@ class Collector:
   # Kagome marketing paths as pending work. Accepted product records are untouched.
   legacy_backlog_key='legacy_marketing_navigation_quarantine_20261122_v1'
   if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(legacy_backlog_key,)).fetchone():
-   quarantined=self.db.execute("""UPDATE queue SET status='done',error='out_of_scope_navigation'
-    WHERE status='pending'
-     AND (url LIKE 'https://housefoods.jp/products/special/%'
-      OR url LIKE 'https://www.housefoods.jp/products/special/%'
-      OR url LIKE 'https://www.kagome.co.jp/products/%'
-      OR url LIKE 'https://kagome.co.jp/products/%'
-      OR url LIKE 'https://and.kagome.co.jp/%')
-     AND NOT EXISTS (
-      SELECT 1 FROM products p WHERE json_extract(p.payload,'$.source_url')=queue.url
-     )""")
+   # Avoid a correlated JSON anti-join here: it scans all accepted products for
+   # each of 305k legacy navigation URLs and can stall the hourly runner for an hour.
+   # This migration changes queue state only; it never deletes or modifies products.
+   quarantined=self.db.execute(LEGACY_NAVIGATION_QUARANTINE_SQL)
    self.db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',(legacy_backlog_key,'done'))
    self.db.commit()
    print('Quarantined legacy out-of-scope marketing URLs:',quarantined.rowcount,flush=True)
