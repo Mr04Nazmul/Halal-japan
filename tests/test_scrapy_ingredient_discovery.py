@@ -12,27 +12,27 @@ from scrapy_ingredient_discovery import (
 
 
 class IngredientDiscoveryTests(unittest.TestCase):
-    def test_meiji_detail_with_labelled_table_is_candidate(self):
+    def test_meiji_restricted_source_is_not_candidate(self):
         html = """
         <html><h1>テストヨーグルト</h1>
         <table><tr><th>原材料名</th><td>生乳、乳製品、砂糖</td></tr></table>
         </html>
         """
         url = "https://www.meiji.co.jp/products/yogurt/4902705133099.html"
-        self.assertTrue(is_ingredient_product_candidate(url, html))
+        self.assertFalse(is_ingredient_product_candidate(url, html))
 
-    def test_kewpie_detail_with_dt_dd_is_candidate(self):
+    def test_kewpie_restricted_source_is_not_candidate(self):
         html = """
         <html><h1>ドレッシング</h1>
         <dl><dt>原材料名</dt><dd>食用植物油脂、醸造酢、砂糖</dd></dl>
         </html>
         """
         url = "https://www.kewpie.co.jp/products/detail/4901577094040/"
-        self.assertTrue(is_ingredient_product_candidate(url, html))
+        self.assertFalse(is_ingredient_product_candidate(url, html))
 
     def test_inline_labeled_declaration_is_candidate(self):
         html = "<html><h1>商品</h1><p>原材料名：小麦粉、砂糖、植物油脂</p></html>"
-        url = "https://www.morinaga.co.jp/products/detail.php?id=PRD2010-07-0029"
+        url = "https://www.nagatanien.co.jp/product/detail/1220/"
         self.assertTrue(is_ingredient_product_candidate(url, html))
 
     def test_7premium_disclaimer_is_not_ingredient_evidence(self):
@@ -98,6 +98,9 @@ class IngredientDiscoveryTests(unittest.TestCase):
             "https://www.imuraya.co.jp/goods/zenzai/c-zenzai/noukouz/",
             "https://www.kikkoman.co.jp/products/K05/detail/K053515.html",
             "https://www.morinagamilk.co.jp/products/milk/morinagamilk/1254.html",
+            "https://housefoods.jp/products/catalog/cd_1,082683.html",
+            "https://www.tablemark.co.jp/products/frozen/rice/detail/7117493.html",
+            "https://www.lotte.co.jp/products/catalogue/biscuit/01/detail01.html",
         ):
             with self.subTest(url=url):
                 self.assertFalse(is_allowed_source_url(url))

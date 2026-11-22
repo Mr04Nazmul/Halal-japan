@@ -8,7 +8,7 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v8"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v9"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -160,6 +160,21 @@ RESTRICTED_SOURCE_POLICIES = {
     "morinagamilk.co.jp": {
         "policy_url": "https://www.morinagamilk.co.jp/terms_of_use/",
         "reason": "Morinaga Milk terms prohibit unauthorized use, reproduction, modification, distribution, or publication beyond private use and require prior permission.",
+        "reviewed_on": "2026-11-23",
+    },
+    "housefoods.jp": {
+        "policy_url": "https://housefoods.jp/term_of_use.html",
+        "reason": "House Foods terms state that site text and other information are copyright-protected and cannot be used without authorization beyond legally permitted exceptions.",
+        "reviewed_on": "2026-11-23",
+    },
+    "tablemark.co.jp": {
+        "policy_url": "https://www.tablemark.co.jp/content/terms.html",
+        "reason": "Tablemark terms restrict unauthorized use of site content beyond uses permitted by copyright law.",
+        "reviewed_on": "2026-11-23",
+    },
+    "lotte.co.jp": {
+        "policy_url": "https://www.lotte.co.jp/agreement/index.html",
+        "reason": "Lotte terms prohibit copying, modifying, distributing, or publicly transmitting site information beyond private-use copyright exceptions without company consent.",
         "reviewed_on": "2026-11-23",
     },
     "marusanai.co.jp": {

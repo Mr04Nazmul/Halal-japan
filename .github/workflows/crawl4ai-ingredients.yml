@@ -18,7 +18,7 @@ on:
     - cron: '12 * * * *'
 concurrency:
   group: ingredient-collector-${{ github.workflow }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 permissions:
   contents: read
   actions: read
