@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - scripts/import_japan_ingredients_supabase.py
+      - scripts/japan_ingredient_source_terms.py
       - scripts/japan_ingredient_import_dedup.py
       - tests/test_japan_ingredient_import_dedup.py
       - scripts/japan_ingredient_barcodes.py
