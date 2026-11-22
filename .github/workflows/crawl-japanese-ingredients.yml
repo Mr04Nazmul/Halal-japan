@@ -10,6 +10,8 @@ on:
       - scripts/japan_ingredient_policy.py
       - scripts/japan_ingredient_food_filter.py
       - tests/test_japan_ingredient_food_filter.py
+      - tests/test_japan_ingredient_crawler.py
+      - tests/test_japan_ingredient_run_yield.py
       - scripts/japan_ingredient_sources.json
       - .github/workflows/crawl-japanese-ingredients.yml
   pull_request:
