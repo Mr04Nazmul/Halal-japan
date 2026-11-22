@@ -136,3 +136,4 @@ jobs:
 
 # Source terms policy v2 (2026-11-22): pending URLs from newly restricted publishers are quarantined at restore; accepted product rows are untouched.
 # Bounded hourly wake: 2026-11-23T01:19+09:00; retry only cooldown-expired official URLs, preserve source terms, checkpoint and idempotent staging.
+# Bounded hourly collection wake: 2026-11-23T04:13+09:00; retry cooldown-expired eligible official product URLs, preserve source-terms and checkpoint safeguards.
