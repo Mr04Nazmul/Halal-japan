@@ -8,7 +8,7 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v5"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v6"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -135,6 +135,26 @@ RESTRICTED_SOURCE_POLICIES = {
     "marusanai.co.jp": {
         "policy_url": "https://www.marusanai.co.jp/privacy/",
         "reason": "Marusan-Ai prohibits unauthorized use or copying of site content for purposes other than noncommercial private use",
+        "reviewed_on": "2026-11-22",
+    },
+    "itoen.jp": {
+        "policy_url": "https://www.itoen.co.jp/agreement/",
+        "reason": "Ito En terms restrict use, reproduction, distribution, alteration, or republication of site information beyond private use without prior consent",
+        "reviewed_on": "2026-11-22",
+    },
+    "kewpie.co.jp": {
+        "policy_url": "https://www.kewpie.com/policy/",
+        "reason": "Kewpie prohibits unauthorized use of website content beyond private or legally permitted scope, including reuse on other websites or printed materials",
+        "reviewed_on": "2026-11-22",
+    },
+    "meg-snow.com": {
+        "policy_url": "https://www.meg-snow.com/rule/",
+        "reason": "Megmilk Snow Brand limits content use to private or legally permitted scope and prohibits reuse on other websites or printed media without consent",
+        "reviewed_on": "2026-11-22",
+    },
+    "yotsuba.co.jp": {
+        "policy_url": "https://www.yotsuba.co.jp/guide/rule/",
+        "reason": "Yotsuba prohibits unauthorized use of copyrighted website content beyond personal or legally permitted use",
         "reviewed_on": "2026-11-22",
     },
 }
