@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v15"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v16"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -111,6 +111,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "nagatanien.co.jp": {
         "policy_url": "https://www.nagatanien.co.jp/sitepolicy/",
         "reason": "Nagatanien site policy states that website text, images, video and programs are copyrighted by Nagatanien; bulk ingredient-data reuse permission or a compatible licence is not established, so collection/import is paused pending rights-holder clarification.",
+        "reviewed_on": "2026-11-23",
+    },
+    "ohsawa-japan.co.jp": {
+        "policy_url": "https://new.ohsawa-japan.co.jp/?actmode=AboutCopyright",
+        "reason": "Ohsawa's site copyright terms state that site content may not be copied, reused, modified, publicly transmitted, or sold without authorization beyond personal-use and legal exceptions; bulk ingredient-data reuse permission is not established, so automated collection/import is paused pending rights-holder clarification.",
         "reviewed_on": "2026-11-23",
     },
     "montoile.co.jp": {
