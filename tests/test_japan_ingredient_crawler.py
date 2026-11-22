@@ -207,11 +207,11 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   catalogue='https://www.topvalu.net/items/'
+   catalogue='https://www.fujicco.co.jp/products/'
    myojo_catalogue='https://www.myojofoods.co.jp/products/items/'
    nissin_catalogue='https://www.nissin.com/jp/'
    fujicco_sitemap='https://www.fujicco.co.jp/sitemap.xml'
-   product='https://www.topvalu.net/items/detail/4549414700565/'
+   product='https://www.fujicco.co.jp/products/detail/123'
    blocked='https://www.kewpie.co.jp/products/'
    self.assertTrue(allowed_link(myojo_catalogue))
    self.assertTrue(allowed_link(nissin_catalogue))
