@@ -8,7 +8,7 @@ compatible licence is established. Existing database rows are not modified.
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v3"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-22-v4"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -40,6 +40,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "bourbon.co.jp": {
         "policy_url": "https://www.bourbon.co.jp/terms.html",
         "reason": "Bourbon terms permit only personal private use; downloading, copying, modifying, distributing, transmitting, reusing on other websites or printed materials, or commercial use without consent is prohibited",
+        "reviewed_on": "2026-11-22",
+    },
+    "dydo.co.jp": {
+        "policy_url": "https://holdings.dydo.co.jp/terms/",
+        "reason": "DyDo terms allow personal use but prohibit reprinting website content on other websites or printed materials and prohibit unauthorized copying, secondary use, or sale",
         "reviewed_on": "2026-11-22",
     },
     "fujicco.co.jp": {
