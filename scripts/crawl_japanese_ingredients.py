@@ -44,6 +44,7 @@ SOURCES={
  'fujicco.co.jp':r'/products/detail/\d+',
  'fujiya-peko.co.jp':r'/sweets/item/\d+',
  'glico.com':r'/jp/product/.*/\d+',
+ 'uha-mikakuto.co.jp':r'/catalog/gummy/(?!index\.html$)[A-Za-z0-9_-]+\.html$',
  'housefoods.jp':r'/products/catalog/(?:cd_|discontinued_)',
  'imuraya.co.jp':r'/goods/[^/]+/[^/]+/[^/]+',
  'kikkoman.co.jp':r'/products(?:-G)?/.*/detail/',
@@ -117,6 +118,8 @@ def allowed_link(u):
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
  if host=='nissin.com' and path.rstrip('/')=='/jp':return True
+ # UHA's official gummy catalogue root is a bounded discovery page.
+ if host=='uha-mikakuto.co.jp' and path.rstrip('/')=='/catalog/gummy':return True
  if host=='housefoods.jp' and path.startswith('/products/special/'):return False
  # Kagome's consumer marketing microsites currently account for hundreds of
  # non-product navigation fetches. Only the supported /foodservice/ detail
@@ -274,6 +277,12 @@ def extract(html,url):
    if h.get_text(' ',strip=True) and not re.search(r'(?:商品を探す|カテゴリから探す|商品ラインアップ|商品トップへ戻る|チャネル限定商品|商品情報|アレルギー情報)',h.get_text(' ',strip=True))),None)
   if product_heading:name=product_heading
  name=re.sub(r'\s*の詳細情報$','',name).strip()
+ if source(url)=='uha-mikakuto.co.jp':
+  # UHA pages use a generic H1; the exact product identity is in the first product H2.
+  product_heading=next((h.get_text(' ',strip=True) for h in soup.find_all('h2')
+   if h.get_text(' ',strip=True) and clean_label(h.get_text(' ',strip=True)) not in {'グミ','商品情報','商品カタログ'}),None)
+  if product_heading:name=product_heading
+  elif clean_label(name)=='グミ':return None,'missing_product_identity'
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
@@ -520,7 +529,8 @@ class Collector:
            or (source(url)=='myojofoods.co.jp' and parsed.path.rstrip('/')=='/products/items')
            or (source(url)=='nissin.com' and parsed.path.rstrip('/')=='/jp')
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')
-           or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')):continue
+           or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
+           or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')):continue
    host=parsed.netloc
    limit=8 if source(url) in {'topvalu.net','natori.co.jp'} else 1
    if refreshed_by_host.get(host,0)>=limit:continue

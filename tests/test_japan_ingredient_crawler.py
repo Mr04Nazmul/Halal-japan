@@ -751,4 +751,44 @@ class Extraction(unittest.TestCase):
   self.assertFalse(record['halal_certified'])
 
 
+class UhaSourceTests(unittest.TestCase):
+ def test_uha_gummy_detail_extracts_exact_product_name_and_ingredients(self):
+  url='https://www.uha-mikakuto.co.jp/catalog/gummy/gu273.html'
+  ingredients='砂糖（国内製造）、果糖ぶどう糖液糖、ゼラチン、米粉、濃縮果汁（マスカット、りんご）、イヌリン／酸味料、ゲル化剤（アラビアガム）、香料'
+  html=f'''<h1>グミ</h1><h2>忍者めし鋼　マスカット味</h2>
+  <table class="product-data-table">
+   <tr><th>原材料名</th><td>{ingredients}</td></tr>
+   <tr><th>内容量</th><td>45g</td></tr>
+  </table>'''
+  self.assertTrue(product_url(url))
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'忍者めし鋼　マスカット味')
+  self.assertEqual(record['ingredients_ja'],ingredients)
+  self.assertIsNone(record['jan'])
+  self.assertEqual(record['source_publisher'],'uha-mikakuto.co.jp')
+  self.assertEqual(record['ingredient_field_status'],'complete_displayed_field')
+  self.assertFalse(record['halal_certified'])
+
+ def test_uha_gummy_catalogue_root_refreshes_without_treating_it_as_a_product(self):
+  from crawl_japanese_ingredients import allowed_link
+  root='https://www.uha-mikakuto.co.jp/catalog/gummy'
+  detail='https://www.uha-mikakuto.co.jp/catalog/gummy/gu273.html'
+  index='https://www.uha-mikakuto.co.jp/catalog/gummy/index.html'
+  self.assertTrue(allowed_link(root))
+  self.assertFalse(product_url(root))
+  self.assertTrue(product_url(detail))
+  self.assertFalse(allowed_link(index))
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   c.enqueue([root,detail])
+   c.db.execute("UPDATE queue SET status='done'")
+   c.db.commit()
+   c.run([root,detail],max_pages=0,minutes=0)
+   states=dict(c.db.execute("SELECT url,status FROM queue"))
+   self.assertEqual(states[canonical(root)],'pending')
+   self.assertEqual(states[canonical(detail)],'done')
+   c.db.close()
+
+
 if __name__=='__main__':unittest.main()
