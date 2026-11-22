@@ -735,4 +735,20 @@ class Extraction(unittest.TestCase):
   self.assertFalse(allowed_link('https://www.matsukiyococokara-online.com/store/customer/account'))
   self.assertFalse(product_url('https://www.matsukiyococokara-online.com.evil.example/store/catalog/product/view/id/4904083473651'))
 
+
+ def test_glico_official_product_title_and_inline_jan_are_captured(self):
+  url='https://www.glico.com/jp/product/drink/glicomilk/47200/'
+  html='''<h1>グリコ牛乳</h1><h2>グリコ牛乳 1000ml</h2>
+  <h3>原材料名</h3><p>生乳100％（国産）</p>
+  <p>JANコード：4971666400137</p>'''
+  self.assertEqual(product_url(url),True)
+  record,error=extract(html,url)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'グリコ牛乳 1000ml')
+  self.assertEqual(record['ingredients_ja'],'生乳100％（国産）')
+  self.assertEqual(record['jan'],'4971666400137')
+  self.assertEqual(record['source_publisher'],'glico.com')
+  self.assertFalse(record['halal_certified'])
+
+
 if __name__=='__main__':unittest.main()
