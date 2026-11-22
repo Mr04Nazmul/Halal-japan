@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/scrapy-ingredients.yml'
       - 'scripts/scrapy_ingredient_discovery.py'
+      - 'tests/test_scrapy_ingredient_discovery.py'
       - 'data/manufacturer_seed_urls.txt'
   schedule:
     - cron: '27 * * * *'
@@ -21,6 +22,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install 'Scrapy>=2.11,<3'
+      - name: Test strict product-detail ingredient discovery
+        run: python -m unittest discover -s tests -p 'test_scrapy_ingredient_discovery.py' -v
       - name: Discover public manufacturer ingredient pages
         run: scrapy runspider scripts/scrapy_ingredient_discovery.py -O scrapy-ingredient-candidates.jsonl
       - uses: actions/upload-artifact@v4
