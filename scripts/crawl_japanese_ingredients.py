@@ -600,10 +600,13 @@ class Collector:
            or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
            or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')):continue
    host=parsed.netloc
-   limit=8 if source(url) in {'topvalu.net','natori.co.jp','fujicco.co.jp'} else 1
-   if refreshed_by_host.get(host,0)>=limit:continue
+   # Refresh at most one sitemap and one catalogue entry point per host.
+   # A sitemap must not be starved by a catalogue seed from the same host.
+   refresh_kind='sitemap' if sitemap_url(url) else 'catalogue'
+   refresh_key=(host,refresh_kind)
+   if refreshed_by_host.get(refresh_key,0)>=1:continue
    updated=self.db.execute("UPDATE queue SET status='pending',attempts=0,next_try=0 WHERE url=? AND status='done' AND error IS NULL",(url,))
-   if updated.rowcount:refreshed_by_host[host]=refreshed_by_host.get(host,0)+1
+   if updated.rowcount:refreshed_by_host[refresh_key]=refreshed_by_host.get(refresh_key,0)+1
   self.db.commit()
   # Seeded official product URLs must not starve behind an ever-growing discovery queue.
   # This TEMP table is recreated on each run; it does not alter persistent checkpoints.
