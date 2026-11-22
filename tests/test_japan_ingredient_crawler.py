@@ -511,7 +511,7 @@ class Extraction(unittest.TestCase):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
    navigation='https://muso.co.jp/item/tag/older-list'
-   product='https://www.meiji.co.jp/products/yogurt/4902705127654.html'
+   product='https://muso.co.jp/item/32882.html'
    self.assertTrue(product_url(product))
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(product,)])
    c.db.commit()
@@ -551,7 +551,7 @@ class Extraction(unittest.TestCase):
    c=Collector(folder,100000)
    navigation='https://muso.co.jp/item/tag/first-list'
    backlog='https://muso.co.jp/item/tag/older-list'
-   product='https://www.meiji.co.jp/products/yogurt/4902705127654.html'
+   product='https://muso.co.jp/item/32882.html'
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(navigation,),(backlog,)])
    c.db.commit()
    visited=[]
