@@ -491,6 +491,26 @@ class Collector:
   self.run_started_at=datetime.now(timezone.utc).isoformat()
   self.run_start_count=self.count()
   self.enqueue(seeds)
+  # Muso's official product pages expose explicit 商品名, JANCODE and 原材料
+  # table rows. Older checkpoints marked these pages missing/ambiguous before
+  # the labelled-table parser was in place. Revisit only seeded Muso product
+  # URLs with that exact field-extraction rejection; preserve 404, robots,
+  # maintenance, already accepted and other rejected records.
+  muso_recovery_key='muso_label_recovery_20261122'
+  if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(muso_recovery_key,)).fetchone():
+   recovered=0
+   for raw in seeds:
+    url=canonical(raw)
+    if source(url)!='muso.co.jp' or not product_url(url):continue
+    changed=self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url=? AND status='done' AND error='missing_or_ambiguous_ingredients'
+     AND NOT EXISTS (
+      SELECT 1 FROM products p WHERE json_extract(p.payload,'$.source_url')=queue.url
+     )""",(url,))
+    recovered+=changed.rowcount
+   self.db.execute('INSERT OR REPLACE INTO metadata VALUES(?,?)',(muso_recovery_key,'done'))
+   self.db.commit()
+   print('Muso labelled-field recovery:',recovered,'previously rejected seeded pages',flush=True)
   # Retry a bounded set of independently inspected House Foods product pages
   # once if a previous checkpoint marked them as navigation or extraction
   # failures. Never reset accepted records, 404s, robots blocks or cooldowns.

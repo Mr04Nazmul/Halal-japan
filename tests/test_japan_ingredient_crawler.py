@@ -6,6 +6,35 @@ from crawl_japanese_ingredients import Collector,extract,product_url,canonical
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://muso.co.jp/item/32882.html'
 class Extraction(unittest.TestCase):
+ def test_muso_product_table_extracts_explicit_jan_and_ingredients(self):
+  record,error=extract(HTML,URL)
+  self.assertIsNone(error)
+  self.assertEqual(record['name_ja'],'テスト米菓')
+  self.assertEqual(record['jan'],'4973728910141')
+  self.assertEqual(record['ingredients_ja'],'米、食塩')
+  self.assertFalse(record['halal_certified'])
+
+ def test_muso_label_recovery_requeues_only_seeded_field_rejections(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   rejected='https://muso.co.jp/item/32882.html'
+   blocked='https://muso.co.jp/item/32883.html'
+   accepted='https://muso.co.jp/item/32884.html'
+   c.db.executemany('INSERT INTO queue(url,status,attempts,next_try,error) VALUES(?,?,?,?,?)',[
+    (rejected,'done',1,0,'missing_or_ambiguous_ingredients'),
+    (blocked,'done',1,0,'robots_disallowed'),
+    (accepted,'done',1,0,'missing_or_ambiguous_ingredients')])
+   c.db.execute('INSERT INTO products(id,formula,payload) VALUES(?,?,?)',
+    ('existing:muso','existing',json.dumps({'source_url':accepted})))
+   c.db.commit()
+   c.permitted=lambda u:True
+   c.request=lambda u:HTML
+   c.run([rejected,blocked,accepted],max_pages=1,minutes=0.1)
+   self.assertEqual(c.count(),2)
+   self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(rejected,)).fetchone(),('done',None))
+   self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(blocked,)).fetchone(),('done','robots_disallowed'))
+   self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(accepted,)).fetchone(),('done','missing_or_ambiguous_ingredients'))
+   c.db.close()
  def test_housefoods_origin_heading_is_not_an_ingredient_declaration(self):
   url='https://housefoods.jp/products/catalog/cd_1,092996.html'
   ingredients='コーングリッツ（国内製造）、植物油脂、食塩／調味料（アミノ酸等）、（一部に豚肉を含む）'
