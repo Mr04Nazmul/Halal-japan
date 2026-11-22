@@ -161,7 +161,7 @@ def allowed_link(u):
  # Keep only exact product detail pages; sitemap URLs were accepted above.
  if host=='maruchan.co.jp':return product_url(u)
  # Kyoritsu's official consumer catalogue paginates product listings at /product/page/N/.
- if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\\d+/?',path):return True
+ if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',path):return True
  if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
@@ -633,13 +633,13 @@ class Collector:
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')
            or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
            or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')
-           or (source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\\d+/?',parsed.path))):continue
+           or (source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path))):continue
    host=parsed.netloc
    # Refresh at most one sitemap and one catalogue entry point per host.
    # A sitemap must not be starved by a catalogue seed from the same host.
    if sitemap_url(url):
     refresh_kind='sitemap';refresh_limit=1
-   elif source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\\d+/?',parsed.path):
+   elif source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path):
     # 12 paginated catalogue pages are bounded and each exposes product links.
     refresh_kind='catalogue_page';refresh_limit=12
    else:

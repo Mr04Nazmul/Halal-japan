@@ -60,7 +60,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
-            url = f\"https://www.kyoritsu-foods.co.jp/product/page/{page}/\"
+            url = f"https://www.kyoritsu-foods.co.jp/product/page/{page}/"
             with self.subTest(url=url):
                 self.assertTrue(allowed_link(url))
                 self.assertFalse(product_url(url))
