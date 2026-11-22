@@ -12,6 +12,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from japan_ingredient_barcodes import jan_valid
+from crawl_japanese_ingredients import product_url as is_supported_product_url
+from japan_ingredient_food_filter import (
+    has_unresolved_html_artifacts,
+    is_nonfood_ingredient_text,
+    is_nonfood_name,
+)
 
 OUT = Path("data/manufacturer_ingredient_candidates.csv")
 PATHS = [
@@ -55,7 +61,13 @@ def extract_ingredient_text(text):
     if not match:
         return ""
     ingredients = re.sub(r"\s+", " ", match.group(1)).strip(" ：:、|")
-    if len(ingredients) < 3 or not re.search(r"[ぁ-んァ-ヶ一-龠]", ingredients):
+    if (
+        len(ingredients) < 10
+        or not re.search(r"[ぁ-んァ-ヶ一-龠]", ingredients)
+        or is_nonfood_ingredient_text(ingredients)
+        or has_unresolved_html_artifacts(ingredients)
+        or NON_DECLARATION_TEXT.search(ingredients)
+    ):
         return ""
     return ingredients[:1600]
 
@@ -76,7 +88,9 @@ def extract_candidate_records(records, exported_at=None):
     items = []
     for record in records:
         url = str(record.get("source_url") or "").strip()
-        if not url.startswith("https://") or url in seen_urls:
+        # Only exact, supported manufacturer/retailer product-detail URLs qualify.
+        # Generic category, corporate, safety and marketing pages are discovery leads, not products.
+        if not url.startswith("https://") or url in seen_urls or not is_supported_product_url(url):
             continue
         text = evidence_text(record)
         ingredients = extract_ingredient_text(text)
@@ -89,6 +103,13 @@ def extract_candidate_records(records, exported_at=None):
             product_name = re.split(r"\s*[|｜]\s*", page_title, maxsplit=1)[0].strip()
         if not product_name:
             continue
+        normalized_name = re.sub(r"\\s+", "", product_name)
+        if (
+            normalized_name in GENERIC_PAGE_NAMES
+            or normalized_name.endswith("の原材料について")
+            or is_nonfood_name(product_name)
+        ):
+            continue
 
         jan_candidates = explicit_jan_codes(text)
         jan_code = jan_candidates[0] if len(jan_candidates) == 1 else ""
@@ -100,9 +121,15 @@ def extract_candidate_records(records, exported_at=None):
                 "ingredient_text": ingredients,
                 "source_url": url,
                 "source_type": record.get("source_type") or "official_public_page_candidate",
-                "source_captured_at": record.get("captured_at") or record.get("retrieved_at") or "",
+                "source_captured_at": record.get("captured_at") or record.get("retrieved_at") or exported_at,
                 "candidate_exported_at": exported_at,
-                "verification_status": record.get("verification") or record.get("verification_status") or "needs_human_review",
+                "verification_status": (
+                    record.get("verification")
+                    if record.get("verification") in {"needs_human_review", "needs_manual_review"}
+                    else record.get("verification_status")
+                    if record.get("verification_status") in {"needs_human_review", "needs_manual_review"}
+                    else "needs_human_review"
+                ),
                 "halal_certified": "false",
                 "page_sha256": record.get("page_sha256") or "",
                 "reviewed": "false",

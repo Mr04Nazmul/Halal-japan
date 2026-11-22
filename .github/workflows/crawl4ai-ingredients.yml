@@ -31,7 +31,7 @@ jobs:
           python-version: '3.11'
       - name: Install crawler and Chromium
         run: |
-          pip install 'crawl4ai==0.7.8'
+          pip install 'crawl4ai==0.7.8' 'beautifulsoup4==4.14.3'
           crawl4ai-setup
       - name: Crawl permitted public pages
         env:
