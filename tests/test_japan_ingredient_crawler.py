@@ -326,6 +326,7 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   url='https://montoile.co.jp/products/hannama-assort/'
   self.assertTrue(product_url(url))
+  self.assertTrue(product_url('https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473651'))
   self.assertTrue(allowed_link('https://montoile.co.jp/products-sitemap.xml'))
   self.assertFalse(product_url('https://montoile.co.jp/product_category/hannama/'))
   html='''<main><section id="product"><h1>半生アソート</h1>
