@@ -118,7 +118,7 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
             if (source and isinstance(name, str) and name.strip()
                     and isinstance(ingredients, str) and ingredients.strip()):
                 formula = (urlsplit(source).hostname,
-                           re.sub(r"\\s+", "", name), ingredients.strip())
+                           re.sub(r"\s+", "", name), ingredients.strip())
                 formula_owners.setdefault(formula, set()).add(ident)
         if len(found) < page_size:
             break
@@ -137,7 +137,7 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
                 and isinstance(name, str) and name.strip()
                 and isinstance(ingredients, str) and ingredients.strip()):
             batch_jan_formulas.add((urlsplit(src).hostname,
-                                    re.sub(r"\\s+", "", name), ingredients.strip()))
+                                    re.sub(r"\s+", "", name), ingredients.strip()))
 
     safe, conflicts = [], []
     seen_formulas = {}
@@ -186,7 +186,7 @@ def filter_existing_source_conflicts(rows, base_url, key, opener=None):
             ingredients = row.get("ingredients_ja")
             if isinstance(name, str) and name.strip() and isinstance(ingredients, str) and ingredients.strip():
                 formula = (urlsplit(source).hostname,
-                           re.sub(r"\\s+", "", name), ingredients.strip())
+                           re.sub(r"\s+", "", name), ingredients.strip())
                 if formula in batch_jan_formulas:
                     conflicts.append({"identity_key": ident, "source_url": source,
                                       "reason": "same-batch JAN-backed formula"})
