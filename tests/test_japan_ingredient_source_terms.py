@@ -20,6 +20,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.ajinomoto.co.jp/products/": "ajinomoto.co.jp",
             "https://www.asahi-gf.co.jp/products/food/": "asahi-gf.co.jp",
             "https://www.asahiinryo.co.jp/products/": "asahiinryo.co.jp",
+            "https://www.askul.co.jp/p/U217658/": "askul.co.jp",
             "https://www.fujiya-peko.co.jp/sweets/item/26844.html": "fujiya-peko.co.jp",
             "https://www.fujicco.co.jp/products/detail/123": "fujicco.co.jp",
             "https://www.kamedaseika.co.jp/product/2068/": "kamedaseika.co.jp",
@@ -66,6 +67,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.meiji.co.jp/product/1"))
         self.assertTrue(is_terms_restricted_url("http://www.fujiya-peko.co.jp/item/1"))
         self.assertTrue(is_terms_restricted_url("https://shop.muso.co.jp/item/1"))
+        self.assertTrue(is_terms_restricted_url("https://food.askul.co.jp/p/U217658/"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -98,6 +100,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890",
             "https://muso.co.jp/item/75025.html",
             "https://www.nipponham.co.jp/products/processed_foods/bread_pizza/24216/",
+            "https://www.askul.co.jp/p/U217658/",
             "https://www.hikarimiso.co.jp/products/kodawari01/",
             "https://www.hanamaruki.co.jp/products/instant_soup/sokuseki_wakame/",
             "https://www.calbee.co.jp/products/detail/?p=20261106232447",
@@ -126,6 +129,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             set(RESTRICTED_SOURCE_POLICIES),
             {
                 "agf.ajinomoto.co.jp",
+                "askul.co.jp",
                 "ajinomoto.co.jp",
                 "asahi-gf.co.jp",
                 "asahiinryo.co.jp",
