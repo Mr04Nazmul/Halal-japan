@@ -39,6 +39,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.tohato.jp/products/caramelcorn/": "tohato.jp",
             "https://www.topvalu.net/items/detail/4902123456789/": "topvalu.net",
             "https://7premium.jp/product/search/detail?id=10791": "7premium.jp",
+            "https://www.hikarimiso.co.jp/products/kodawari01/": "hikarimiso.co.jp",
+            "https://www.marusanai.co.jp/lineup/detail-64095/": "marusanai.co.jp",
         }
         for url, domain in examples.items():
             with self.subTest(url=url):
@@ -73,6 +75,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890",
             "https://muso.co.jp/item/75025.html",
             "https://www.nipponham.co.jp/products/processed_foods/bread_pizza/24216/",
+            "https://www.hikarimiso.co.jp/products/kodawari01/",
+            "https://www.marusanai.co.jp/lineup/detail-64095/",
             "https://www.topvalu.net/items/detail/4902123456789/",
             "https://7premium.jp/product/search/detail?id=10791",
         ]
@@ -107,6 +111,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "tohato.jp",
                 "topvalu.net",
                 "7premium.jp",
+                "hikarimiso.co.jp",
+                "marusanai.co.jp",
             },
         )
 
