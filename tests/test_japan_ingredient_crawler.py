@@ -280,7 +280,7 @@ class Extraction(unittest.TestCase):
   self.assertFalse(allowed_link('https://and.kagome.co.jp/products/feature/'))
 
  def test_kagome_restricted_source_is_quarantined_without_deleting_queue(self):
-  from crawl_japanese_ingredients import allowed_link
+  from crawl_japanese_ingredients import allowed_link,quarantine_restricted_pending_sources
   blocked=['https://www.kagome.co.jp/products/vegetablejuice/brand/',
            'https://and.kagome.co.jp/products/feature/',
            'https://www.kagome.co.jp/foodservice/frozen/5615/']
@@ -288,10 +288,13 @@ class Extraction(unittest.TestCase):
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
    good='https://www.kyoritsu-foods.co.jp/product/page/7/'
+   c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in blocked])
+   c.db.commit()
+   self.assertEqual(quarantine_restricted_pending_sources(c.db),3)
    visited=[]
    c.permitted=lambda u:True
    c.request=lambda u:(visited.append(u) or '<h1>Catalog</h1>')
-   c.run(blocked+[good],max_pages=1,minutes=1)
+   c.run([good],max_pages=1,minutes=1)
    self.assertEqual(visited,[good])
    for url in blocked:
     self.assertEqual(c.db.execute('SELECT status,error FROM queue WHERE url=?',(url,)).fetchone(),
