@@ -496,7 +496,7 @@ class Collector:
   # the labelled-table parser was in place. Revisit only seeded Muso product
   # URLs with that exact field-extraction rejection; preserve 404, robots,
   # maintenance, already accepted and other rejected records.
-  muso_recovery_key='muso_label_recovery_20261122'
+  muso_recovery_key='muso_label_recovery_20261122_v2'
   if not self.db.execute('SELECT 1 FROM metadata WHERE key=?',(muso_recovery_key,)).fetchone():
    recovered=0
    for raw in seeds:
