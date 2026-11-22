@@ -178,8 +178,13 @@ def allowed_link(u):
  # Kirin's official soft-drink nutrition catalogue links to product pages.
  # Never traverse unrelated alcohol or marketing sections.
  if host=='kirin.co.jp' and path.rstrip('/')=='/softdrink/nutrition/softdrink':return True
- # Yamaki's official catalogue root links to its product-detail pages.
- if host=='yamaki.co.jp' and path.rstrip('/')=='/catalog':return True
+ # Yamaki's public catalogue root and bounded consumer-category pages link
+ # directly to exact product-detail pages. Keep the separate business catalogue
+ # and unrelated marketing/recipe sections out of scope.
+ if host=='yamaki.co.jp' and path.rstrip('/') in (
+  '/catalog','/catalog/katsuo','/catalog/mixture','/catalog/dashi',
+  '/catalog/tsuyu','/catalog/none-allergen','/catalog/gennen','/catalog/none-konbu'
+ ):return True
  return bool(source(u) and (product_url(u) or re.search(r'/(?:items/(?:category|list)|items/?$|item(?:/category)?|products?(?:/|$)|products\.html$|products_search/|jp/product|goods/|sweets/|business/|foodservice/)',urlsplit(u).path)) and not re.search(r'\.(?:jpg|png|svg|pdf|zip|js|css)$',urlsplit(u).path,re.I))
 def gtin(s):
  return s.isascii() and s.isdigit() and len(s) in (8,12,13,14) and (sum(int(n)*(3 if i%2==0 else 1) for i,n in enumerate(s[-2::-1]))+int(s[-1]))%10==0

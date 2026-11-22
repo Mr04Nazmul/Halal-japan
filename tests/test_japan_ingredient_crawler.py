@@ -949,3 +949,26 @@ class CheckpointPerformanceIndexes(unittest.TestCase):
    self.assertTrue(any('products_source_url_idx' in row[3] for row in product_plan),product_plan)
    self.assertTrue(any('queue_status_next_try_idx' in row[3] for row in queue_plan),queue_plan)
    c.db.close()
+
+
+class YamakiCategoryDiscoveryTests(unittest.TestCase):
+ def test_only_bounded_official_consumer_catalogue_categories_are_followed(self):
+  from crawl_japanese_ingredients import allowed_link,product_url,source
+  categories=[
+   'https://www.yamaki.co.jp/catalog/katsuo/',
+   'https://www.yamaki.co.jp/catalog/mixture/',
+   'https://www.yamaki.co.jp/catalog/dashi/',
+   'https://www.yamaki.co.jp/catalog/tsuyu/',
+   'https://www.yamaki.co.jp/catalog/none-allergen/',
+   'https://www.yamaki.co.jp/catalog/gennen/',
+   'https://www.yamaki.co.jp/catalog/none-konbu/',
+  ]
+  for url in categories:
+   with self.subTest(url=url):
+    self.assertEqual(source(url),'yamaki.co.jp')
+    self.assertTrue(allowed_link(url))
+    self.assertFalse(product_url(url))
+  self.assertTrue(allowed_link('https://www.yamaki.co.jp/catalog/'))
+  self.assertTrue(product_url('https://www.yamaki.co.jp/catalog/products/index.php?id=93'))
+  self.assertFalse(allowed_link('https://www.yamaki.co.jp/catalog/recipes/'))
+  self.assertFalse(allowed_link('https://www.yamaki.co.jp/pcatalog/'))
