@@ -34,6 +34,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.sbfoods.co.jp/products/detail/123.html": "sbfoods.co.jp",
             "https://sokensha.co.jp/news/2026/13262/": "sokensha.co.jp",
             "https://montoile.co.jp/products/tenohira-gopan-tomato-basil/": "montoile.co.jp",
+            "https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906": "ohsawa-japan.co.jp",
             "https://www.maruchan.co.jp/products/search/310686.html": "maruchan.co.jp",
             "https://www.meiji.co.jp/products/drink/4902705133150.html": "meiji.co.jp",
             "https://www.meito-abc.co.jp/products/lineup/new": "meito-abc.co.jp",
@@ -76,6 +77,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.yamamori.co.jp/products/matsusaka_sukiyaki/"))
         self.assertTrue(is_terms_restricted_url("https://shop.sokensha.co.jp/products/example/"))
         self.assertTrue(is_terms_restricted_url("https://shop.montoile.co.jp/products/example/"))
+        self.assertTrue(is_terms_restricted_url("https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -105,6 +107,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.sbfoods.co.jp/products/detail/123.html",
             "https://sokensha.co.jp/products/product_detail/161784",
             "https://montoile.co.jp/products/tenohira-gopan-tomato-basil/",
+            "https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906",
             "https://www.maruchan.co.jp/products/search/310686.html",
             "https://www.meiji.co.jp/products/drink/4902705133150.html",
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890",
@@ -185,6 +188,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "yamamori.co.jp",
                 "sokensha.co.jp",
                 "montoile.co.jp",
+                "ohsawa-japan.co.jp",
             },
         )
 
@@ -206,19 +210,21 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_yamamori = "https://www.yamamori.co.jp/products/matsusaka_sukiyaki/"
             blocked_sokensha = "https://sokensha.co.jp/news/2026/13262/"
             blocked_montoile = "https://montoile.co.jp/products/tenohira-gopan-tomato-basil/"
+            blocked_ohsawa = "https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906"
             allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 4)
+            self.assertEqual(changed, 5)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
             self.assertEqual(rows[blocked_sokensha], "done")
             self.assertEqual(rows[blocked_montoile], "done")
+            self.assertEqual(rows[blocked_ohsawa], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 5)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 6)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
