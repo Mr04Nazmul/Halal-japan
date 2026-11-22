@@ -1,4 +1,4 @@
-import json,sys,tempfile,unittest,time,urllib.error
+import json,sys,tempfile,unittest,time,urllib.error,sqlite3
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 from crawl_japanese_ingredients import Collector,extract,product_url,canonical
