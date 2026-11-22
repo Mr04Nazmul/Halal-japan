@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v11"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v12"
 
 RESTRICTED_SOURCE_POLICIES = {
     # Ajinomoto AGF has a separate policy from the parent Ajinomoto site.
@@ -171,6 +171,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "housefoods.jp": {
         "policy_url": "https://housefoods.jp/term_of_use.html",
         "reason": "House Foods terms state that site text and other information are copyright-protected and cannot be used without authorization beyond legally permitted exceptions.",
+        "reviewed_on": "2026-11-23",
+    },
+    "tajimaya-cc.net": {
+        "policy_url": "https://www.tajimaya-cc.net/service",
+        "reason": "Tajimaya site footer asserts copyright for site content; bulk ingredient-data reuse permission is not established, so automated collection/import is paused pending rights-holder clarification.",
         "reviewed_on": "2026-11-23",
     },
     "tablemark.co.jp": {
