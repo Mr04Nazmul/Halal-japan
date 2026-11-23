@@ -92,3 +92,5 @@ https://shop.kyoritsu-foods.co.jp/item-detail/1981297
 https://shop.kyoritsu-foods.co.jp/item-detail/1981307
 https://shop.kyoritsu-foods.co.jp/item-detail/1981473
 https://shop.kyoritsu-foods.co.jp/item-detail/1981475
+# Bounded Kyoritsu Foods official online-shop catalogue root; follow only exact item-detail product pages.
+https://shop.kyoritsu-foods.co.jp/
