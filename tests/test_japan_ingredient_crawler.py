@@ -21,12 +21,12 @@ class Extraction(unittest.TestCase):
   ]
   for url,title,jan,ingredients,expected_name in cases:
    with self.subTest(url=url):
-    html=f\'''<html><head><title>{title} | 共立食品ショップ</title></head><body>
+    html=f'''<html><head><title>{title} | 共立食品ショップ</title></head><body>
     <h1 class="title1">{title}</h1>
     <div class="item-detail-jancode"><dl><dt>JANコード</dt><dd>{jan}</dd></dl></div>
     <div class="item-footer"><div class="item-detail-txt1 wysiwyg-data">
     <h2>商品詳細</h2><div>●規格…100ｇ</div><div><div>●原材料名…{ingredients}</div></div>
-    </div></div></body></html>\'''
+    </div></div></body></html>'''
     record,error=extract(html,url)
     self.assertIsNone(error)
     self.assertEqual(record['name_ja'],expected_name)
