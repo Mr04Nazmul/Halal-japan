@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v23"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v24"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -281,6 +281,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "sangaria.co.jp": {
         "policy_url": "https://sangaria.co.jp/privacy/",
         "reason": "Sangaria site-use terms state that website content is copyrighted by Japan Sangaria Beverage Company and prohibit unauthorized reproduction, reuse, sale, or other secondary use; no compatible licence or bulk ingredient-data reuse permission is established, so automated collection/import is paused pending rights-holder permission.",
+        "reviewed_on": "2026-11-23",
+    },
+    "kyoritsu-foods.co.jp": {
+        "policy_url": "https://www.kyoritsu-foods.co.jp/",
+        "reason": "The official manufacturer site footer identifies © 2023 Kyoritsu Foods and its manufacturer-operated shop footer identifies © 2026 Kyoritsu Foods Shop; no compatible licence or bulk ingredient-data reuse permission is established, so automated collection/import is paused pending rights-holder clarification.",
         "reviewed_on": "2026-11-23",
     },
     "lawson.co.jp": {
