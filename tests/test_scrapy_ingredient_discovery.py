@@ -77,6 +77,32 @@ class IngredientDiscoveryTests(unittest.TestCase):
             is_product_detail_url("https://www.itoen.jp/products/category/drink/")
         )
 
+    def test_kyoritsu_shop_category_allowlist_is_exact(self):
+        allowed = "https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441"
+        self.assertTrue(is_allowed_source_url(allowed))
+        self.assertFalse(is_product_detail_url(allowed))
+        for url in (
+            "https://shop.kyoritsu-foods.co.jp/item-list?categoryId=abc",
+            "https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441&foo=1",
+            "https://shop.kyoritsu-foods.co.jp/item-list?foo=1",
+            "https://shop.kyoritsu-foods.co.jp/membership",
+            "https://shop.kyoritsu-foods.co.jp/item-detail/not-a-number",
+            "https://shop.kyoritsu-foods.co.jp/item-detail/1981297?redirect=1",
+        ):
+            with self.subTest(url=url):
+                self.assertFalse(is_allowed_source_url(url))
+
+    def test_kyoritsu_item_detail_with_explicit_label_is_candidate(self):
+        html = """
+        <html><h1>米粉のバターミルクパンケーキミックス</h1>
+        <table><tr><th>原材料名</th><td>米粉、砂糖、バターミルクパウダー</td></tr></table>
+        </html>
+        """
+        url = "https://shop.kyoritsu-foods.co.jp/item-detail/1981297"
+        self.assertTrue(is_allowed_source_url(url))
+        self.assertTrue(is_product_detail_url(url))
+        self.assertTrue(is_ingredient_product_candidate(url, html))
+
     def test_known_product_detail_url_shapes(self):
         urls = [
             "https://www.natori.co.jp/products_search/sausage/item_539",
