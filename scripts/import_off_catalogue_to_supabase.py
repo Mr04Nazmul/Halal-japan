@@ -63,8 +63,8 @@ def build_review_row(record, *, require_japan_scope=False):
     if not JP_CHARS.search(name) or not JP_CHARS.search(ingredients):
         return None
     # Han characters are shared with Chinese. Require kana in the ingredient
-    # label, or a Japan-issued JAN prefix for all-kanji labels. This remains
-    # discovery_only / needs_review; the prefix is not certification evidence.
+    # label, or a 45/49 JAN prefix as a weak tie-breaker for all-kanji labels.
+    # Neither signal proves market presence; rows remain discovery_only / needs_review.
     if not JP_KANA.search(ingredients) and not code.startswith(("45", "49")):
         return None
 
