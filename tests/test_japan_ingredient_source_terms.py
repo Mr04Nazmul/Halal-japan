@@ -72,6 +72,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.katosangyo.co.jp/product/detail/159/": "katosangyo.co.jp",
             "https://www.ohyamafoods.co.jp/products/junkomesu500ml": "ohyamafoods.co.jp",
             "https://www.kurakon.jp/products/01/shiodai.html": "kurakon.jp",
+            "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/": "sangaria.co.jp",
         }
         for url, domain in examples.items():
             with self.subTest(url=url):
@@ -96,6 +97,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.katosangyo.co.jp/product/detail/159/"))
         self.assertTrue(is_terms_restricted_url("https://www.ohyamafoods.co.jp/products/junkomesu500ml"))
         self.assertTrue(is_terms_restricted_url("https://www.kurakon.jp/products/01/shiodai.html"))
+        self.assertTrue(is_terms_restricted_url("https://shop.sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -159,6 +161,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.katosangyo.co.jp/product/detail/159/",
             "https://www.ohyamafoods.co.jp/products/junkomesu500ml",
             "https://www.kurakon.jp/products/01/shiodai.html",
+            "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/",
             "https://www.glico.com/jp/product/drink/glicomilk/47200/",
             "https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380",
         ]
@@ -223,6 +226,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "katosangyo.co.jp",
                 "ohyamafoods.co.jp",
                 "kurakon.jp",
+                "sangaria.co.jp",
             },
         )
 
@@ -263,12 +267,13 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_kato = "https://www.katosangyo.co.jp/product/detail/159/"
             blocked_ohyama = "https://www.ohyamafoods.co.jp/products/junkomesu500ml"
             blocked_kurakon = "https://www.kurakon.jp/products/01/shiodai.html"
+            blocked_sangaria = "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/"
             allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 13)
+            self.assertEqual(changed, 14)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
@@ -283,8 +288,9 @@ class SourceTermsPolicyTests(unittest.TestCase):
             self.assertEqual(rows[blocked_kato], "done")
             self.assertEqual(rows[blocked_ohyama], "done")
             self.assertEqual(rows[blocked_kurakon], "done")
+            self.assertEqual(rows[blocked_sangaria], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 14)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 15)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
