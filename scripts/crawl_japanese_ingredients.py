@@ -261,7 +261,7 @@ def extract(html,url):
  # Capture only explicit 原材料名/原材料 labels from that product-detail block.
  if (urlsplit(url).hostname or '').lower()=='shop.kyoritsu-foods.co.jp':
   for block in soup.select('.item-detail-txt1.wysiwyg-data > div'):
-   raw=unicodedata.normalize('NFKC',block.get_text(' ',strip=True))
+   raw=block.get_text(' ',strip=True)  # preserve the exact displayed ingredient punctuation
    match=re.match(r'^[●•\s]*(原材料名/添加物名|原材料名|原材料)\s*(?:[/／:：]|…|\.\.\.)\s*(.+)$',raw,re.S)
    if match:
     fields.setdefault(match.group(1),[]).append(match.group(2).strip())
@@ -520,6 +520,18 @@ class Collector:
         SELECT 1 FROM products p
         WHERE json_extract(p.payload,'$.source_url')=queue.url
        )""")
+   # Older Kyoritsu shop product pages were marked done when the parser
+   # missed the explicitly labelled 原材料名 block inside nested divs.
+   # Revisit only those field-extraction failures once; preserve accepted rows.
+   if not previous or 'kyoritsu-shop-v1' not in previous[0]:
+    changed=self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url LIKE 'https://shop.kyoritsu-foods.co.jp/item-detail/%'
+       AND status='done' AND error='missing_or_ambiguous_ingredients'
+       AND NOT EXISTS (
+        SELECT 1 FROM products p
+        WHERE json_extract(p.payload,'$.source_url')=queue.url
+       )""")
+    print('Kyoritsu shop extraction recovery:',changed.rowcount,'previously rejected pages',flush=True)
    # Retry only previously rejected House Foods product pages after fixing
    # the misleading origin-section heading. Keep robots/404 decisions,
    # already accepted records and the rest of the queue untouched.
