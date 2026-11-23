@@ -94,3 +94,13 @@ https://shop.kyoritsu-foods.co.jp/item-detail/1981473
 https://shop.kyoritsu-foods.co.jp/item-detail/1981475
 # Bounded Kyoritsu Foods official online-shop catalogue root; follow only exact item-detail product pages.
 https://shop.kyoritsu-foods.co.jp/
+
+# Bounded Kyoritsu Foods official online-shop category listings; only numeric categoryId filters are followed.
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109442
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109448
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109445
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110226
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110227
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110229
+https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110230
