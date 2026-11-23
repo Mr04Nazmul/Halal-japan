@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v20"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v21"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -271,6 +271,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "kurakon.jp": {
         "policy_url": "https://www.kurakon.jp/products/01/shiodai.html",
         "reason": "Kurakon product pages carry an explicit company copyright notice; no compatible licence or bulk ingredient-data reuse permission is established.",
+        "reviewed_on": "2026-11-23",
+    },
+    "sangaria.co.jp": {
+        "policy_url": "https://sangaria.co.jp/privacy/",
+        "reason": "Sangaria site-use terms state that website content is copyrighted by Japan Sangaria Beverage Company and prohibit unauthorized reproduction, reuse, sale, or other secondary use; no compatible licence or bulk ingredient-data reuse permission is established, so automated collection/import is paused pending rights-holder permission.",
         "reviewed_on": "2026-11-23",
     },
 }
