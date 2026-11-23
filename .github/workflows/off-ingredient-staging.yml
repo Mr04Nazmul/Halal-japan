@@ -1,5 +1,12 @@
 name: OFF Japanese ingredient staging threshold
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/off-ingredient-staging.yml'
+      - 'scripts/import_off_japan_ingredients.py'
+      - 'scripts/stage_off_ingredient_batch.py'
+      - 'tests/test_off_ingredient_staging.py'
   workflow_dispatch:
   schedule:
     - cron: '51 * * * *'
@@ -17,15 +24,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Test OFF review-only import and insert-only deduplication
+        run: python -m unittest discover -s tests -p 'test_off_ingredient_staging.py' -v
       - name: Fetch source-backed candidates
-        # Run 162 starts after the first 20 pages scanned by the previous run.
+        # Runs 162-164 never created jobs. Run 165 resumes after the first 20 pages.
         # Calculate the rotating page offset in Bash; GitHub expressions do not
-        # support multiplication and previously prevented this workflow from
-        # creating a job.
+        # support multiplication.
         shell: bash
         run: |
           set -euo pipefail
-          start_page=$((21 + (GITHUB_RUN_NUMBER - 162) * 20))
+          start_page=$((21 + (GITHUB_RUN_NUMBER - 165) * 20))
           python scripts/import_off_japan_ingredients.py --pages 20 --page-size 100 --start-page "$start_page"
       - name: Import only if at least 1000 qualified records
         run: python scripts/stage_off_ingredient_batch.py
