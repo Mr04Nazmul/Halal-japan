@@ -41,6 +41,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906": "ohsawa-japan.co.jp",
             "https://www.pokkasapporo-fb.jp/products/soup/jikkuri/WZ02.html": "pokkasapporo-fb.jp",
             "https://www.uha-mikakuto.co.jp/catalog/gummy/gu330.html": "uha-mikakuto.co.jp",
+            "https://www.ucc.co.jp/product/drink/coffee/black/black-can.html": "ucc.co.jp",
             "https://www.maruchan.co.jp/products/search/310686.html": "maruchan.co.jp",
             "https://www.meiji.co.jp/products/drink/4902705133150.html": "meiji.co.jp",
             "https://www.meito-abc.co.jp/products/lineup/new": "meito-abc.co.jp",
@@ -100,6 +101,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906"))
         self.assertTrue(is_terms_restricted_url("https://shop.pokkasapporo-fb.jp/products/example/"))
         self.assertTrue(is_terms_restricted_url("https://shop.uha-mikakuto.co.jp/catalog/gummy/gu330.html"))
+        self.assertTrue(is_terms_restricted_url("https://store.ucc.co.jp/item/CAL1300002.html"))
         self.assertTrue(is_terms_restricted_url("https://and.kagome.co.jp/products/feature/"))
         self.assertTrue(is_terms_restricted_url("https://www.glico.com/jp/product/drink/glicomilk/47200/"))
         self.assertTrue(is_terms_restricted_url("https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380"))
@@ -152,6 +154,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906",
             "https://www.pokkasapporo-fb.jp/products/soup/jikkuri/WZ02.html",
             "https://www.uha-mikakuto.co.jp/catalog/gummy/gu330.html",
+            "https://www.ucc.co.jp/product/drink/coffee/black/black-can.html",
             "https://www.maruchan.co.jp/products/search/310686.html",
             "https://www.meiji.co.jp/products/drink/4902705133150.html",
             "https://www.morinaga.co.jp/products/detail.php?id=PRD1234-56-7890",
@@ -253,6 +256,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "ohsawa-japan.co.jp",
                 "pokkasapporo-fb.jp",
                 "uha-mikakuto.co.jp",
+                "ucc.co.jp",
                 "katosangyo.co.jp",
                 "ohyamafoods.co.jp",
                 "kurakon.jp",
@@ -294,6 +298,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_ohsawa = "https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906"
             blocked_pokka = "https://www.pokkasapporo-fb.jp/products/soup/jikkuri/WZ02.html"
             blocked_uha = "https://www.uha-mikakuto.co.jp/catalog/gummy/gu330.html"
+            blocked_ucc = "https://www.ucc.co.jp/product/drink/coffee/black/black-can.html"
             blocked_kagome = "https://www.kagome.co.jp/foodservice/frozen/5615/"
             blocked_glico = "https://www.glico.com/jp/product/drink/glicomilk/47200/"
             blocked_kirin = "https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380"
@@ -309,10 +314,10 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_kyoritsu_shop = "https://shop.kyoritsu-foods.co.jp/item-detail/1981297"
             allowed = "https://www.yamaki.co.jp/catalog/products/index.php?id=86"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (blocked_lawson,), (blocked_mizkan,), (blocked_mizkan_asia,), (blocked_kyoritsu_main,), (blocked_kyoritsu_shop,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_ucc,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (blocked_lawson,), (blocked_mizkan,), (blocked_mizkan_asia,), (blocked_kyoritsu_main,), (blocked_kyoritsu_shop,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 20)
+            self.assertEqual(changed, 21)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
@@ -321,6 +326,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             self.assertEqual(rows[blocked_ohsawa], "done")
             self.assertEqual(rows[blocked_pokka], "done")
             self.assertEqual(rows[blocked_uha], "done")
+            self.assertEqual(rows[blocked_ucc], "done")
             self.assertEqual(rows[blocked_kagome], "done")
             self.assertEqual(rows[blocked_glico], "done")
             self.assertEqual(rows[blocked_kirin], "done")
@@ -335,7 +341,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             self.assertEqual(rows[blocked_kyoritsu_main], "done")
             self.assertEqual(rows[blocked_kyoritsu_shop], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 21)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 22)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
