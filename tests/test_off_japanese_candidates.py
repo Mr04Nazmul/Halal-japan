@@ -113,5 +113,42 @@ class OFFSupplementalJapanShardTests(unittest.TestCase):
         self.assertNotIn("_halalVerified", row)
 
 
+    def test_chinese_only_japan_tagged_label_is_rejected(self):
+        row = self.sample(
+            code="6942656601269",
+            product_name="青梅绿茶",
+            ingredients_text="水、白砂糖、果葡糖浆、绿茶浓缩液",
+            _sourceUrl="https://world.openfoodfacts.org/product/6942656601269",
+        )
+        self.assertIsNone(catalogue_module.build_review_row(
+            row, require_japan_scope=True
+        ))
+
+    def test_all_kanji_japanese_label_with_japan_jan_prefix_is_reviewable(self):
+        row = self.sample(
+            code="4903210718726",
+            product_name="元祖玉露",
+            ingredients_text="緑茶(京都府産)",
+            _sourceUrl="https://world.openfoodfacts.org/product/4903210718726",
+        )
+        accepted = catalogue_module.build_review_row(
+            row, require_japan_scope=True
+        )
+        self.assertIsNotNone(accepted)
+        self.assertEqual(accepted["status"], "needs_review")
+        self.assertEqual(accepted["evidence_level"], "discovery_only")
+
+    def test_all_kanji_non_japan_prefix_is_rejected(self):
+        row = self.sample(
+            code="6942656601269",
+            product_name="青梅绿茶",
+            ingredients_text="青梅绿茶",
+            _sourceUrl="https://world.openfoodfacts.org/product/6942656601269",
+        )
+        self.assertIsNone(catalogue_module.build_review_row(
+            row, require_japan_scope=True
+        ))
+
+
 if __name__ == "__main__":
     unittest.main()
