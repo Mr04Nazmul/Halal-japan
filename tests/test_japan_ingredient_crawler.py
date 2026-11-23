@@ -878,37 +878,19 @@ class Extraction(unittest.TestCase):
   self.assertFalse(record['halal_certified'])
 
 
- def test_matsukiyo_retailer_pages_capture_only_labelled_ingredients_and_explicit_jan(self):
+ def test_matsukiyo_retailer_pages_are_blocked_pending_reuse_permission(self):
   from crawl_japanese_ingredients import allowed_link,source
-  fixtures=[
-   ('https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473651',
-    'matsukiyo LAB　糖質９．３ｇソイスナック　チーズ味 ２９ｇ','4904083473651',
-    '大豆パフ（調製豆乳粉、でんぷん）（国内製造）、植物油脂、チーズシーズニング（チーズパウダー、グラニュー糖、食塩、たんぱく加水分解物、オニオンパウダー）／調味料（アミノ酸等）、炭酸Ｃａ、香料、微粒二酸化ケイ素、パプリカ色素、甘味料（スクラロース）、（一部に乳成分・小麦・大豆を含む）'),
-   ('https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473668',
-    'matsukiyo LAB　糖質９．８ｇソイスナック　うましお ２９ｇ','4904083473668',
-    '大豆パフ（調製豆乳粉、でんぷん）（国内製造）、植物油脂、うましおシーズニング（砂糖、デキストリン、食塩、粉末醤油、粉末昆布エキス、粉末鰹エキス、粉末酵母エキス、粉末椎茸エキス）／調味料（アミノ酸等）、炭酸Ｃａ、香料、微粒二酸化ケイ素、甘味料（スクラロース）、（一部に小麦・大豆を含む）')]
-  for url,name,jan,ingredients in fixtures:
+  urls=[
+   'https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473651',
+   'https://www.matsukiyococokara-online.com/store/catalog/product/view/id/4904083473668',
+   'https://www.matsukiyococokara-online.com/store/catalog/category/view/categories/009/04/01'
+  ]
+  for url in urls:
    with self.subTest(url=url):
     self.assertEqual(source(url),'matsukiyococokara-online.com')
-    self.assertTrue(product_url(url))
-    self.assertTrue(allowed_link(url))
-    html=f'''<h1><img alt="store logo"></h1>
-    <div class="p-productdetail__box_tit"><h1><big>{name}</big></h1></div>
-    <dl><dt><big>JANコード</big></dt><dd><big>{jan}</big></dd></dl>
-    <div class="p-explanation__txt white_space"><p>〖原材料〗
-    {ingredients}
-    〖栄養成分表示〗１袋（２９ｇ）当たり エネルギー１４１ｋｃａｌ</p></div>'''
-    record,error=extract(html,url)
-    self.assertIsNone(error)
-    self.assertEqual(record['name_ja'],name)
-    self.assertEqual(record['jan'],jan)
-    self.assertEqual(record['ingredients_ja'],ingredients)
-    self.assertEqual(record['source_publisher'],'matsukiyococokara-online.com')
-    self.assertFalse(record['halal_certified'])
-  category='https://www.matsukiyococokara-online.com/store/catalog/category/view/categories/009/04/01'
-  self.assertTrue(allowed_link(category))
-  self.assertFalse(allowed_link('https://www.matsukiyococokara-online.com/store/customer/account'))
-  self.assertFalse(product_url('https://www.matsukiyococokara-online.com.evil.example/store/catalog/product/view/id/4904083473651'))
+    if '/product/view/' in url:
+     self.assertTrue(product_url(url))
+    self.assertFalse(allowed_link(url))
 
 
  def test_kirin_official_product_pages_are_blocked_pending_reuse_permission(self):

@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v21"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v22"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -36,6 +36,11 @@ RESTRICTED_SOURCE_POLICIES = {
     "askul.co.jp": {
         "policy_url": "https://www.askul.co.jp/etc/disclaimer.html",
         "reason": "ASKUL states product-information content belongs to ASKUL or rights holders and prohibits copying, adaptation, reuse, distribution, public transmission, or third-party provision without prior consent beyond legally permitted scope",
+        "reviewed_on": "2026-11-23",
+    },
+    "matsukiyococokara-online.com": {
+        "policy_url": "https://www.matsukiyococara-online.com/rule",
+        "reason": "Matsukiyo Cocokara terms restrict site information to private-use copyright exceptions and prohibit unauthorized commercial or secondary use; bulk ingredient-data reuse permission is not established.",
         "reviewed_on": "2026-11-23",
     },
     "fujiya-peko.co.jp": {
