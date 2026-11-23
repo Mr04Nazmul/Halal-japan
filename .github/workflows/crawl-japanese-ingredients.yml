@@ -25,6 +25,8 @@ on:
       - tests/test_japan_ingredient_policy.py
       - tests/test_japan_ingredient_source_terms.py
       - data/manufacturer_seed_urls.txt
+      - scripts/japan_ingredient_sources.json
+      - .github/workflows/crawl-japanese-ingredients.yml
 permissions:
   contents: read
   actions: write
@@ -97,9 +99,28 @@ jobs:
             echo 'First hosted run: previous 721-record chat checkpoint is separate; revalidate official sources without adding unimported counts.'
           fi
           rm -rf crawler-candidates
+      - name: Merge reviewed manufacturer seed URLs
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          primary = json.loads(Path('scripts/japan_ingredient_sources.json').read_text(encoding='utf-8'))
+          supplemental = []
+          for line in Path('data/manufacturer_seed_urls.txt').read_text(encoding='utf-8').splitlines():
+              value = line.split('#', 1)[0].strip()
+              if value.startswith(('https://', 'http://')):
+                  supplemental.append(value)
+          merged = list(dict.fromkeys([*primary, *supplemental]))
+          Path('crawler-seeds.json').write_text(
+              json.dumps(merged, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          print(f'Primary seeds: {len(primary)}; supplemental seeds: {len(supplemental)}; merged unique seeds: {len(merged)}')
+          PY
       - name: Crawl one bounded batch toward 100000 actual ingredient products
         if: github.ref == 'refs/heads/main'
-        run: python -u scripts/crawl_japanese_ingredients.py --target 100000 --minutes 30 --max-pages 1200
+        run: python -u scripts/crawl_japanese_ingredients.py --seeds crawler-seeds.json --target 100000 --minutes 30 --max-pages 1200
       - name: Finalize consistent exports even after an interrupted batch
         id: finalize
         if: always() && github.ref == 'refs/heads/main' && steps.restore.outcome == 'success' && hashFiles('crawler-state/state.sqlite3') != ''
