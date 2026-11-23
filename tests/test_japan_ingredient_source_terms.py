@@ -24,7 +24,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.asahi-gf.co.jp/products/food/": "asahi-gf.co.jp",
             "https://www.asahiinryo.co.jp/products/": "asahiinryo.co.jp",
             "https://www.askul.co.jp/p/U217658/": "askul.co.jp",
-            "https://www.matsukiyococokara-online.com/products/food/": "matsukiyococara-online.com",
+            "https://www.matsukiyococokara-online.com/products/food/": "matsukiyococokara-online.com",
             "https://www.fujiya-peko.co.jp/sweets/item/26844.html": "fujiya-peko.co.jp",
             "https://www.fujicco.co.jp/products/detail/123": "fujicco.co.jp",
             "https://www.glico.com/jp/product/drink/glicomilk/47200/": "glico.com",
@@ -86,7 +86,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("http://www.fujiya-peko.co.jp/item/1"))
         self.assertTrue(is_terms_restricted_url("https://shop.muso.co.jp/item/1"))
         self.assertTrue(is_terms_restricted_url("https://food.askul.co.jp/p/U217658/"))
-        self.assertTrue(is_terms_restricted_url("https://shop.matsukiyococara-online.com/products/food/"))
+        self.assertTrue(is_terms_restricted_url("https://shop.matsukiyococokara-online.com/products/food/"))
         self.assertTrue(is_terms_restricted_url("https://shop.yamamori.co.jp/products/matsusaka_sukiyaki/"))
         self.assertTrue(is_terms_restricted_url("https://shop.sokensha.co.jp/products/example/"))
         self.assertTrue(is_terms_restricted_url("https://shop.montoile.co.jp/products/example/"))
@@ -148,7 +148,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://muso.co.jp/item/75025.html",
             "https://www.nipponham.co.jp/products/processed_foods/bread_pizza/24216/",
             "https://www.askul.co.jp/p/U217658/",
-            "https://www.matsukiyococara-online.com/products/food/example",
+            "https://www.matsukiyococokara-online.com/products/food/example",
             "https://www.hikarimiso.co.jp/products/kodawari01/",
             "https://www.hanamaruki.co.jp/products/instant_soup/sokuseki_wakame/",
             "https://www.calbee.co.jp/products/detail/?p=20261106232447",
@@ -188,7 +188,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             {
                 "agf.ajinomoto.co.jp",
                 "askul.co.jp",
-                "matsukiyococara-online.com",
+                "matsukiyococokara-online.com",
                 "ajinomoto.co.jp",
                 "asahi-gf.co.jp",
                 "asahiinryo.co.jp",
@@ -282,7 +282,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_ohyama = "https://www.ohyamafoods.co.jp/products/junkomesu500ml"
             blocked_kurakon = "https://www.kurakon.jp/products/01/shiodai.html"
             blocked_sangaria = "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/"
-            blocked_matsukiyo = "https://www.matsukiyococara-online.com/products/food/example"
+            blocked_matsukiyo = "https://www.matsukiyococokara-online.com/products/food/example"
             allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
                            [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (allowed,)])
