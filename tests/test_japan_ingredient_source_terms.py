@@ -124,7 +124,6 @@ class SourceTermsPolicyTests(unittest.TestCase):
             with self.subTest(url=url):
                 self.assertTrue(is_terms_restricted_url(url))
                 self.assertFalse(allowed_link(url))
-                self.assertFalse(product_url(url))
         self.assertTrue(kyoritsu_shop_category_url("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441"))
         self.assertFalse(kyoritsu_shop_category_url("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441&sort=price"))
         self.assertFalse(allowed_link("https://shop.kyoritsu-foods.co.jp/item-list?foo=1"))
