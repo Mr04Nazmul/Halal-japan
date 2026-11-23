@@ -24,8 +24,14 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_off_japan_ingredient_retry.py' -v
       - name: Fetch Japan ingredient evidence with attribution
         # Run 313 starts after the first 5 pages scanned by the previous run.
-        # Each later run advances by 5 pages; the collector wraps at OFF page_count.
-        run: python scripts/import_off_japan_ingredients.py --pages 5 --page-size 100 --start-page "${{ 6 + (github.run_number - 313) * 5 }}"
+        # Calculate the rotating page offset in Bash; GitHub expressions do not
+        # support multiplication and previously prevented this workflow from
+        # creating a job.
+        shell: bash
+        run: |
+          set -euo pipefail
+          start_page=$((6 + (GITHUB_RUN_NUMBER - 313) * 5))
+          python scripts/import_off_japan_ingredients.py --pages 5 --page-size 100 --start-page "$start_page"
       - uses: actions/upload-artifact@v4
         with:
           name: off-japan-ingredient-candidates
