@@ -86,6 +86,26 @@ class OpenFoodFactsRetryTests(unittest.TestCase):
         self.assertFalse(collector.is_japanese_ingredient_candidate(
             "4901002018849", "Poppy seeds", "water and salt"))
 
+    def test_fetch_page_returns_api_page_count(self):
+        payload = {"products": [{"code": "4901002018849"}], "page_count": "17"}
+        products, page_count = collector.fetch_page(
+            "https://world.openfoodfacts.org/test",
+            opener=lambda req, timeout: io.BytesIO(json.dumps(payload).encode()),
+            sleeper=lambda _: None,
+        )
+        self.assertEqual(len(products), 1)
+        self.assertEqual(page_count, 17)
+
+    def test_page_sequence_wraps_at_page_count(self):
+        self.assertEqual(collector.page_sequence(6, 4, 7), [6, 7, 1, 2])
+        self.assertEqual(collector.page_sequence(8, 3, 7), [1, 2, 3])
+
+    def test_page_sequence_without_page_count_is_monotonic(self):
+        self.assertEqual(collector.page_sequence(6, 3, None), [6, 7, 8])
+
+    def test_page_sequence_never_repeats_within_a_window(self):
+        self.assertEqual(collector.page_sequence(2, 20, 7), [2, 3, 4, 5, 6, 7, 1])
+
 
 if __name__ == "__main__":
     unittest.main()

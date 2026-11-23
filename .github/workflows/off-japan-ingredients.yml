@@ -23,7 +23,9 @@ jobs:
       - name: Test bounded OFF retries and barcode gate
         run: python -m unittest discover -s tests -p 'test_off_japan_ingredient_retry.py' -v
       - name: Fetch Japan ingredient evidence with attribution
-        run: python scripts/import_off_japan_ingredients.py --pages 5 --page-size 100
+        # Run 313 starts after the first 5 pages scanned by the previous run.
+        # Each later run advances by 5 pages; the collector wraps at OFF page_count.
+        run: python scripts/import_off_japan_ingredients.py --pages 5 --page-size 100 --start-page "${{ 6 + (github.run_number - 313) * 5 }}"
       - uses: actions/upload-artifact@v4
         with:
           name: off-japan-ingredient-candidates
