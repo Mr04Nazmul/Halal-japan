@@ -13,6 +13,15 @@ spec.loader.exec_module(collector)
 
 
 class OpenFoodFactsRetryTests(unittest.TestCase):
+    def test_access_and_server_errors_stop_the_page_batch(self):
+        for code in (401, 403, 429, 500, 502, 503, 504):
+            error = urllib.error.HTTPError("https://world.openfoodfacts.org/test",
+                                           code, "blocked", {}, None)
+            self.assertTrue(collector.should_stop_batch(error), code)
+        not_found = urllib.error.HTTPError("https://world.openfoodfacts.org/test",
+                                           404, "not found", {}, None)
+        self.assertFalse(collector.should_stop_batch(not_found))
+
     def test_503_then_success(self):
         calls = []
         sleeps = []
