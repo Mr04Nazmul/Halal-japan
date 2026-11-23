@@ -103,6 +103,11 @@ class IngredientDiscoveryTests(unittest.TestCase):
         self.assertTrue(is_product_detail_url(url))
         self.assertTrue(is_ingredient_product_candidate(url, html))
 
+    def test_kyoritsu_bullet_ellipsis_ingredient_label_is_candidate(self):
+        html = "<html><p>●原材料名…米粉(国内製造)、砂糖、バターミルクパウダー</p></html>"
+        url = "https://shop.kyoritsu-foods.co.jp/item-detail/1981297"
+        self.assertTrue(is_ingredient_product_candidate(url, html))
+
     def test_known_product_detail_url_shapes(self):
         urls = [
             "https://www.natori.co.jp/products_search/sausage/item_539",
