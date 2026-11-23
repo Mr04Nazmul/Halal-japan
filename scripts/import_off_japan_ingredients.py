@@ -17,6 +17,7 @@ from pathlib import Path
 JP_TEXT = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
 JP_KANA = re.compile(r"[\u3040-\u30ff]")
 RETRYABLE_HTTP = {429, 500, 502, 503, 504}
+STOP_BATCH_HTTP = {401, 403, 429, 500, 502, 503, 504}
 USER_AGENT = "JapanHalalCheckerResearch/1.1 (https://github.com/Mr04Nazmul/Halal-japan)"
 
 
@@ -97,6 +98,11 @@ def page_sequence(start_page, pages, page_count=None):
     return [((first - 1 + offset) % page_count) + 1 for offset in range(count)]
 
 
+def should_stop_batch(error):
+    """Stop paging after access denial, rate limiting, or exhausted server errors."""
+    return isinstance(error, urllib.error.HTTPError) and error.code in STOP_BATCH_HTTP
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pages", type=int, default=2)
@@ -126,12 +132,17 @@ def main():
     # runs rotate through the full catalogue instead of rescanning pages 1..N.
     probe_products = None
     page_count = None
+    stop_after_probe = False
     try:
         probe_products, page_count = fetch_page(page_url(start_page))
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
-        print(f"page-count probe for page {start_page} failed; retrying in collection loop: {exc}",
-              flush=True)
-    page_numbers = page_sequence(start_page, pages, page_count)
+        failed_pages += 1
+        print(f"page-count probe for page {start_page} failed: {exc}", flush=True)
+        stop_after_probe = should_stop_batch(exc)
+        if stop_after_probe:
+            print("Stopping OFF batch after access/rate-limit/server failure; no further pages requested.",
+                  flush=True)
+    page_numbers = [] if stop_after_probe else page_sequence(start_page, pages, page_count)
     print(json.dumps({"start_page": start_page, "page_count": page_count,
                       "pages_requested": pages, "page_window": page_numbers}), flush=True)
 
@@ -145,6 +156,10 @@ def main():
                 except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
                     failed_pages += 1
                     print(f"page {page} failed after retries: {exc}", flush=True)
+                    if should_stop_batch(exc):
+                        print("Stopping OFF batch after access/rate-limit/server failure.",
+                              flush=True)
+                        break
                     continue
             for row in products:
                 code = str(row.get("code") or "").strip()
