@@ -862,8 +862,9 @@ class Extraction(unittest.TestCase):
   for url in urls:
    with self.subTest(url=url):
     self.assertEqual(source(url),'mizkan.co.jp')
+    # Product URL shape is independent of permission; the source-terms gate blocks traversal.
     self.assertTrue(product_url(url))
-    self.assertTrue(allowed_link(url))
+    self.assertFalse(allowed_link(url))
   self.assertFalse(product_url('https://shop.mizkan.co.jp/products/'))
   url=urls[3]
   ingredients='しょうゆ（国内製造）、醸造酢、果糖ぶどう糖液糖、かんきつ混合果汁、バター風味エキス（ポークエキス、バター（北海道製造）、食塩）、でん粉、食塩、バターミルクパウダー、砂糖、野菜エキス、ポークチキン香味オイル、焙煎糖、こしょう、クリーム加工品、酵母エキス加工品／調味料（アミノ酸等）、香料、酸味料、増粘多糖類、乳化剤、（一部に小麦・乳成分・大豆・鶏肉・豚肉を含む）'

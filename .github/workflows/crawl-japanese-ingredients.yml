@@ -20,6 +20,7 @@ on:
   pull_request:
     paths:
       - scripts/crawl_japanese_ingredients.py
+      - scripts/japan_ingredient_source_terms.py
       - scripts/japan_ingredient_policy.py
       - tests/test_japan_ingredient_crawler.py
       - tests/test_japan_ingredient_policy.py

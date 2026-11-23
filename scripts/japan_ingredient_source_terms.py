@@ -4,7 +4,7 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v22"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v23"
 
 RESTRICTED_SOURCE_POLICIES = {
     "sokensha.co.jp": {
@@ -281,6 +281,21 @@ RESTRICTED_SOURCE_POLICIES = {
     "sangaria.co.jp": {
         "policy_url": "https://sangaria.co.jp/privacy/",
         "reason": "Sangaria site-use terms state that website content is copyrighted by Japan Sangaria Beverage Company and prohibit unauthorized reproduction, reuse, sale, or other secondary use; no compatible licence or bulk ingredient-data reuse permission is established, so automated collection/import is paused pending rights-holder permission.",
+        "reviewed_on": "2026-11-23",
+    },
+    "lawson.co.jp": {
+        "policy_url": "https://www.lawson.co.jp/kiyaku/rule.html",
+        "reason": "Lawson website terms prohibit use, reproduction, distribution, or modification of website information beyond personal use or legally permitted exceptions without rights-holder consent; bulk ingredient-data reuse permission is not established.",
+        "reviewed_on": "2026-11-23",
+    },
+    "mizkan.co.jp": {
+        "policy_url": "https://mizkan.asia/jp/terms-of-use",
+        "reason": "Mizkan Group terms prohibit copying, reproducing, adapting, distributing, or publicly transmitting website content without prior written consent; no compatible licence or bulk ingredient-data reuse permission is established.",
+        "reviewed_on": "2026-11-23",
+    },
+    "mizkan.asia": {
+        "policy_url": "https://mizkan.asia/jp/terms-of-use",
+        "reason": "Mizkan Group terms prohibit copying, reproducing, adapting, distributing, or publicly transmitting website content without prior written consent; no compatible licence or bulk ingredient-data reuse permission is established.",
         "reviewed_on": "2026-11-23",
     },
 }

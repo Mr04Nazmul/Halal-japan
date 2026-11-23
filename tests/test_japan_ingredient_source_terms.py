@@ -12,7 +12,7 @@ from japan_ingredient_source_terms import (
     is_terms_restricted_url,
     source_terms_restriction,
 )
-from crawl_japanese_ingredients import (allowed_link, product_url, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
+from crawl_japanese_ingredients import (allowed_link, canonical, kyoritsu_shop_category_url, product_url, SOURCE_TERMS_QUARANTINE_KEY, quarantine_restricted_pending_sources)
 from agent_reach_public_sources import build_report
 
 
@@ -74,6 +74,10 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.ohyamafoods.co.jp/products/junkomesu500ml": "ohyamafoods.co.jp",
             "https://www.kurakon.jp/products/01/shiodai.html": "kurakon.jp",
             "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/": "sangaria.co.jp",
+            "https://www.lawson.co.jp/recommend/original/detail/123": "lawson.co.jp",
+            "https://shop.mizkan.co.jp/products/detail/123": "mizkan.co.jp",
+            "https://www.mizkan.co.jp/products/detail/123": "mizkan.co.jp",
+            "https://mizkan.asia/jp/terms-of-use": "mizkan.asia",
         }
         for url, domain in examples.items():
             with self.subTest(url=url):
@@ -100,6 +104,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://www.ohyamafoods.co.jp/products/junkomesu500ml"))
         self.assertTrue(is_terms_restricted_url("https://www.kurakon.jp/products/01/shiodai.html"))
         self.assertTrue(is_terms_restricted_url("https://shop.sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/"))
+        self.assertTrue(is_terms_restricted_url("https://www.lawson.co.jp/recommend/original/detail/123"))
+        self.assertTrue(is_terms_restricted_url("https://mldata.lawson.co.jp/lab/food/"))
+        self.assertTrue(is_terms_restricted_url("https://shop.mizkan.co.jp/products/detail/123"))
+        self.assertTrue(is_terms_restricted_url("https://www.mizkan.co.jp/products/detail/123"))
+        self.assertTrue(is_terms_restricted_url("https://mizkan.asia/jp/terms-of-use"))
 
     def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
         for page in range(2, 14):
@@ -118,6 +127,20 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(allowed_link(detail))
         self.assertTrue(product_url(detail))
         self.assertFalse(is_terms_restricted_url(detail))
+
+    def test_kyoritsu_shop_category_pages_are_bounded_navigation(self):
+        category_ids = (109441, 109442, 109448, 109445, 110226, 110227, 110229, 110230)
+        for category_id in category_ids:
+            url = f"https://shop.kyoritsu-foods.co.jp/item-list?categoryId={category_id}"
+            with self.subTest(url=url):
+                self.assertEqual(canonical(url), url)
+                self.assertTrue(kyoritsu_shop_category_url(url))
+                self.assertTrue(allowed_link(url))
+                self.assertFalse(product_url(url))
+                self.assertFalse(is_terms_restricted_url(url))
+        self.assertFalse(kyoritsu_shop_category_url("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441&sort=price"))
+        self.assertFalse(allowed_link("https://shop.kyoritsu-foods.co.jp/item-list?foo=1"))
+        self.assertFalse(allowed_link("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=abc"))
 
     def test_unreviewed_sources_are_not_mislabeled_as_blocked(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
@@ -177,6 +200,9 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/",
             "https://www.glico.com/jp/product/drink/glicomilk/47200/",
             "https://products.kirin.co.jp/softdrink/softdrink/detail.html?id=7380",
+            "https://www.lawson.co.jp/recommend/original/detail/123",
+            "https://shop.mizkan.co.jp/item-detail/123",
+            "https://www.mizkan.co.jp/products/detail/123",
         ]
         for url in blocked:
             with self.subTest(url=url):
@@ -241,6 +267,9 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "ohyamafoods.co.jp",
                 "kurakon.jp",
                 "sangaria.co.jp",
+                "lawson.co.jp",
+                "mizkan.co.jp",
+                "mizkan.asia",
             },
         )
 
@@ -283,12 +312,15 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_kurakon = "https://www.kurakon.jp/products/01/shiodai.html"
             blocked_sangaria = "https://sangaria.co.jp/products/oishisa-dantotsu-caramel-and-milk/"
             blocked_matsukiyo = "https://www.matsukiyococokara-online.com/products/food/example"
+            blocked_lawson = "https://www.lawson.co.jp/recommend/original/detail/123"
+            blocked_mizkan = "https://shop.mizkan.co.jp/products/detail/123"
+            blocked_mizkan_asia = "https://mizkan.asia/jp/terms-of-use"
             allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (blocked_lawson,), (blocked_mizkan,), (blocked_mizkan_asia,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 15)
+            self.assertEqual(changed, 18)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
@@ -305,8 +337,11 @@ class SourceTermsPolicyTests(unittest.TestCase):
             self.assertEqual(rows[blocked_kurakon], "done")
             self.assertEqual(rows[blocked_sangaria], "done")
             self.assertEqual(rows[blocked_matsukiyo], "done")
+            self.assertEqual(rows[blocked_lawson], "done")
+            self.assertEqual(rows[blocked_mizkan], "done")
+            self.assertEqual(rows[blocked_mizkan_asia], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 16)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 19)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
