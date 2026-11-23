@@ -21,6 +21,7 @@ SOURCE = ROOT / "openfoodfacts-japan.json"
 SHARDS = ROOT / "world-food-shards"
 DISCOVERY_SOURCE = "Open Food Facts catalogue"
 JP_CHARS = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
+JP_KANA = re.compile(r"[\u3040-\u309f\u30a0-\u30ff]")
 PLACEHOLDERS = {"", "unknown", "n/a", "none", "no data", "ingredients", "?", "-"}
 
 
@@ -60,6 +61,11 @@ def build_review_row(record, *, require_japan_scope=False):
     if not valid_jan_code(code) or not name or not ingredients:
         return None
     if not JP_CHARS.search(name) or not JP_CHARS.search(ingredients):
+        return None
+    # Han characters are shared with Chinese. Require kana in the ingredient
+    # label, or a 45/49 JAN prefix as a weak tie-breaker for all-kanji labels.
+    # Neither signal proves market presence; rows remain discovery_only / needs_review.
+    if not JP_KANA.search(ingredients) and not code.startswith(("45", "49")):
         return None
 
     expected_url = "https://world.openfoodfacts.org/product/" + code
