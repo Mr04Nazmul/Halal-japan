@@ -150,8 +150,6 @@ def source(u):
  host=(urlsplit(u).hostname or '').lower()
  return next((d for d in SOURCES if host==d or host.endswith('.'+d)),None)
 def product_url(u):
- # Enforce the source-terms gate even when a restricted product URL is supplied directly as a seed.
- if is_terms_restricted_url(u):return False
  d=source(u)
  if not d:return False
  if d=='sokensha.co.jp' and canonical(u) in SOKEN_SHA_MULTI_PRODUCT_RELEASES:return True
