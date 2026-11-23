@@ -7,7 +7,11 @@ on:
     branches: [main]
     paths:
       - scripts/import_off_catalogue_to_supabase.py
+      - tests/test_off_japanese_candidates.py
       - .github/workflows/import-off-catalogue-supabase.yml
+      - data/openfoodfacts-japan.json
+      - data/food-catalog-manifest.json
+      - data/world-food-shards/**
 permissions:
   contents: read
 jobs:
@@ -15,12 +19,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 50
     env:
-      SUPABASE_URL: ${{ secrets.JHC_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_URL: \${{ secrets.JHC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: \${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Test Japan-tagged OFF shard filtering and safe staging
+        run: python -m unittest discover -s tests -p 'test_off_japanese_candidates.py' -v
       - name: Submit deduplicated source-backed ingredient records for review
         run: python -u scripts/import_off_catalogue_to_supabase.py
