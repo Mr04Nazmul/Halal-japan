@@ -81,6 +81,24 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
             json.loads(rows[0]["jan_code_candidates"]),
         )
 
+    def test_marukome_allergen_heading_is_excluded_from_ingredients(self):
+        record = self.record(
+            "https://www.marukome.co.jp/product/detail/koji_009/",
+            ["原材料\\n米（国産）、大豆、食塩\\nこの商品に含まれるアレルギー物質（特定原材料及びそれに準ずるものを表示）\\n大豆\\n栄養成分"],
+        )
+        rows = extract_candidate_records([record], exported_at="2026-11-23T09:30:33Z")
+        self.assertEqual(1, len(rows))
+        self.assertEqual("米（国産）、大豆、食塩", rows[0]["ingredient_text"])
+
+    def test_markdown_allergen_heading_is_excluded_from_ingredients(self):
+        record = self.record(
+            "https://www.yamaki.co.jp/catalog/products/index.php?id=86",
+            ["## 原材料名\\n食塩（国内製造）、ぶどう糖、風味原料（かつおぶし粉末）\\n## アレルギー情報\\n特定原材料"],
+        )
+        rows = extract_candidate_records([record], exported_at="2026-11-23T09:30:33Z")
+        self.assertEqual(1, len(rows))
+        self.assertEqual("食塩（国内製造）、ぶどう糖、風味原料（かつおぶし粉末）", rows[0]["ingredient_text"])
+
     def test_allergen_only_text_is_not_an_ingredient_record(self):
         record = self.record(
             "https://www.yamaki.co.jp/catalog/products/index.php?id=86",
