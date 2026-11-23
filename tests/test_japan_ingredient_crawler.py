@@ -862,8 +862,8 @@ class Extraction(unittest.TestCase):
   for url in urls:
    with self.subTest(url=url):
     self.assertEqual(source(url),'mizkan.co.jp')
-    # Fixture extraction remains testable, but reuse is blocked by the current official terms.
-    self.assertFalse(product_url(url))
+    # Product URL shape is independent of permission; the source-terms gate blocks traversal.
+    self.assertTrue(product_url(url))
     self.assertFalse(allowed_link(url))
   self.assertFalse(product_url('https://shop.mizkan.co.jp/products/'))
   url=urls[3]
