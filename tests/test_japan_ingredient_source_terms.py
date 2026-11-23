@@ -107,6 +107,16 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 self.assertFalse(product_url(url))
                 self.assertFalse(is_terms_restricted_url(url))
 
+    def test_kyoritsu_official_shop_root_is_bounded_navigation(self):
+        root = "https://shop.kyoritsu-foods.co.jp/"
+        detail = "https://shop.kyoritsu-foods.co.jp/item-detail/1953381"
+        self.assertTrue(allowed_link(root))
+        self.assertFalse(product_url(root))
+        self.assertFalse(is_terms_restricted_url(root))
+        self.assertTrue(allowed_link(detail))
+        self.assertTrue(product_url(detail))
+        self.assertFalse(is_terms_restricted_url(detail))
+
     def test_unreviewed_sources_are_not_mislabeled_as_blocked(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
         self.assertFalse(is_terms_restricted_url("https://www.kyoritsu-foods.co.jp/product/page/7/"))
