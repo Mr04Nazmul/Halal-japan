@@ -6,6 +6,56 @@ from crawl_japanese_ingredients import Collector,extract,product_url,canonical,L
 HTML='''<h1>Product</h1><table><tr><th>商品名</th><td>テスト米菓</td></tr><tr><th>JANCODE</th><td>4973728910141</td></tr><tr><th>原材料</th><td>米、食塩</td></tr></table>'''
 URL='https://montoile.co.jp/products/ashitamo-okura-norishio/'
 class Extraction(unittest.TestCase):
+ def test_kyoritsu_official_shop_div_label_extracts_exact_name_jan_and_ingredients(self):
+  cases=[
+   ('https://shop.kyoritsu-foods.co.jp/item-detail/1953381',
+    '【1個】すみっコぐらし　卵を使わないスポンジケーキキット(30％OFF)',
+    '4901325302786',
+    '小麦粉(国内製造)、砂糖、マルトデキストリン、食塩/膨張剤、加工デンプン、増粘剤(キサンタンガム)',
+    'すみっコぐらし 卵を使わないスポンジケーキキット'),
+   ('https://shop.kyoritsu-foods.co.jp/item-detail/1953378',
+    '【1個】すみっコぐらし　チョコケーキセット(30％OFF)',
+    '4901325301703',
+    '砂糖(国内製造)、小麦粉、ココアパウダー、粉末水あめ/乳化剤、膨張剤、増粘剤(キサンタンガム)、(一部に小麦･乳成分･大豆を含む)',
+    'すみっコぐらし チョコケーキセット'),
+  ]
+  for url,title,jan,ingredients,expected_name in cases:
+   with self.subTest(url=url):
+    html=f\'''<html><head><title>{title} | 共立食品ショップ</title></head><body>
+    <h1 class="title1">{title}</h1>
+    <div class="item-detail-jancode"><dl><dt>JANコード</dt><dd>{jan}</dd></dl></div>
+    <div class="item-footer"><div class="item-detail-txt1 wysiwyg-data">
+    <h2>商品詳細</h2><div>●規格…100ｇ</div><div><div>●原材料名…{ingredients}</div></div>
+    </div></div></body></html>\'''
+    record,error=extract(html,url)
+    self.assertIsNone(error)
+    self.assertEqual(record['name_ja'],expected_name)
+    self.assertEqual(record['jan'],jan)
+    self.assertEqual(record['ingredients_ja'],ingredients)
+    self.assertEqual(record['source_type'],'official_manufacturer_shop_page')
+    self.assertEqual(record['verification_status'],'official_ingredient_field_captured_pending_human_review')
+    self.assertTrue(record['research_only'])
+    self.assertFalse(record['packaging_verified'])
+    self.assertFalse(record['halal_certified'])
+
+ def test_kyoritsu_shop_field_rejections_requeued_once_on_extractor_upgrade(self):
+  with tempfile.TemporaryDirectory() as folder:
+   c=Collector(folder,100000)
+   url='https://shop.kyoritsu-foods.co.jp/item-detail/1953381'
+   c.db.execute('INSERT INTO queue(url,status,attempts,error) VALUES(?,?,?,?)',
+                (url,'done',1,'missing_or_ambiguous_ingredients'))
+   c.db.execute("UPDATE metadata SET value=? WHERE key='extractor_version'",
+                ('official-fields-2026-11-23-v17-sokensha-release-v8-agf-div-v9-asahi-maintenance-v10-natori-core-v11-marukome-business-v16-maruchan-product-catalogue',))
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'pending')
+   c.db.execute("UPDATE queue SET status='done',error='missing_or_ambiguous_ingredients' WHERE url=?",(url,))
+   c.db.commit();c.db.close()
+   c=Collector(folder,100000)
+   self.assertEqual(c.db.execute('SELECT status FROM queue WHERE url=?',(url,)).fetchone()[0],'done')
+   c.db.close()
+
+
  def test_montoile_product_table_extracts_explicit_jan_and_ingredients(self):
   record,error=extract(HTML,URL)
   self.assertIsNone(error)
