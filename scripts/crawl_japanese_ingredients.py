@@ -138,9 +138,9 @@ def canonical(u):
   # Natori's official category pages require these filters for pagination.
   allowed.update({'formid','ible-categoryselectbox1','ible-categoryselectbox2',
                   'ible-checkboxsolo1','ible-keyword1'})
-  # Kyoritsu's official shop category pages use one numeric categoryId filter.
-  if (p.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and p.path.rstrip('/')=='/item-list':
-   allowed.add('categoryId')
+ # Kyoritsu's official shop category pages use one numeric categoryId filter.
+ if (p.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and p.path.rstrip('/')=='/item-list':
+  allowed.add('categoryId')
  keep_blank=(p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list'
  q=sorted((k,v) for k,v in parse_qsl(p.query,keep_blank_values=keep_blank) if k in allowed)
  path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
