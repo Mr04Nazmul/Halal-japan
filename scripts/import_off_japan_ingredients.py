@@ -37,8 +37,8 @@ def is_japanese_ingredient_candidate(code, name, ingredients):
             and bool(JP_KANA.search(name) or JP_KANA.search(ingredients)))
 
 
-def fetch_products(url, *, opener=None, sleeper=None, attempts=3):
-    """Retry transient OFF errors with bounded backoff, never retry 4xx except 429."""
+def fetch_page(url, *, opener=None, sleeper=None, attempts=3):
+    """Fetch one OFF page and return its products plus total page count."""
     opener = opener or urllib.request.urlopen
     sleeper = sleeper or time.sleep
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -49,7 +49,14 @@ def fetch_products(url, *, opener=None, sleeper=None, attempts=3):
             products = payload.get("products")
             if not isinstance(products, list):
                 raise ValueError("OFF response missing products array")
-            return products
+            raw_page_count = payload.get("page_count")
+            try:
+                page_count = int(raw_page_count) if raw_page_count is not None else None
+            except (TypeError, ValueError):
+                page_count = None
+            if page_count is not None and page_count < 1:
+                page_count = None
+            return products, page_count
         except urllib.error.HTTPError as exc:
             if exc.code not in RETRYABLE_HTTP or attempt + 1 == attempts:
                 raise
@@ -72,33 +79,73 @@ def fetch_products(url, *, opener=None, sleeper=None, attempts=3):
     raise RuntimeError("OFF request exhausted attempts")
 
 
+def fetch_products(url, *, opener=None, sleeper=None, attempts=3):
+    """Backward-compatible products-only wrapper used by existing callers."""
+    products, _ = fetch_page(url, opener=opener, sleeper=sleeper, attempts=attempts)
+    return products
+
+
+def page_sequence(start_page, pages, page_count=None):
+    """Select a bounded, non-repeating page window and wrap at OFF's page_count."""
+    start_page = max(1, int(start_page))
+    pages = max(1, min(int(pages), 20))
+    if page_count is None or int(page_count) < 1:
+        return [start_page + offset for offset in range(pages)]
+    page_count = int(page_count)
+    count = min(pages, page_count)
+    first = ((start_page - 1) % page_count) + 1
+    return [((first - 1 + offset) % page_count) + 1 for offset in range(count)]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--pages", type=int, default=2)
     parser.add_argument("--page-size", type=int, default=100)
+    parser.add_argument("--start-page", type=int, default=1,
+                        help="first OFF result page; wraps using the API page_count")
     parser.add_argument("--output", default="data/off_japan_ingredient_candidates.jsonl")
     args = parser.parse_args()
     pages = max(1, min(args.pages, 20))
     page_size = max(1, min(args.page_size, 100))
+    start_page = max(1, args.start_page)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     seen = set()
     total = rejected = failed_pages = 0
+
+    def page_url(page):
+        params = {
+            "action": "process", "json": "1", "tagtype_0": "countries",
+            "tag_contains_0": "contains", "tag_0": "japan",
+            "fields": "code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja",
+            "page": str(page), "page_size": str(page_size),
+        }
+        return "https://world.openfoodfacts.org/cgi/search.pl?" + urllib.parse.urlencode(params)
+
+    # Probe the requested page for OFF's current page_count. This lets scheduled
+    # runs rotate through the full catalogue instead of rescanning pages 1..N.
+    probe_products = None
+    page_count = None
+    try:
+        probe_products, page_count = fetch_page(page_url(start_page))
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
+        print(f"page-count probe for page {start_page} failed; retrying in collection loop: {exc}",
+              flush=True)
+    page_numbers = page_sequence(start_page, pages, page_count)
+    print(json.dumps({"start_page": start_page, "page_count": page_count,
+                      "pages_requested": pages, "page_window": page_numbers}), flush=True)
+
     with output.open("w", encoding="utf8") as file:
-        for page in range(1, pages + 1):
-            params = {
-                "action": "process", "json": "1", "tagtype_0": "countries",
-                "tag_contains_0": "contains", "tag_0": "japan",
-                "fields": "code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja",
-                "page": str(page), "page_size": str(page_size),
-            }
-            url = "https://world.openfoodfacts.org/cgi/search.pl?" + urllib.parse.urlencode(params)
-            try:
-                products = fetch_products(url)
-            except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
-                failed_pages += 1
-                print(f"page {page} failed after retries: {exc}", flush=True)
-                continue
+        for page in page_numbers:
+            if page == start_page and probe_products is not None:
+                products = probe_products
+            else:
+                try:
+                    products, _ = fetch_page(page_url(page))
+                except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
+                    failed_pages += 1
+                    print(f"page {page} failed after retries: {exc}", flush=True)
+                    continue
             for row in products:
                 code = str(row.get("code") or "").strip()
                 ingredients = (row.get("ingredients_text_ja") or row.get("ingredients_text") or "").strip()
@@ -125,6 +172,10 @@ def main():
             print(f"page={page} ingredient_records={total}", flush=True)
             time.sleep(2)
     print(json.dumps({
+        "start_page": start_page,
+        "page_count": page_count,
+        "pages_requested": pages,
+        "page_window": page_numbers,
         "ingredient_records": total,
         "rejected_non_japanese_or_invalid_ean": rejected,
         "failed_pages": failed_pages,
