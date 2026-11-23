@@ -18,7 +18,10 @@ JP_TEXT = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
 JP_KANA = re.compile(r"[\u3040-\u30ff]")
 RETRYABLE_HTTP = {429, 500, 502, 503, 504}
 STOP_BATCH_HTTP = {401, 403, 429, 500, 502, 503, 504}
-USER_AGENT = "JapanHalalCheckerResearch/1.1 (https://github.com/Mr04Nazmul/Halal-japan)"
+USER_AGENT = "JapanHalalCheckerResearch/1.2 (https://github.com/Mr04Nazmul/Halal-japan)"
+# OFF documents a 10 requests/minute search limit. Keep a conservative 7s
+# interval between page requests (about 8.6 requests/minute).
+REQUEST_INTERVAL_SECONDS = 7
 
 
 def valid_ean(code):
@@ -38,8 +41,8 @@ def is_japanese_ingredient_candidate(code, name, ingredients):
             and bool(JP_KANA.search(name) or JP_KANA.search(ingredients)))
 
 
-def fetch_page(url, *, opener=None, sleeper=None, attempts=3):
-    """Fetch one OFF page and return its products plus total page count."""
+def fetch_page(url, *, opener=None, sleeper=None, attempts=3, page_size=100):
+    """Fetch one OFF API v2 page and calculate total pages from the result count."""
     opener = opener or urllib.request.urlopen
     sleeper = sleeper or time.sleep
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -50,19 +53,25 @@ def fetch_page(url, *, opener=None, sleeper=None, attempts=3):
             products = payload.get("products")
             if not isinstance(products, list):
                 raise ValueError("OFF response missing products array")
-            raw_page_count = payload.get("page_count")
+            # API v2's page_count is the number of products on this page,
+            # not the total number of pages. Use count/page_size instead.
+            raw_count = payload.get("count")
             try:
-                page_count = int(raw_page_count) if raw_page_count is not None else None
+                total_count = int(raw_count) if raw_count is not None else None
             except (TypeError, ValueError):
-                page_count = None
-            if page_count is not None and page_count < 1:
-                page_count = None
-            return products, page_count
+                total_count = None
+            if total_count is None:
+                total_pages = None
+            elif total_count <= 0:
+                total_pages = 0
+            else:
+                total_pages = (total_count + max(1, int(page_size)) - 1) // max(1, int(page_size))
+            return products, total_pages
         except urllib.error.HTTPError as exc:
             if exc.code not in RETRYABLE_HTTP or attempt + 1 == attempts:
                 raise
             retry_after = (exc.headers.get("Retry-After") or "").strip() if exc.headers else ""
-            delay = 3 * (2 ** attempt)
+            delay = REQUEST_INTERVAL_SECONDS * (2 ** attempt)
             if retry_after.isdigit():
                 # Respect upstream rate limits: do not retry if wait exceeds budget.
                 if int(retry_after) > 30:
@@ -80,9 +89,11 @@ def fetch_page(url, *, opener=None, sleeper=None, attempts=3):
     raise RuntimeError("OFF request exhausted attempts")
 
 
-def fetch_products(url, *, opener=None, sleeper=None, attempts=3):
+def fetch_products(url, *, opener=None, sleeper=None, attempts=3, page_size=100):
     """Backward-compatible products-only wrapper used by existing callers."""
-    products, _ = fetch_page(url, opener=opener, sleeper=sleeper, attempts=attempts)
+    products, _ = fetch_page(
+        url, opener=opener, sleeper=sleeper, attempts=attempts, page_size=page_size
+    )
     return products
 
 
@@ -90,9 +101,11 @@ def page_sequence(start_page, pages, page_count=None):
     """Select a bounded, non-repeating page window and wrap at OFF's page_count."""
     start_page = max(1, int(start_page))
     pages = max(1, min(int(pages), 20))
-    if page_count is None or int(page_count) < 1:
+    if page_count is None:
         return [start_page + offset for offset in range(pages)]
     page_count = int(page_count)
+    if page_count < 1:
+        return []
     count = min(pages, page_count)
     first = ((start_page - 1) % page_count) + 1
     return [((first - 1 + offset) % page_count) + 1 for offset in range(count)]
@@ -101,6 +114,19 @@ def page_sequence(start_page, pages, page_count=None):
 def should_stop_batch(error):
     """Stop paging after access denial, rate limiting, or exhausted server errors."""
     return isinstance(error, urllib.error.HTTPError) and error.code in STOP_BATCH_HTTP
+
+
+def build_search_url(page, page_size):
+    """Build a bounded Japan-country search using OFF's supported structured API."""
+    params = {
+        "countries_tags_en": "japan",
+        "fields": "code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja",
+        "page": str(int(page)),
+        "page_size": str(int(page_size)),
+    }
+    # OFF currently documents structured search on API v2; v3 search is not
+    # implemented. The legacy /cgi/search.pl endpoint is not used.
+    return "https://world.openfoodfacts.org/api/v2/search?" + urllib.parse.urlencode(params)
 
 
 def main():
@@ -119,22 +145,14 @@ def main():
     seen = set()
     total = rejected = failed_pages = 0
 
-    def page_url(page):
-        params = {
-            "action": "process", "json": "1", "tagtype_0": "countries",
-            "tag_contains_0": "contains", "tag_0": "japan",
-            "fields": "code,product_name,product_name_ja,brands,ingredients_text,ingredients_text_ja",
-            "page": str(page), "page_size": str(page_size),
-        }
-        return "https://world.openfoodfacts.org/cgi/search.pl?" + urllib.parse.urlencode(params)
-
-    # Probe the requested page for OFF's current page_count. This lets scheduled
-    # runs rotate through the full catalogue instead of rescanning pages 1..N.
+    # Probe the requested page for OFF's total count. API v2 page_count is only
+    # the number of products returned on the current page.
+    page_url = lambda page: build_search_url(page, page_size)
     probe_products = None
     page_count = None
     stop_after_probe = False
     try:
-        probe_products, page_count = fetch_page(page_url(start_page))
+        probe_products, page_count = fetch_page(page_url(start_page), page_size=page_size)
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
         failed_pages += 1
         print(f"page-count probe for page {start_page} failed: {exc}", flush=True)
@@ -152,7 +170,7 @@ def main():
                 products = probe_products
             else:
                 try:
-                    products, _ = fetch_page(page_url(page))
+                    products, _ = fetch_page(page_url(page), page_size=page_size)
                 except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, ValueError) as exc:
                     failed_pages += 1
                     print(f"page {page} failed after retries: {exc}", flush=True)
@@ -185,7 +203,7 @@ def main():
                 file.write(json.dumps(item, ensure_ascii=False) + "\n")
                 total += 1
             print(f"page={page} ingredient_records={total}", flush=True)
-            time.sleep(2)
+            time.sleep(REQUEST_INTERVAL_SECONDS)
     print(json.dumps({
         "start_page": start_page,
         "page_count": page_count,
