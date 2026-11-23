@@ -46,8 +46,8 @@ def build_rows(lines):
                 not valid_ean(barcode)
                 or len(name) < 2
                 or len(ingredients) < 8
-                or not re.search(r"[\\u3040-\\u30ff\\u3400-\\u9fff]", name)
-                or not re.search(r"[\\u3040-\\u30ff\\u3400-\\u9fff]", ingredients)
+                or not re.search(r"[\u3040-\u30ff\u3400-\u9fff]", name)
+                or not re.search(r"[\u3040-\u30ff\u3400-\u9fff]", ingredients)
                 or parsed.scheme != "https"
                 or parsed.netloc != "world.openfoodfacts.org"
                 or parsed.path.rstrip("/") != expected_path
