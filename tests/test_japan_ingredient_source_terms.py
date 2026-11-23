@@ -65,6 +65,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.marusanai.co.jp/lineup/detail-64095/": "marusanai.co.jp",
             "https://www.itoen.jp/products/41922/": "itoen.jp",
             "https://www.kewpie.co.jp/products/detail/4901577004865/": "kewpie.co.jp",
+            "https://www.kyoritsu-foods.co.jp/product/28092/": "kyoritsu-foods.co.jp",
+            "https://shop.kyoritsu-foods.co.jp/item-detail/1981297": "kyoritsu-foods.co.jp",
             "https://www.meg-snow.com/products/": "meg-snow.com",
             "https://www.yotsuba.co.jp/products/": "yotsuba.co.jp",
             "https://www.tajimaya-cc.net/products/2118": "tajimaya-cc.net",
@@ -93,6 +95,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://shop.matsukiyococokara-online.com/products/food/"))
         self.assertTrue(is_terms_restricted_url("https://shop.yamamori.co.jp/products/matsusaka_sukiyaki/"))
         self.assertTrue(is_terms_restricted_url("https://shop.sokensha.co.jp/products/example/"))
+        self.assertTrue(is_terms_restricted_url("https://shop.kyoritsu-foods.co.jp/item-detail/1981297"))
         self.assertTrue(is_terms_restricted_url("https://shop.montoile.co.jp/products/example/"))
         self.assertTrue(is_terms_restricted_url("https://new.ohsawa-japan.co.jp/?actmode=ItemDetail&iid=906"))
         self.assertTrue(is_terms_restricted_url("https://shop.pokkasapporo-fb.jp/products/example/"))
@@ -110,41 +113,26 @@ class SourceTermsPolicyTests(unittest.TestCase):
         self.assertTrue(is_terms_restricted_url("https://www.mizkan.co.jp/products/detail/123"))
         self.assertTrue(is_terms_restricted_url("https://mizkan.asia/jp/terms-of-use"))
 
-    def test_kyoritsu_pagination_pages_are_bounded_navigation_not_products(self):
-        for page in range(2, 14):
-            url = f"https://www.kyoritsu-foods.co.jp/product/page/{page}/"
+    def test_kyoritsu_manufacturer_and_shop_sources_are_paused_pending_reuse_permission(self):
+        urls = (
+            "https://www.kyoritsu-foods.co.jp/product/page/7/",
+            "https://shop.kyoritsu-foods.co.jp/",
+            "https://shop.kyoritsu-foods.co.jp/item-detail/1953381",
+            "https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441",
+        )
+        for url in urls:
             with self.subTest(url=url):
-                self.assertTrue(allowed_link(url))
+                self.assertTrue(is_terms_restricted_url(url))
+                self.assertFalse(allowed_link(url))
                 self.assertFalse(product_url(url))
-                self.assertFalse(is_terms_restricted_url(url))
-
-    def test_kyoritsu_official_shop_root_is_bounded_navigation(self):
-        root = "https://shop.kyoritsu-foods.co.jp/"
-        detail = "https://shop.kyoritsu-foods.co.jp/item-detail/1953381"
-        self.assertTrue(allowed_link(root))
-        self.assertFalse(product_url(root))
-        self.assertFalse(is_terms_restricted_url(root))
-        self.assertTrue(allowed_link(detail))
-        self.assertTrue(product_url(detail))
-        self.assertFalse(is_terms_restricted_url(detail))
-
-    def test_kyoritsu_shop_category_pages_are_bounded_navigation(self):
-        category_ids = (109441, 109442, 109448, 109445, 110226, 110227, 110229, 110230)
-        for category_id in category_ids:
-            url = f"https://shop.kyoritsu-foods.co.jp/item-list?categoryId={category_id}"
-            with self.subTest(url=url):
-                self.assertEqual(canonical(url), url)
-                self.assertTrue(kyoritsu_shop_category_url(url))
-                self.assertTrue(allowed_link(url))
-                self.assertFalse(product_url(url))
-                self.assertFalse(is_terms_restricted_url(url))
+        self.assertTrue(kyoritsu_shop_category_url("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441"))
         self.assertFalse(kyoritsu_shop_category_url("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=109441&sort=price"))
         self.assertFalse(allowed_link("https://shop.kyoritsu-foods.co.jp/item-list?foo=1"))
         self.assertFalse(allowed_link("https://shop.kyoritsu-foods.co.jp/item-list?categoryId=abc"))
 
     def test_unreviewed_sources_are_not_mislabeled_as_blocked(self):
         # Not yet reviewed for reuse terms; this is not an assertion of permission.
-        self.assertFalse(is_terms_restricted_url("https://www.kyoritsu-foods.co.jp/product/page/7/"))
+        self.assertFalse(is_terms_restricted_url("https://www.family.co.jp/goods.html"))
         self.assertFalse(is_terms_restricted_url("https://www.yamaki.co.jp/catalog/products/index.php?id=86"))
 
     def test_main_crawler_does_not_enqueue_restricted_current_source_pages(self):
@@ -203,6 +191,8 @@ class SourceTermsPolicyTests(unittest.TestCase):
             "https://www.lawson.co.jp/recommend/original/detail/123",
             "https://shop.mizkan.co.jp/item-detail/123",
             "https://www.mizkan.co.jp/products/detail/123",
+            "https://www.kyoritsu-foods.co.jp/product/28092/",
+            "https://shop.kyoritsu-foods.co.jp/item-detail/1981297",
         ]
         for url in blocked:
             with self.subTest(url=url):
@@ -251,6 +241,7 @@ class SourceTermsPolicyTests(unittest.TestCase):
                 "marusanai.co.jp",
                 "itoen.jp",
                 "kewpie.co.jp",
+                "kyoritsu-foods.co.jp",
                 "kagome.co.jp",
                 "glico.com",
                 "kirin.co.jp",
@@ -315,12 +306,14 @@ class SourceTermsPolicyTests(unittest.TestCase):
             blocked_lawson = "https://www.lawson.co.jp/recommend/original/detail/123"
             blocked_mizkan = "https://shop.mizkan.co.jp/products/detail/123"
             blocked_mizkan_asia = "https://mizkan.asia/jp/terms-of-use"
-            allowed = "https://www.kyoritsu-foods.co.jp/product/page/7/"
+            blocked_kyoritsu_main = "https://www.kyoritsu-foods.co.jp/product/28092/"
+            blocked_kyoritsu_shop = "https://shop.kyoritsu-foods.co.jp/item-detail/1981297"
+            allowed = "https://www.yamaki.co.jp/catalog/products/index.php?id=86"
             db.executemany("INSERT INTO queue(url) VALUES(?)",
-                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (blocked_lawson,), (blocked_mizkan,), (blocked_mizkan_asia,), (allowed,)])
+                           [(blocked,), (blocked_yamamori,), (blocked_sokensha,), (blocked_montoile,), (blocked_ohsawa,), (blocked_pokka,), (blocked_uha,), (blocked_kagome,), (blocked_glico,), (blocked_kirin,), (blocked_kato,), (blocked_ohyama,), (blocked_kurakon,), (blocked_sangaria,), (blocked_matsukiyo,), (blocked_lawson,), (blocked_mizkan,), (blocked_mizkan_asia,), (blocked_kyoritsu_main,), (blocked_kyoritsu_shop,), (allowed,)])
             db.commit()
             changed = quarantine_restricted_pending_sources(db)
-            self.assertEqual(changed, 18)
+            self.assertEqual(changed, 20)
             rows = dict(db.execute("SELECT url,status FROM queue"))
             self.assertEqual(rows[blocked], "done")
             self.assertEqual(rows[blocked_yamamori], "done")
@@ -340,8 +333,10 @@ class SourceTermsPolicyTests(unittest.TestCase):
             self.assertEqual(rows[blocked_lawson], "done")
             self.assertEqual(rows[blocked_mizkan], "done")
             self.assertEqual(rows[blocked_mizkan_asia], "done")
+            self.assertEqual(rows[blocked_kyoritsu_main], "done")
+            self.assertEqual(rows[blocked_kyoritsu_shop], "done")
             self.assertEqual(rows[allowed], "pending")
-            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 19)
+            self.assertEqual(db.execute("SELECT count(*) FROM queue").fetchone()[0], 21)
             self.assertEqual(quarantine_restricted_pending_sources(db), 0)
             db.close()
 
