@@ -15,7 +15,7 @@ from japan_ingredient_food_filter import is_nonfood_name,is_nonfood_ingredient_t
 from japan_ingredient_source_terms import (is_terms_restricted_url, RESTRICTED_SOURCE_POLICIES, SOURCE_TERMS_POLICY_VERSION)
 
 UA='JapanHalalResearch/1.0 (+https://github.com/Mr04Nazmul/Halal-japan)'
-EXTRACTOR_VERSION='official-fields-2026-11-23-v17-sokensha-release-v8-agf-div-v9-asahi-maintenance-v10-natori-core-v11-marukome-business-v16-maruchan-product-catalogue'
+EXTRACTOR_VERSION='official-fields-2026-11-23-v17-sokensha-release-v8-agf-div-v9-asahi-maintenance-v10-natori-core-v11-marukome-business-v16-maruchan-product-catalogue-kyoritsu-shop-v1'
 SOURCES={
  'suntory.co.jp':r'/d/\d{13}/?$',
  'morinaga.co.jp':r'/products/detail\.php\?id=PRD\d{4}-\d{2}-\d{4}$',
@@ -256,6 +256,15 @@ def extract(html,url):
    if match:
     declaration=match.group(1).strip()
     if declaration:fields.setdefault('原材料',[]).append(declaration)
+ # Kyoritsu's official online shop places the labelled declaration inside
+ # direct child divs of .item-detail-txt1.wysiwyg-data, not in p/th/td.
+ # Capture only explicit 原材料名/原材料 labels from that product-detail block.
+ if (urlsplit(url).hostname or '').lower()=='shop.kyoritsu-foods.co.jp':
+  for block in soup.select('.item-detail-txt1.wysiwyg-data > div'):
+   raw=block.get_text(' ',strip=True)  # preserve the exact displayed ingredient punctuation
+   match=re.match(r'^[●•\s]*(原材料名/添加物名|原材料名|原材料)\s*(?:[/／:：]|…|\.\.\.)\s*(.+)$',raw,re.S)
+   if match:
+    fields.setdefault(match.group(1),[]).append(match.group(2).strip())
  for tr in soup.find_all('tr'):
   cells=tr.find_all(['th','td'],recursive=False)
   if len(cells)==2:fields.setdefault(clean_label(cells[0].get_text(' ',strip=True)),[]).append(cells[1].get_text(' ',strip=True))
@@ -351,6 +360,11 @@ def extract(html,url):
    if h.get_text(' ',strip=True) and clean_label(h.get_text(' ',strip=True)) not in {'グミ','商品情報','商品カタログ'}),None)
   if product_heading:name=product_heading
   elif clean_label(name)=='グミ':return None,'missing_product_identity'
+ if (urlsplit(url).hostname or '').lower()=='shop.kyoritsu-foods.co.jp':
+  # Strip shop-only sale/pack-count wrappers; preserve the Japanese product name.
+  name=re.sub(r'^[【〖]\s*\d+個(?:入り)?[】〗]\s*','',name)
+  name=re.sub(r'\s*[（(]\s*\d+\s*[％%]\s*OFF\s*[）)]\s*$','',name)
+  name=re.sub(r'\s+',' ',name).strip()
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
@@ -378,11 +392,18 @@ def extract(html,url):
  # halal suitability cannot be established from its contents. Keep UNKNOWN
  # pending review rather than treating it as an incomplete declaration.
  key='jan:'+jan if jan else 'name:'+source(url)+'|'+normalized(name)
+ shop_source=(urlsplit(url).hostname or '').lower()=='shop.kyoritsu-foods.co.jp'
+ source_type='official_manufacturer_shop_page' if shop_source else 'official_manufacturer_brand_or_distributor_page'
+ source_context={}
+ if shop_source and any(term in soup.get_text(' ',strip=True) for term in ('旧パッケージ','販売終了商品','アウトレット')):
+  source_context['packaging_note']='Official outlet listing may include old-package, discontinued, or end-of-sale-period stock; physical package not verified.'
  result={'product_id':key,'name_ja':name,'brand':brand,'jan':jan,'ingredients_ja':ingredients,
  'additives_ja':additives,'source_url':url,'source_publisher':source(url),
- 'source_type':'official_manufacturer_brand_or_distributor_page','retrieved_at':datetime.now(timezone.utc).isoformat(),
+ 'source_type':source_type,'retrieved_at':datetime.now(timezone.utc).isoformat(),
  'source_html_sha256':hashlib.sha256(html.encode()).hexdigest(),'ingredient_field_status':'complete_displayed_field',
- 'reuse_permission':'not_established','live_database_updated':False,**decision}
+ 'verification_status':'official_ingredient_field_captured_pending_human_review',
+ 'research_only':True,'packaging_verified':False,
+ 'reuse_permission':'not_established','live_database_updated':False,**source_context,**decision,'halal_certified':False}
  return result,None
 
 def extract_sokensha_news_release(html,url):
@@ -499,6 +520,18 @@ class Collector:
         SELECT 1 FROM products p
         WHERE json_extract(p.payload,'$.source_url')=queue.url
        )""")
+   # Older Kyoritsu shop product pages were marked done when the parser
+   # missed the explicitly labelled 原材料名 block inside nested divs.
+   # Revisit only those field-extraction failures once; preserve accepted rows.
+   if not previous or 'kyoritsu-shop-v1' not in previous[0]:
+    changed=self.db.execute("""UPDATE queue SET status='pending',attempts=0,next_try=0,error=NULL
+     WHERE url LIKE 'https://shop.kyoritsu-foods.co.jp/item-detail/%'
+       AND status='done' AND error='missing_or_ambiguous_ingredients'
+       AND NOT EXISTS (
+        SELECT 1 FROM products p
+        WHERE json_extract(p.payload,'$.source_url')=queue.url
+       )""")
+    print('Kyoritsu shop extraction recovery:',changed.rowcount,'previously rejected pages',flush=True)
    # Retry only previously rejected House Foods product pages after fixing
    # the misleading origin-section heading. Keep robots/404 decisions,
    # already accepted records and the rest of the queue untouched.
