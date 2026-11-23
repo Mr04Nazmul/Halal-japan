@@ -1,4 +1,13 @@
 # Japan-only public product and ingredient sources. Keep official retailer/manufacturer URLs; review robots.txt and evidence before database import.
+# Yamaki official consumer catalogue categories; Scrapy follows same-host product-detail links and extracts labelled fields only.
+https://www.yamaki.co.jp/catalog/
+https://www.yamaki.co.jp/catalog/dashi/
+https://www.yamaki.co.jp/catalog/tsuyu/
+https://www.yamaki.co.jp/catalog/katsuo/
+https://www.yamaki.co.jp/catalog/mixture/
+https://www.yamaki.co.jp/catalog/gennen/
+https://www.yamaki.co.jp/catalog/none-allergen/
+https://www.yamaki.co.jp/catalog/none-konbu/
 # Convenience stores: Lawson (official product catalog and categories)
 https://www.lawson.co.jp/recommend/original/select/
 https://www.lawson.co.jp/recommend/original/bakery/index.html
