@@ -104,3 +104,21 @@ https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110226
 https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110227
 https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110229
 https://shop.kyoritsu-foods.co.jp/item-list?categoryId=110230
+
+# Marukome official consumer product catalogue; extract factual label fields only, no images or promotional copy.
+https://www.marukome.co.jp/product/
+https://www.marukome.co.jp/product/koji/all/all/
+https://www.marukome.co.jp/product/daizu_product/all/all/
+https://www.marukome.co.jp/product/dashiirimiso/all/all/
+https://www.marukome.co.jp/product/dashinashimiso/all/all/
+https://www.marukome.co.jp/product/ekimiso/all/all/
+https://www.marukome.co.jp/product/instant/all/all/
+https://www.marukome.co.jp/product/misokakohin/all/all/
+https://www.marukome.co.jp/product/kanesa/all/all/
+https://www.marukome.co.jp/product/uonumajozo/all/all/
+https://www.marukome.co.jp/product/fushitaka/all/all/
+https://www.marukome.co.jp/product/new/all/all/
+# Exact Marukome consumer product-detail pages checked against the live manufacturer site on 2026-11-23.
+https://www.marukome.co.jp/product/detail/koji_009/
+https://www.marukome.co.jp/product/detail/koji_043/
+https://www.marukome.co.jp/product/detail/koji_042/
