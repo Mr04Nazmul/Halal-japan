@@ -140,8 +140,8 @@ class JapaneseProductLinks(scrapy.Spider):
             for line in seeds.read_text(encoding="utf-8").splitlines()
             if line.strip().startswith("https://") and is_allowed_source_url(line.strip())
         ]
-        # Put the bounded Kyoritsu category pages first; they were previously
-        # excluded by the first-80 cap because they sit at the end of the seed file.
+        # Keep deterministic priority for any future re-authorized Kyoritsu
+        # category seeds; the source-terms gate filters restricted domains above.
         kyoritsu_categories = [
             url for url in seed_urls
             if urlparse(url).hostname == "shop.kyoritsu-foods.co.jp"
