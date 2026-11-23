@@ -183,8 +183,8 @@ def allowed_link(u):
  if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',path):return True
  # The official shop homepage is a bounded catalogue root; its exact item-detail links use the existing product URL rule.
  if host=='kyoritsu-foods.co.jp' and raw_host=='shop.kyoritsu-foods.co.jp' and path.rstrip('/')=='':return True
-  # Only exact numeric categoryId filters on the official shop listing path are navigation.
-  if host=='kyoritsu-foods.co.jp' and kyoritsu_shop_category_url(u):return True
+ # Only exact numeric categoryId filters on the official shop listing path are navigation.
+ if host=='kyoritsu-foods.co.jp' and kyoritsu_shop_category_url(u):return True
  if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
