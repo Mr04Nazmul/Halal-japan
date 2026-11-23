@@ -26,9 +26,9 @@ PATHS = [
     Path("data/http_ingredient_evidence.jsonl"),
 ]
 STOP_LABELS = (
-    r"(?:アレルギー(?:物質)?|栄養成分(?:表示)?|内容量|保存方法|賞味期限|"
-    r"消費期限|原産国|製造者|販売者|お問い合わせ|JANコード|JAN\s*CODE|"
-    r"JANCODE|POSコード)"
+    r"(?:この商品に含まれる(?:アレルギー物質)?|アレルギー(?:物質|情報)?|"
+    r"栄養成分(?:表示)?|内容量|保存方法|賞味期限|消費期限|原産国|製造者|"
+    r"販売者|お問い合わせ|JANコード|JAN\s*CODE|JANCODE|POSコード|#{1,6}\s)"
 )
 JAN_LABEL = re.compile(
     r"(?:JANコード|JAN\s*CODE|JANCODE|POSコード)\s*[:：|｜]?\s*"
