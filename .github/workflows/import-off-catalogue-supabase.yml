@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 50
     env:
-      SUPABASE_URL: \${{ secrets.JHC_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: \${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_URL: ${{ secrets.JHC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,5 +28,16 @@ jobs:
           python-version: '3.12'
       - name: Test Japan-tagged OFF shard filtering and safe staging
         run: python -m unittest discover -s tests -p 'test_off_japanese_candidates.py' -v
+      - name: Validate Supabase secrets are configured
+        run: |
+          python - <<'PY'
+          import os
+          from urllib.parse import urlsplit
+          url = os.environ.get('SUPABASE_URL', '')
+          key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
+          assert urlsplit(url).scheme == 'https' and urlsplit(url).netloc, 'Invalid SUPABASE_URL secret'
+          assert key, 'Missing SUPABASE_SERVICE_ROLE_KEY secret'
+          print('Supabase endpoint and service-role secret are configured')
+          PY
       - name: Submit deduplicated source-backed ingredient records for review
         run: python -u scripts/import_off_catalogue_to_supabase.py
