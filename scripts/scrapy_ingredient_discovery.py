@@ -72,7 +72,7 @@ def has_declared_ingredient_field(selector):
     # paragraph instead of a separate label/value pair.
     for text in selector.css("p::text,li::text").getall():
         compact = _compact(text)
-        if re.match(r"^(?:原材料名|原材料)[:：]\S{2,}", compact):
+        if re.match(r"^[●・•]?(?:原材料名|原材料)[:：…]\S{2,}", compact):
             return True
     return False
 
