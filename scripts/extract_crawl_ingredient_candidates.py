@@ -11,6 +11,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from bs4 import BeautifulSoup
 from japan_ingredient_barcodes import jan_valid
 from crawl_japanese_ingredients import product_url as is_supported_product_url
 from japan_ingredient_food_filter import (
@@ -91,6 +92,21 @@ def explicit_jan_codes(text):
         if len(code) == 13 and jan_valid(code) and code not in found:
             found.append(code)
     return found
+
+
+def explicit_jan_codes_from_page(markdown="", *html_documents):
+    """Find labelled JANs in captured Markdown and the full page DOM.
+
+    Crawl4AI's Markdown snippets can omit the product-information block even
+    when it exists in the source HTML. Generic barcode candidates are never
+    consulted; every returned code must still pass the explicit JAN label and
+    JAN-13 checksum checks above.
+    """
+    parts = [str(markdown or "")]
+    for document in html_documents:
+        if document:
+            parts.append(BeautifulSoup(str(document), "html.parser").get_text(" ", strip=True))
+    return explicit_jan_codes("\n".join(parts))
 
 
 def extract_candidate_records(records, exported_at=None):
