@@ -18,7 +18,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Fetch source-backed candidates
-        run: python scripts/import_off_japan_ingredients.py --pages 20 --page-size 100
+        # Run 162 starts after the first 20 pages scanned by the previous run.
+        # Each later run advances by 20 pages; the collector wraps at OFF page_count.
+        run: python scripts/import_off_japan_ingredients.py --pages 20 --page-size 100 --start-page "${{ 21 + (github.run_number - 162) * 20 }}"
       - name: Import only if at least 1000 qualified records
         run: python scripts/stage_off_ingredient_batch.py
       - name: Preserve inspection file
