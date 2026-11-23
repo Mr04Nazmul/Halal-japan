@@ -36,7 +36,7 @@ class OpenFoodFactsRetryTests(unittest.TestCase):
                                           opener=opener, sleeper=sleeps.append)
         self.assertEqual(len(result), 1)
         self.assertEqual(len(calls), 2)
-        self.assertEqual(sleeps, [3])
+        self.assertEqual(sleeps, [7])
 
     def test_long_retry_after_stops_to_respect_rate_limit(self):
         calls = []
@@ -79,7 +79,7 @@ class OpenFoodFactsRetryTests(unittest.TestCase):
             collector.fetch_products("https://world.openfoodfacts.org/test",
                                      opener=opener, sleeper=sleeps.append)
         self.assertEqual(len(calls), 3)
-        self.assertEqual(sleeps, [3, 6])
+        self.assertEqual(sleeps, [7, 14])
 
     def test_malformed_response_rejected(self):
         with self.assertRaises(ValueError):
@@ -95,15 +95,42 @@ class OpenFoodFactsRetryTests(unittest.TestCase):
         self.assertFalse(collector.is_japanese_ingredient_candidate(
             "4901002018849", "Poppy seeds", "water and salt"))
 
-    def test_fetch_page_returns_api_page_count(self):
-        payload = {"products": [{"code": "4901002018849"}], "page_count": "17"}
-        products, page_count = collector.fetch_page(
-            "https://world.openfoodfacts.org/test",
+    def test_fetch_page_calculates_total_pages_from_api_count(self):
+        # OFF API v2 page_count is per-page; count is the total match count.
+        payload = {"products": [{"code": "4901002018849"}], "count": 1700, "page_count": 100}
+        products, total_pages = collector.fetch_page(
+            "https://world.openfoodfacts.org/api/v2/search",
             opener=lambda req, timeout: io.BytesIO(json.dumps(payload).encode()),
             sleeper=lambda _: None,
+            page_size=100,
         )
         self.assertEqual(len(products), 1)
-        self.assertEqual(page_count, 17)
+        self.assertEqual(total_pages, 17)
+
+    def test_zero_total_count_has_no_pages(self):
+        payload = {"products": [], "count": 0, "page_count": 0}
+        products, total_pages = collector.fetch_page(
+            "https://world.openfoodfacts.org/api/v2/search",
+            opener=lambda req, timeout: io.BytesIO(json.dumps(payload).encode()),
+            sleeper=lambda _: None,
+            page_size=100,
+        )
+        self.assertEqual(products, [])
+        self.assertEqual(total_pages, 0)
+
+    def test_search_url_uses_supported_structured_api(self):
+        from urllib.parse import parse_qs, urlsplit
+        url = collector.build_search_url(12, 100)
+        parsed = urlsplit(url)
+        params = parse_qs(parsed.query)
+        self.assertEqual(parsed.path, "/api/v2/search")
+        self.assertEqual(params["countries_tags_en"], ["japan"])
+        self.assertEqual(params["page"], ["12"])
+        self.assertEqual(params["page_size"], ["100"])
+        self.assertIn("ingredients_text_ja", params["fields"][0])
+
+    def test_zero_page_count_does_not_probe_nonexistent_pages(self):
+        self.assertEqual(collector.page_sequence(4, 5, 0), [])
 
     def test_page_sequence_wraps_at_page_count(self):
         self.assertEqual(collector.page_sequence(6, 4, 7), [6, 7, 1, 2])
