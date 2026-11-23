@@ -138,6 +138,9 @@ def canonical(u):
   # Natori's official category pages require these filters for pagination.
   allowed.update({'formid','ible-categoryselectbox1','ible-categoryselectbox2',
                   'ible-checkboxsolo1','ible-keyword1'})
+  # Kyoritsu's official shop category pages use one numeric categoryId filter.
+  if (p.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and p.path.rstrip('/')=='/item-list':
+   allowed.add('categoryId')
  keep_blank=(p.hostname or '').lower() in {'dydo.co.jp','www.dydo.co.jp'} and p.path.rstrip('/')=='/products/list'
  q=sorted((k,v) for k,v in parse_qsl(p.query,keep_blank_values=keep_blank) if k in allowed)
  path=quote(p.path,safe="/%:@!$&'()*+,;=-._~")
@@ -158,6 +161,11 @@ def product_url(u):
 def sitemap_url(u):
  path=urlsplit(u).path.lower()
  return bool(source(u) and 'sitemap' in path and path.endswith('.xml'))
+def kyoritsu_shop_category_url(u):
+ p=urlsplit(u)
+ return ((p.hostname or '').lower()=='shop.kyoritsu-foods.co.jp'
+         and p.path.rstrip('/')=='/item-list'
+         and re.fullmatch(r'categoryId=\d+',p.query) is not None)
 def allowed_link(u):
  if is_terms_restricted_url(u):return False
  if sitemap_url(u):return True
@@ -175,6 +183,8 @@ def allowed_link(u):
  if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',path):return True
  # The official shop homepage is a bounded catalogue root; its exact item-detail links use the existing product URL rule.
  if host=='kyoritsu-foods.co.jp' and raw_host=='shop.kyoritsu-foods.co.jp' and path.rstrip('/')=='':return True
+  # Only exact numeric categoryId filters on the official shop listing path are navigation.
+  if host=='kyoritsu-foods.co.jp' and kyoritsu_shop_category_url(u):return True
  if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
@@ -726,7 +736,7 @@ class Collector:
    if not allowed_link(url):continue
    if product_url(url):continue
    parsed=urlsplit(url)
-   if parsed.query and source(url)!='natori.co.jp':continue
+   if parsed.query and source(url)!='natori.co.jp' and not kyoritsu_shop_category_url(url):continue
    if not (sitemap_url(url)
            or re.fullmatch(r'/(?:items/?|items/list/\d+/?|products/?|products/list/?|products/new\.php|products\.html|products_search/search|product/?)',parsed.path)
            or (source(url)=='kirin.co.jp' and parsed.path.rstrip('/')=='/softdrink/nutrition/softdrink')
@@ -740,6 +750,7 @@ class Collector:
            or (source(url)=='kyoritsu-foods.co.jp' and (
             re.fullmatch(r'/product/page/\d+/?',parsed.path)
             or ((parsed.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and parsed.path.rstrip('/')=='')
+             or kyoritsu_shop_category_url(url)
            ))
            or ((parsed.hostname or '').lower().removeprefix('www.')=='nagatanien.co.jp' and parsed.path.startswith('/product/') and parsed.path.rstrip('/')!='/product' and not re.fullmatch(r'/product/detail/\d+/?',parsed.path))):continue
    host=parsed.netloc
@@ -750,6 +761,9 @@ class Collector:
    elif source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path):
     # 12 paginated corporate catalogue pages are bounded and each exposes product links.
     refresh_kind='catalogue_page';refresh_limit=12
+   elif kyoritsu_shop_category_url(url):
+    # Eight bounded numeric category filters expose exact official item-detail links.
+    refresh_kind='catalogue_category';refresh_limit=8
    elif source(url)=='kyoritsu-foods.co.jp' and (parsed.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and parsed.path.rstrip('/')=='':
     # The official online shop root is one bounded page with exact product-detail links.
     refresh_kind='catalogue_page';refresh_limit=1
