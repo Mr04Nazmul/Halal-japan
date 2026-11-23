@@ -150,10 +150,15 @@ def source(u):
  host=(urlsplit(u).hostname or '').lower()
  return next((d for d in SOURCES if host==d or host.endswith('.'+d)),None)
 def product_url(u):
+ # Enforce the source-terms gate even when a restricted product URL is supplied directly as a seed.
+ if is_terms_restricted_url(u):return False
  d=source(u)
  if not d:return False
  if d=='sokensha.co.jp' and canonical(u) in SOKEN_SHA_MULTI_PRODUCT_RELEASES:return True
  path=urlsplit(u).path
+ raw_host=(urlsplit(u).hostname or '').lower()
+ # Kyoritsu shop category listings are navigation, never product records.
+ if d=='kyoritsu-foods.co.jp' and raw_host=='shop.kyoritsu-foods.co.jp' and path.rstrip('/')=='/item-list':return False
  # Asahi's /products/list/ pages are catalogue filters, not product detail pages.
  # Keep them discoverable as navigation, but do not count or prioritize them as products.
  if d=='asahiinryo.co.jp' and path.startswith('/products/list/'):return False
@@ -183,6 +188,10 @@ def allowed_link(u):
  if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',path):return True
  # The official shop homepage is a bounded catalogue root; its exact item-detail links use the existing product URL rule.
  if host=='kyoritsu-foods.co.jp' and raw_host=='shop.kyoritsu-foods.co.jp' and path.rstrip('/')=='':return True
+ # The /item-list route is navigation only when it has exactly one numeric categoryId.
+ # Reject every other query on this path before the broad product/navigation matcher.
+ if host=='kyoritsu-foods.co.jp' and raw_host=='shop.kyoritsu-foods.co.jp' and path.rstrip('/')=='/item-list':
+  return kyoritsu_shop_category_url(u)
  # Only exact numeric categoryId filters on the official shop listing path are navigation.
  if host=='kyoritsu-foods.co.jp' and kyoritsu_shop_category_url(u):return True
  if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
