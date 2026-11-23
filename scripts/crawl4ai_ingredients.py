@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode
 from japan_ingredient_source_terms import is_terms_restricted_url
+from extract_crawl_ingredient_candidates import explicit_jan_codes_from_page
 
 SEEDS = Path(os.getenv("CRAWL_SEEDS_FILE", "data/manufacturer_seed_urls.txt"))
 OUT = Path("data/crawl4ai_ingredient_evidence.jsonl")
@@ -16,7 +17,6 @@ MAX_URLS = min(max(int(os.getenv("CRAWL_MAX_URLS", "50")), 1), 250)
 AGENT = "JapanHalalCheckerResearchBot"
 PATTERN = re.compile(r"(原材料名|原材料|使用原材料|ingredients|アレルゲン|添加物)", re.I)
 BARCODE = re.compile(r"(?<!\d)(?:45|49)\d{11}(?!\d)")
-JAN_LABEL = re.compile(r"(?:JANコード|JAN\s*CODE|JANCODE|POSコード)\s*[:：|｜]?\s*((?:\d[\s-]?){7,12}\d)(?!\d)", re.I)
 robots_cache = {}
 
 def allowed(url):
@@ -82,7 +82,7 @@ async def main():
                             record={"source_url":url,"host":urlparse(url).hostname,"page_title":title,
                                     "evidence":evidence[:25],
                                     "barcode_candidates":list(dict.fromkeys(BARCODE.findall(md)))[:20],
-                                    "jan_candidates":list(dict.fromkeys(re.sub(r"\D", "", m.group(1)) for m in JAN_LABEL.finditer(md) if len(re.sub(r"\D", "", m.group(1))) == 13))[:10],
+                                    "jan_candidates":explicit_jan_codes_from_page(md, getattr(result, "html", "") or "", getattr(result, "cleaned_html", "") or "")[:10],
                                     "page_sha256":hashlib.sha256(md.encode()).hexdigest(),
                                     "verification":"needs_human_review","halal_certified":False}
                             with OUT.open("a", encoding="utf-8") as f:

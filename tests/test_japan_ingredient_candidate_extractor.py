@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from extract_crawl_ingredient_candidates import extract_candidate_records
+from extract_crawl_ingredient_candidates import explicit_jan_codes_from_page, extract_candidate_records
 
 
 class IngredientCandidateExtractorTests(unittest.TestCase):
@@ -43,6 +43,24 @@ class IngredientCandidateExtractorTests(unittest.TestCase):
         rows = extract_candidate_records([record], exported_at="2026-11-22T00:00:00Z")
         self.assertEqual("4903065061206", rows[0]["jan_code"])
         self.assertEqual('[\"4903065061206\"]', rows[0]["jan_code_candidates"])
+
+    def test_full_html_jan_label_is_captured_when_markdown_omits_it(self):
+        html = """<html><body><dl>
+        <dt>JANコード</dt><dd>4903065061206</dd>
+        <dt>原材料名</dt><dd>食塩（国内製造）、ぶどう糖</dd>
+        </dl></body></html>"""
+        self.assertEqual(
+            ["4903065061206"],
+            explicit_jan_codes_from_page("原材料名 食塩（国内製造）、ぶどう糖", html),
+        )
+
+    def test_generic_barcode_in_html_without_jan_label_is_ignored(self):
+        html = "<html><body><p>Barcode 4903065061206</p></body></html>"
+        self.assertEqual([], explicit_jan_codes_from_page("原材料名 食塩", html))
+
+    def test_invalid_checksum_jan_in_html_is_ignored(self):
+        html = "<html><body><dt>JANコード</dt><dd>4903065061207</dd></body></html>"
+        self.assertEqual([], explicit_jan_codes_from_page("原材料名 食塩", html))
 
     def test_crawler_explicit_jan_metadata_is_used_when_snippet_omits_jan(self):
         record = self.record(
