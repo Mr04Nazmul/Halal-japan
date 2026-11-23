@@ -14,10 +14,10 @@ spec.loader.exec_module(staging)
 class OffStagingTests(unittest.TestCase):
     def test_jan_checksum_is_required(self):
         self.assertTrue(staging.valid_ean("4901002018849"))
-        self.assertTrue(staging.valid_ean("49012345"))
+        self.assertTrue(staging.valid_ean("49012347"))
         self.assertFalse(staging.valid_ean("4901002018848"))
         self.assertFalse(staging.valid_ean("490100201884"))
-        self.assertFalse(staging.valid_ean("4006381333931"))  # valid EAN-13 but not Japanese-prefix gated below
+        self.assertTrue(staging.valid_ean("4006381333931"))  # valid EAN-13; Japanese script is checked separately
 
     def test_review_rows_keep_off_license_and_unverified_status(self):
         record = {
