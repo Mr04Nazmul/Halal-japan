@@ -3,22 +3,34 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '51 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/import_off_japan_ingredients.py'
+      - 'scripts/stage_off_ingredient_batch.py'
+      - 'tests/test_off_ingredient_staging.py'
+      - '.github/workflows/off-ingredient-staging.yml'
 permissions:
   contents: read
+concurrency:
+  group: off-ingredient-staging
+  cancel-in-progress: false
 jobs:
   collect-and-stage:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      SUPABASE_URL: ${{ secrets.JHC_SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_URL: \${{ secrets.JHC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: \${{ secrets.JHC_SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Fetch source-backed candidates
-        run: python scripts/import_off_japan_ingredients.py --pages 20 --page-size 100
+      - name: Test OFF checksum, pagination, and review-only staging
+        run: python -m unittest discover -s tests -p 'test_off_ingredient_staging.py'
+      - name: Fetch source-backed candidates from licensed OFF categories
+        run: python scripts/import_off_japan_ingredients.py --categories-limit 12 --pages-per-category 10 --page-size 100 --delay 7
       - name: Import only if at least 1000 qualified records
         run: python scripts/stage_off_ingredient_batch.py
       - name: Preserve inspection file
