@@ -44,6 +44,12 @@ def is_product_detail_url(url):
         return True
     if path.endswith("/catalog/products/index.php") and query.get("id"):
         return True
+    if (
+        parsed.hostname == "shop.kyoritsu-foods.co.jp"
+        and re.fullmatch(r"/item-detail/\\d+", path)
+        and not parsed.query
+    ):
+        return True
     return any(pattern.search(path) for pattern in DETAIL_PATH_PATTERNS)
 
 
@@ -73,7 +79,27 @@ def has_declared_ingredient_field(selector):
 
 def is_allowed_source_url(url):
     parsed = urlparse(url)
-    return parsed.scheme == "https" and not is_terms_restricted_url(url)
+    if parsed.scheme != "https" or is_terms_restricted_url(url):
+        return False
+
+    # Kyoritsu's shop is a bounded discovery source: exact item details,
+    # the root catalogue, and one numeric categoryId filter only.
+    if parsed.hostname == "shop.kyoritsu-foods.co.jp":
+        path = parsed.path.rstrip("/") or "/"
+        if path == "/" and not parsed.query:
+            return True
+        if path == "/item-list":
+            query = parse_qs(parsed.query, keep_blank_values=True)
+            return (
+                set(query) == {"categoryId"}
+                and len(query["categoryId"]) == 1
+                and query["categoryId"][0].isdigit()
+            )
+        if re.fullmatch(r"/item-detail/\\d+", path) and not parsed.query:
+            return True
+        return False
+
+    return True
 
 
 def response_text(response):
@@ -114,7 +140,16 @@ class JapaneseProductLinks(scrapy.Spider):
             for line in seeds.read_text(encoding="utf-8").splitlines()
             if line.strip().startswith("https://") and is_allowed_source_url(line.strip())
         ]
-        for url in seed_urls[:80]:
+        # Put the bounded Kyoritsu category pages first; they were previously
+        # excluded by the first-80 cap because they sit at the end of the seed file.
+        kyoritsu_categories = [
+            url for url in seed_urls
+            if urlparse(url).hostname == "shop.kyoritsu-foods.co.jp"
+            and urlparse(url).path.rstrip("/") == "/item-list"
+            and is_allowed_source_url(url)
+        ]
+        ordered_seeds = kyoritsu_categories + [url for url in seed_urls if url not in kyoritsu_categories]
+        for url in ordered_seeds[:120]:
             yield scrapy.Request(
                 url,
                 callback=self.parse,
