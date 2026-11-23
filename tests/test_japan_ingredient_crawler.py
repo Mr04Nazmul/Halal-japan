@@ -257,10 +257,10 @@ class Extraction(unittest.TestCase):
   from crawl_japanese_ingredients import allowed_link
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   catalogue='https://www.kyoritsu-foods.co.jp/product/page/7/'
-   sitemap='https://www.kyoritsu-foods.co.jp/sitemap.xml'
-   product='https://www.kyoritsu-foods.co.jp/product/123/'
-   blocked='https://www.kyoritsu-foods.co.jp/product/999/'
+   catalogue='https://www.yamaki.co.jp/catalog'
+   sitemap='https://www.yamaki.co.jp/sitemap.xml'
+   product='https://www.yamaki.co.jp/catalog/products/index.php?id=86'
+   blocked='https://www.yamaki.co.jp/catalog/products/index.php?id=999'
    self.assertTrue(allowed_link(catalogue))
    self.assertTrue(allowed_link(sitemap))
    seeds=[catalogue,sitemap,product,blocked]
@@ -337,7 +337,7 @@ class Extraction(unittest.TestCase):
   self.assertTrue(all(not allowed_link(url) for url in blocked))
   with tempfile.TemporaryDirectory() as folder:
    c=Collector(folder,100000)
-   good='https://www.kyoritsu-foods.co.jp/product/page/7/'
+   good='https://www.yamaki.co.jp/catalog'
    c.db.execute("DELETE FROM metadata WHERE key=?",(SOURCE_TERMS_QUARANTINE_KEY,))
    c.db.executemany("INSERT INTO queue(url) VALUES(?)",[(url,) for url in blocked])
    c.db.commit()
