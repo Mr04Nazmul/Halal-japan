@@ -46,7 +46,7 @@ def is_product_detail_url(url):
         return True
     if (
         parsed.hostname == "shop.kyoritsu-foods.co.jp"
-        and re.fullmatch(r"/item-detail/\\d+", path)
+        and re.fullmatch(r"/item-detail/\d+", path)
         and not parsed.query
     ):
         return True
@@ -95,7 +95,7 @@ def is_allowed_source_url(url):
                 and len(query["categoryId"]) == 1
                 and query["categoryId"][0].isdigit()
             )
-        if re.fullmatch(r"/item-detail/\\d+", path) and not parsed.query:
+        if re.fullmatch(r"/item-detail/\d+", path) and not parsed.query:
             return True
         return False
 
