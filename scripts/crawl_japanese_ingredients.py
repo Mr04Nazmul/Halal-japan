@@ -173,6 +173,8 @@ def allowed_link(u):
  if host=='maruchan.co.jp':return product_url(u)
  # Kyoritsu's official consumer catalogue paginates product listings at /product/page/N/.
  if host=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',path):return True
+ # The official shop homepage is a bounded catalogue root; its exact item-detail links use the existing product URL rule.
+ if host=='kyoritsu-foods.co.jp' and raw_host=='shop.kyoritsu-foods.co.jp' and path.rstrip('/')=='':return True
  if host=='matsukiyococokara-online.com' and re.fullmatch(r'/store/catalog/category/view/categories/\d+(?:/\d+)*/?',path):return True
  # Nissin's Japan homepage is a first-party product catalogue index.
  # Allow it so the crawler can discover and prioritize official item pages.
@@ -702,7 +704,10 @@ class Collector:
            or (source(url)=='housefoods.jp' and parsed.path=='/products/catalog/new.html')
            or (source(url)=='calbee.co.jp' and parsed.path.rstrip('/')=='/products/select/new.php')
            or (source(url)=='uha-mikakuto.co.jp' and parsed.path.rstrip('/')=='/catalog/gummy')
-           or (source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path))
+           or (source(url)=='kyoritsu-foods.co.jp' and (
+            re.fullmatch(r'/product/page/\d+/?',parsed.path)
+            or ((parsed.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and parsed.path.rstrip('/')=='')
+           ))
            or ((parsed.hostname or '').lower().removeprefix('www.')=='nagatanien.co.jp' and parsed.path.startswith('/product/') and parsed.path.rstrip('/')!='/product' and not re.fullmatch(r'/product/detail/\d+/?',parsed.path))):continue
    host=parsed.netloc
    # Refresh at most one sitemap and one catalogue entry point per host.
@@ -710,8 +715,11 @@ class Collector:
    if sitemap_url(url):
     refresh_kind='sitemap';refresh_limit=1
    elif source(url)=='kyoritsu-foods.co.jp' and re.fullmatch(r'/product/page/\d+/?',parsed.path):
-    # 12 paginated catalogue pages are bounded and each exposes product links.
+    # 12 paginated corporate catalogue pages are bounded and each exposes product links.
     refresh_kind='catalogue_page';refresh_limit=12
+   elif source(url)=='kyoritsu-foods.co.jp' and (parsed.hostname or '').lower()=='shop.kyoritsu-foods.co.jp' and parsed.path.rstrip('/')=='':
+    # The official online shop root is one bounded page with exact product-detail links.
+    refresh_kind='catalogue_page';refresh_limit=1
    elif (parsed.hostname or '').lower().removeprefix('www.')=='nagatanien.co.jp' and parsed.path.startswith('/product/') and parsed.path.rstrip('/')!='/product' and not re.fullmatch(r'/product/detail/\d+/?',parsed.path):
     # 22 consumer category pages are bounded and each exposes product-detail links.
     refresh_kind='catalogue_page';refresh_limit=22
