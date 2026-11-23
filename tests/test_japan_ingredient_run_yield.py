@@ -41,7 +41,7 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
             collector = Collector(directory, 100)
             collector.permitted = lambda url: True
             collector.request = lambda url: "<html><body><h1>Product catalogue</h1></body></html>"
-            collector.run(["https://www.kyoritsu-foods.co.jp/product/page/7/"], max_pages=1, minutes=1)
+            collector.run(["https://www.marukome.co.jp/products/"], max_pages=1, minutes=1)
             summary = json.loads((Path(directory) / "summary.json").read_text())
             self.assertEqual(summary["current_run"]["pages_processed"], 1)
             self.assertEqual(summary["current_run"]["new_accepted"], 0)
@@ -54,7 +54,7 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
             product = "https://www.yamaki.co.jp/catalog/products/index.php?id=86"
-            catalogue = "https://www.kyoritsu-foods.co.jp/product/page/7/"
+            catalogue = "https://www.marukome.co.jp/products/"
             collector.enqueue([product])
             collector.permitted = lambda url: True
             collector.request = lambda url: (
@@ -73,10 +73,10 @@ class CrawlerRunYieldDiagnostics(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             collector = Collector(directory, 100)
             urls = [
-                "https://www.kyoritsu-foods.co.jp/product/page/7/",
-                "https://www.kyoritsu-foods.co.jp/product/page/8/",
-                "https://www.yamaki.co.jp/catalog/products/",
-                "https://www.yamaki.co.jp/catalog/products/index.php",
+                "https://www.marukome.co.jp/products/",
+                "https://www.marukome.co.jp/products/?page=2",
+                "https://www.yamaki.co.jp/catalog/dashi",
+                "https://www.yamaki.co.jp/catalog/mixture",
             ]
             collector.enqueue(urls)
             collector.permitted = lambda url: True
