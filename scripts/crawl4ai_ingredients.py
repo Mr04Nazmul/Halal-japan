@@ -2,7 +2,7 @@
 """Crawl public Japanese food pages for ingredient evidence (NOT halal certification).
 Unseen URLs are prioritized; attempt history and evidence are persisted between workflow runs.
 """
-import asyncio, hashlib, json, os
+import asyncio, hashlib, json, os, re
 from pathlib import Path
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
