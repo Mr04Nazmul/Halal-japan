@@ -262,7 +262,7 @@ def extract(html,url):
  if (urlsplit(url).hostname or '').lower()=='shop.kyoritsu-foods.co.jp':
   for block in soup.select('.item-detail-txt1.wysiwyg-data > div'):
    raw=unicodedata.normalize('NFKC',block.get_text(' ',strip=True))
-   match=re.match(r'^[●•\\s]*(原材料名/添加物名|原材料名|原材料)\\s*(?:[/／:：]|…|\\.\\.\\.)\\s*(.+)$',raw,re.S)
+   match=re.match(r'^[●•\s]*(原材料名/添加物名|原材料名|原材料)\s*(?:[/／:：]|…|\.\.\.)\s*(.+)$',raw,re.S)
    if match:
     fields.setdefault(match.group(1),[]).append(match.group(2).strip())
  for tr in soup.find_all('tr'):
@@ -362,9 +362,9 @@ def extract(html,url):
   elif clean_label(name)=='グミ':return None,'missing_product_identity'
  if (urlsplit(url).hostname or '').lower()=='shop.kyoritsu-foods.co.jp':
   # Strip shop-only sale/pack-count wrappers; preserve the Japanese product name.
-  name=re.sub(r'^[【〖]\\s*\\d+個(?:入り)?[】〗]\\s*','',name)
-  name=re.sub(r'\\s*[（(]\\s*\\d+\\s*[％%]\\s*OFF\\s*[）)]\\s*$','',name)
-  name=re.sub(r'\\s+',' ',name).strip()
+  name=re.sub(r'^[【〖]\s*\d+個(?:入り)?[】〗]\s*','',name)
+  name=re.sub(r'\s*[（(]\s*\d+\s*[％%]\s*OFF\s*[）)]\s*$','',name)
+  name=re.sub(r'\s+',' ',name).strip()
  if not name or '\ufffd' in name or clean_label(name) in GENERIC_NAMES:return None,'missing_product_identity'
  if is_nonfood_name(name):return None,'non_human_food'
  codes=[]
