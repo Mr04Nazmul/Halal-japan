@@ -427,7 +427,7 @@ class Extraction(unittest.TestCase):
   self.assertEqual(record['source_publisher'],'montoile.co.jp')
   self.assertFalse(record['halal_certified'])
 
- def test_restricted_itoen_and_allowed_ucc_product_patterns(self):
+ def test_restricted_itoen_and_ucc_product_patterns(self):
   from crawl_japanese_ingredients import allowed_link
   self.assertTrue(product_url('https://www.itoen.jp/products/43679/'))
   self.assertTrue(product_url('https://www.ucc.co.jp/product/instant/class-one/class-one-bin-170g.html'))
@@ -437,7 +437,9 @@ class Extraction(unittest.TestCase):
   self.assertFalse(product_url('https://www.ucc.co.jp/product/instant/'))
   self.assertFalse(product_url('https://www.itoen.jp.evil.example/products/43679/'))
   self.assertFalse(allowed_link('https://www.itoen.jp/products/43679/'))
-  self.assertTrue(allowed_link('https://www.ucc.co.jp/product/'))
+  self.assertFalse(allowed_link('https://www.ucc.co.jp/product/'))
+  self.assertFalse(allowed_link('https://www.ucc.co.jp/product/instant/class-one/class-one-bin-170g.html'))
+  self.assertFalse(allowed_link('https://store.ucc.co.jp/item/CAL1300002.html'))
  def test_yamaki_catalogue_root_is_discovery_only(self):
   from crawl_japanese_ingredients import allowed_link
   self.assertTrue(allowed_link('https://www.yamaki.co.jp/catalog/'))

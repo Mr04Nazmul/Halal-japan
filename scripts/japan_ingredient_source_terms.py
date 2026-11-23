@@ -4,9 +4,14 @@ Reviewed 2026-11-23. This gate blocks sources with express reuse restrictions an
 """
 from urllib.parse import urlsplit
 
-SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v24"
+SOURCE_TERMS_POLICY_VERSION = "2026-11-23-v25"
 
 RESTRICTED_SOURCE_POLICIES = {
+    "ucc.co.jp": {
+        "policy_url": "https://www.ucc.co.jp/webuse.html",
+        "reason": "UCC website terms state that site content is copyrighted and prohibit unauthorized reproduction, reuse, resale, or republication beyond private or legally permitted use; bulk ingredient-data reuse permission is not established, so automated collection/import is paused pending rights-holder clarification.",
+        "reviewed_on": "2026-11-23",
+    },
     "sokensha.co.jp": {
         "policy_url": "https://sokensha.co.jp/",
         "reason": "Sokensha corporate pages display a copyright notice; no compatible licence or bulk ingredient-data reuse permission is established, so automated collection/import is paused pending rights-holder clarification.",
